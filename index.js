@@ -12,7 +12,6 @@ import upload from "./lib/multer.js";
 import nftRoutes from "./routes/nftRoutes.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
 const imgsDir = path.join(__dirname, "images");
 
 dotenv.config();
@@ -23,6 +22,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.get("/", (req, res) => {
+  res.status(200).send("Welcome to the Fibbo API!");
+});
 nftRoutes(app, upload, imgsDir, sanity_client);
 
 app.listen(9000, () => {
