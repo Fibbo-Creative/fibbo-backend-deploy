@@ -4,8 +4,16 @@ export const removeFiles = async (directory) => {
   fs.readdir(directory, (err, files) => {
     if (err) throw err;
     for (const file of files) {
-      console.log(file);
-      fs.unlinkSync(path.join(directory, file));
+      if (
+        file.includes(".png") ||
+        file.includes(".jpg") ||
+        file.includes(".gif") ||
+        file.includes(".PNG") ||
+        file.includes(".svg") ||
+        file.includes(".jpeg") ||
+        file.includes(".mp4")
+      )
+        fs.unlinkSync(path.join(directory, file));
     }
   });
 };
