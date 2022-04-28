@@ -26,6 +26,7 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to the Fibbo API!");
 });
+
 nftRoutes(app, upload, imgsDir, sanity_client);
 
 app.listen(PORT, () => {
