@@ -16,6 +16,7 @@ const imgsDir = path.join(__dirname, "images");
 
 dotenv.config();
 
+const PORT = process.env.PORT || 9000;
 // OWN PROJECT DEPENDECNIES
 
 const app = express();
@@ -27,6 +28,6 @@ app.get("/", (req, res) => {
 });
 nftRoutes(app, upload, imgsDir, sanity_client);
 
-app.listen(9000, () => {
-  console.log("Listening at 9000");
+app.listen(PORT, () => {
+  console.log("Server listening!");
 });
