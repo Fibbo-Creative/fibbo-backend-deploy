@@ -5,6 +5,7 @@ import {
 } from "./utils.js";
 
 import { uploadToCDN } from "../utils/sanity.js";
+import { removeFiles } from "../utils/multer.js";
 
 export default (app, upload, imgsDir, sanity_client) => {
   app.get("/getAllNfts", async (req, res) => {
@@ -87,6 +88,9 @@ export default (app, upload, imgsDir, sanity_client) => {
       image ? image : null,
       imgsDir
     );
+
+    await removeFiles(imgsDir);
+
     res.send(uploadedImgSanity.url);
   });
 
@@ -321,6 +325,8 @@ export default (app, upload, imgsDir, sanity_client) => {
         })
         .commit();
 
+      await removeFiles(imgsDir);
+
       res.status(200).send(profileImgUrl);
     } else {
     }
@@ -348,6 +354,8 @@ export default (app, upload, imgsDir, sanity_client) => {
           profileBanner: bannerImgUrl,
         })
         .commit();
+
+      await removeFiles(imgsDir);
 
       res.status(200).send(bannerImgUrl);
     } else {
