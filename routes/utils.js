@@ -1,12 +1,8 @@
+import Events from "../models/events.js";
+
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
-export const registerMintEvent = async (
-  sanity_client,
-  collectionAddress,
-  tokenId,
-  to
-) => {
+export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
-    _type: "event",
     eventType: "MINT",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
@@ -16,20 +12,20 @@ export const registerMintEvent = async (
     price: 0,
   };
 
-  const createdEvent = await sanity_client.create(doc);
+  const createdEvent = await Events.create(doc);
 
-  return createdEvent;
+  if (createdEvent) {
+    return createdEvent;
+  }
 };
 
 export const registerListingEvent = async (
-  sanity_client,
   collectionAddress,
   tokenId,
   from,
   price
 ) => {
   const doc = {
-    _type: "event",
     tokenId: tokenId,
     eventType: "LISTING",
     collectionAddress: collectionAddress,
@@ -39,13 +35,11 @@ export const registerListingEvent = async (
     price: price,
   };
 
-  const createdEvent = await sanity_client.create(doc);
-
-  return createdEvent;
+  const createdEvent = await Events.create(doc);
+  if (createdEvent) return createdEvent;
 };
 
 export const registerTransferEvent = async (
-  sanity_client,
   collectionAddress,
   tokenId,
   from,
@@ -53,7 +47,6 @@ export const registerTransferEvent = async (
   price
 ) => {
   const doc = {
-    _type: "event",
     eventType: "TRANSFER",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
@@ -63,7 +56,6 @@ export const registerTransferEvent = async (
     price: price,
   };
 
-  const createdEvent = await sanity_client.create(doc);
-
-  return createdEvent;
+  const createdEvent = await Events.create(doc);
+  if (createdEvent) return createdEvent;
 };

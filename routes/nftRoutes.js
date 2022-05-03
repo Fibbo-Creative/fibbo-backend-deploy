@@ -6,94 +6,32 @@ import {
 
 import { uploadToCDN } from "../utils/sanity.js";
 import { removeFiles } from "../utils/multer.js";
+import { getCollectionInfo } from "../utils/collections.js";
+import Nft from "../models/nft.js";
+import {
+  changeNftOwner,
+  getAllNfts,
+  getNftInfo,
+  getNftInfoById,
+  getNftsByAddress,
+} from "../utils/nfts.js";
+import NftForSale from "../models/nftForSale.js";
+import {
+  deleteNftForSale,
+  getAllNftsForSale,
+  getNftForSaleById,
+} from "../utils/nftsForSale.js";
+import { getEventsFromNft } from "../utils/events.js";
+import {
+  getProfileInfo,
+  updateProfileBanner,
+  updateProfileImg,
+  updateUsername,
+} from "../utils/profiles.js";
+import Profile from "../models/profile.js";
 
 export default (app, upload, imgsDir, sanity_client) => {
-  app.get("/getAllNfts", async (req, res) => {
-    console.log("Fetching collections");
-
-    const query =
-      '*[_type == "nft"] {name, description, owner, image, royalty}';
-
-    const allNfts = await sanity_client.fetch(query);
-
-    res.status(200).send(allNfts);
-  });
-
-  app.get("/getNftsForSale", async (req, res) => {
-    const query =
-      '*[_type == "nftForSale"] {name, price, forSaleAt, nft->{image, collectionAddress, itemId, royalty}}';
-
-    const allNftsForSale = await sanity_client.fetch(query);
-
-    res.status(200).send(allNftsForSale);
-  });
-
-  app.get("/getNftInfoById", async (req, res) => {
-    const { collection, nftId } = req.query;
-
-    console.log(collection, nftId);
-
-    if (!nftId) {
-      res.status(204).send("No identifier supplied");
-    }
-    const query = `*[_type == "nft" && itemId==${nftId} && collectionAddress=="${collection}"] {_id, itemId, name, description, owner, creator, image, royalty}`;
-
-    const nft = await sanity_client.fetch(query);
-    console.log(nft);
-    if (nft.length > 0) {
-      let nftResult = nft[0];
-
-      const forSaleQuery = `*[_type == "nftForSale" && collectionAddress=='${collection}' && tokenId==${nftId}] {_id, itemId, price, forSaleAt}`;
-
-      const nftForSale = await sanity_client.fetch(forSaleQuery);
-
-      if (nftForSale.length > 0) {
-        nftResult = {
-          ...nftResult,
-          forSale: true,
-          price: nftForSale[0].price,
-          forSaleAt: nftForSale[0].forSaleAt,
-          forSaleItemId: nftForSale[0].itemId,
-        };
-      } else {
-        nftResult = {
-          ...nftResult,
-          forSale: false,
-        };
-      }
-      res.status(200).send(nftResult);
-    } else {
-      res.status(205).send("Nft with id not found!");
-    }
-  });
-
-  app.get("/getNftsByAddress", async (req, res) => {
-    const { address } = req.query;
-
-    if (!address) {
-      res.status(204).send("No address supplied");
-    }
-
-    const query = `*[_type == "nft" && owner=="${address}" ] {name, collectionAddress, itemId, description, owner, image, royalty}`;
-
-    const nfts = await sanity_client.fetch(query);
-
-    res.status(200).send(nfts);
-  });
-
-  app.post("/uploadTestImg", upload.single("image"), async (req, res) => {
-    const image = req.file;
-    const uploadedImgSanity = await uploadToCDN(
-      sanity_client,
-      image ? image : null,
-      imgsDir
-    );
-
-    await removeFiles(imgsDir);
-
-    res.send(uploadedImgSanity.url);
-  });
-
+  //POST NFT ENDPOINTS
   app.post("/newNftItem", async (req, res) => {
     const {
       collection,
@@ -105,17 +43,12 @@ export default (app, upload, imgsDir, sanity_client) => {
       sanityImgUrl,
     } = req.body;
 
-    console.log(collection);
+    const collectionInfo = await getCollectionInfo(collection);
 
-    const queryCollections = `*[_type=="collection" && contractAddress=="${collection}"] {_id, name}`;
-
-    const collectionInfo = await sanity_client.fetch(queryCollections);
     console.log(collectionInfo);
-    if (collectionInfo.length > 0) {
-      const collectionId = collectionInfo[0]._id;
-      const doc = {
-        _type: "nft",
-        _id: `fibbo-${collection}-${itemId}`,
+
+    if (collectionInfo) {
+      const newCollection = await Nft.create({
         name: name,
         description: description,
         owner: creator,
@@ -124,27 +57,15 @@ export default (app, upload, imgsDir, sanity_client) => {
         royalty: parseFloat(royalty),
         image: sanityImgUrl,
         collectionAddress: collection,
-        collection: {
-          _type: "reference",
-          _ref: collectionId,
-        },
-      };
+      });
 
-      const createdDoc = await sanity_client.create(doc);
+      if (newCollection) {
+        res.status(200).send(newCollection);
 
-      //Add nft transfer/Creation
-
-      //Register item minted!
-
-      await registerMintEvent(sanity_client, collection, itemId, creator);
-
-      await sanity_client
-        .patch(collectionId)
-        .set({ numberOfItems: itemId })
-        .commit();
-      res.send(createdDoc);
+        await registerMintEvent(collection, itemId, creator);
+      }
     } else {
-      res.status(205).send("Collection not found");
+      res.send("No collection Found");
     }
   });
 
@@ -154,45 +75,23 @@ export default (app, upload, imgsDir, sanity_client) => {
       res.status(204).send("No params supplied");
     }
 
-    const query = `*[_type=="nft" && owner=="${owner}" && itemId==${itemId} && collectionAddress=='${collectionAddress}'] {_id, name, description, owner, image, royalty}`;
-
-    const nftQuery = await sanity_client.fetch(query);
-
-    const nft = nftQuery[0];
+    const nft = await getNftInfo(owner, itemId, collectionAddress);
 
     if (nft) {
-      const nftSanityId = nft._id;
-      const nftInBdOwner = nft.owner;
-      const nftName = nft.name;
-      if (owner !== nftInBdOwner) {
-        res.status(205).send("Address suplied is not the owner!");
-      } else {
-        const doc = {
-          _type: "nftForSale",
-          _id: `${nftSanityId}-forSale`,
-          name: nftName,
-          nft: {
-            _type: "reference",
-            _ref: nftSanityId,
-          },
-          itemId: forSaleItemId,
-          tokenId: itemId,
-          collectionAddress: collectionAddress,
-          price: price,
-          forSaleAt: new Date().toISOString().split("T")[0],
-        };
+      const doc = {
+        name: nft.name,
+        itemId: forSaleItemId,
+        image: nft.image,
+        tokenId: itemId,
+        collectionAddress: collectionAddress,
+        price: price,
+        forSaleAt: new Date().toISOString().split("T")[0],
+      };
 
-        const createdDoc = await sanity_client.create(doc);
+      const createdDoc = await NftForSale.create(doc);
 
-        await registerListingEvent(
-          sanity_client,
-          collectionAddress,
-          itemId,
-          owner,
-          price
-        );
-        res.status(200).send(createdDoc);
-      }
+      await registerListingEvent(collectionAddress, itemId, owner, price);
+      res.status(200).send(createdDoc);
     }
   });
 
@@ -212,93 +111,112 @@ export default (app, upload, imgsDir, sanity_client) => {
 
     try {
       //Update NFT new Owner...
-      await sanity_client
-        .patch(sanityItemId)
-        .set({
-          owner: newOwner,
-        })
-        .commit();
-
-      //Create transfer doc
-
-      await sanity_client.delete({
-        query: `*[_type == "nftForSale" && _id=="${sanityItemId}-forSale"]`,
-      });
-
-      const eventCreated = await registerTransferEvent(
-        sanity_client,
-        collectionAddress,
+      const updatedOwner = await changeNftOwner(
         nftItemId,
+        collectionAddress,
         prevOwner,
-        newOwner,
-        boughtFor
+        newOwner
       );
 
-      res.status(200).send(eventCreated);
+      if (updatedOwner) {
+        const deletedNftForSale = await deleteNftForSale(
+          collectionAddress,
+          nftForSaleItemId
+        );
+
+        const eventCreated = await registerTransferEvent(
+          collectionAddress,
+          nftItemId,
+          prevOwner,
+          newOwner,
+          boughtFor
+        );
+
+        res.status(200).send(eventCreated);
+      }
+
+      //Create transfer doc
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
     }
   });
 
-  app.post("/makeOffer", async (req, res) => {});
+  //GET NFT ENDPOINTS
 
-  app.get("/getCollectionData", async (req, res) => {
-    const { collection } = req.query;
+  app.get("/getAllNfts", async (req, res) => {
+    console.log("Fetching collections");
 
-    const queryCollections = `*[_type=="collection" && contractAddress=="${collection}"] {_id, name, contractAddress, numberOfItems }`;
+    const allNfts = await getAllNfts();
 
-    const collectionInfo = await sanity_client.fetch(queryCollections);
-    console.log(collectionInfo);
-    if (collectionInfo.length > 0) {
-      res.status(200).send(collectionInfo[0]);
+    res.status(200).send(allNfts);
+  });
+
+  app.get("/getNftsForSale", async (req, res) => {
+    const allNftsForSale = await getAllNftsForSale();
+
+    res.status(200).send(allNftsForSale);
+  });
+
+  app.get("/getNftInfoById", async (req, res) => {
+    const { collection, nftId } = req.query;
+
+    console.log(collection, nftId);
+
+    if (!nftId) {
+      res.status(204).send("No identifier supplied");
     }
-  });
 
-  app.get("/getItemHistory", async (req, res) => {
-    const { collection, tokenId } = req.query;
+    const nft = await getNftInfoById(nftId, collection);
 
-    console.log(collection, tokenId);
-    const query = `*[_type=="event" && collectionAddress=="${collection}" && tokenId==${tokenId}] {_id, eventType, from, to, timestamp, price, _createdAt } | order(_createdAt asc)`;
-
-    const result = await sanity_client.fetch(query);
-
-    console.log(result);
-
-    res.status(200).send(result);
-  });
-
-  //Profile endpoints
-  app.post("/newProfile", async (req, res) => {
-    const { wallet } = req.body;
-    console.log(wallet);
-    const profileDoc = {
-      _type: "profile",
-      _id: `profile-${wallet}`,
-      wallet: wallet,
-      username: "Fibbo Artist",
-      profileImg: `https://avatars.dicebear.com/api/bottts/${wallet}.svg`,
-      profileBanner: "",
-      following: [],
-      followers: [],
-    };
-
-    const createdProfile = await sanity_client.create(profileDoc);
-    res.status(200).send(createdProfile);
-  });
-
-  app.get("/userProfile", async (req, res) => {
-    const { wallet } = req.query;
-
-    const query = `*[_type == "profile" && wallet=='${wallet}' ] {wallet, username, profileImg, profileBanner, following, followers}`;
-
-    const userProfile = await sanity_client.fetch(query);
-    if (userProfile.length > 0) {
-      let profileResult = userProfile[0];
-      res.status(200).send(profileResult);
+    if (nft) {
+      const nftForSale = await getNftForSaleById(collection, nftId);
+      let nftResult = nft;
+      if (nftForSale) {
+        nftResult = {
+          ...nft,
+          forSale: true,
+          price: nftForSale.price,
+          forSaleAt: nftForSale.forSaleAt,
+          forSaleItemId: nftForSale.itemId,
+        };
+      } else {
+        nftResult = {
+          ...nft,
+          forSale: false,
+        };
+      }
+      res.status(200).send(nftResult);
     } else {
-      res.status(205).send("Profile not found!");
+      res.status(205).send("Nft with id not found!");
     }
+  });
+
+  app.get("/getNftsByAddress", async (req, res) => {
+    const { address } = req.query;
+
+    if (!address) {
+      res.status(204).send("No address supplied");
+    }
+
+    const nfts = await getNftsByAddress(address);
+
+    res.status(200).send(nfts);
+  });
+
+  //UPLOAD IMG ENDPOINTS
+
+  app.post("/uploadTestImg", upload.single("image"), async (req, res) => {
+    const image = req.file;
+    const uploadedImgSanity = await uploadToCDN(
+      sanity_client,
+      image ? image : null,
+      imgsDir
+    );
+
+    await removeFiles(imgsDir);
+
+    res.send(uploadedImgSanity.url);
   });
 
   app.post("/uploadProfileImg", upload.single("image"), async (req, res) => {
@@ -312,18 +230,11 @@ export default (app, upload, imgsDir, sanity_client) => {
     );
     //Add nft transfer/Creation
 
-    const query = `*[_type == "profile" && wallet=='${wallet}' ] {_id,wallet, username, profileImg, profileBanner, following, followers}`;
-
-    const userProfile = await sanity_client.fetch(query);
-    if (userProfile.length > 0) {
+    const userProfile = await getProfileInfo(wallet);
+    if (userProfile) {
       const profileImgUrl = uploadedImgSanity.url;
 
-      await sanity_client
-        .patch(userProfile[0]._id)
-        .set({
-          profileImg: profileImgUrl,
-        })
-        .commit();
+      await updateProfileImg(wallet, profileImgUrl);
 
       await removeFiles(imgsDir);
 
@@ -342,18 +253,11 @@ export default (app, upload, imgsDir, sanity_client) => {
       imgsDir
     );
 
-    const query = `*[_type == "profile" && wallet=='${wallet}' ] {_id,wallet, username, profileImg, profileBanner, following, followers}`;
-
-    const userProfile = await sanity_client.fetch(query);
-    if (userProfile.length > 0) {
+    const userProfile = await getProfileInfo(wallet);
+    if (userProfile) {
       const bannerImgUrl = uploadedImgSanity.url;
 
-      await sanity_client
-        .patch(userProfile[0]._id)
-        .set({
-          profileBanner: bannerImgUrl,
-        })
-        .commit();
+      await updateProfileBanner(wallet, bannerImgUrl);
 
       await removeFiles(imgsDir);
 
@@ -364,20 +268,66 @@ export default (app, upload, imgsDir, sanity_client) => {
     //Add nft transfer/Creation
   });
 
+  app.post("/makeOffer", async (req, res) => {});
+
+  app.get("/getCollectionData", async (req, res) => {
+    const { collection } = req.query;
+    const collectionInfo = await getCollectionInfo(collection);
+    if (collectionInfo) {
+      res.status(200).send(collectionInfo);
+    } else {
+      res.status(204).send("Collection not found");
+    }
+  });
+
+  app.get("/getItemHistory", async (req, res) => {
+    const { collection, tokenId } = req.query;
+
+    const result = await getEventsFromNft(collection, tokenId);
+
+    res.status(200).send(result);
+  });
+
+  //Profile endpoints
+  app.post("/newProfile", async (req, res) => {
+    const { wallet } = req.body;
+
+    const profileInfo = await getProfileInfo(wallet);
+    if (profileInfo) {
+      res.status(205).send("profile already created!");
+    } else {
+      //Create Profile
+      const profileDoc = {
+        wallet: wallet,
+        username: "Fibbo Artist",
+        profileImg: `https://avatars.dicebear.com/api/bottts/${wallet}.svg`,
+        profileBanner: "",
+        following: [],
+        followers: [],
+      };
+
+      const createdProfile = await Profile.create(profileDoc);
+      res.status(200).send(createdProfile);
+    }
+  });
+
+  app.get("/userProfile", async (req, res) => {
+    const { wallet } = req.query;
+
+    const userProfile = await getProfileInfo(wallet);
+    if (userProfile) {
+      res.status(200).send(userProfile);
+    } else {
+      res.status(205).send("Profile not found!");
+    }
+  });
+
   app.post("/uploadUsername", async (req, res) => {
     const { username, wallet } = req.body;
 
-    const query = `*[_type == "profile" && wallet=='${wallet}' ] {_id,wallet, username, profileImg, profileBanner, following, followers}`;
-
-    const userProfile = await sanity_client.fetch(query);
-    if (userProfile.length > 0) {
-      await sanity_client
-        .patch(userProfile[0]._id)
-        .set({
-          username: username,
-        })
-        .commit();
-
+    const userProfile = await getProfileInfo(wallet);
+    if (userProfile) {
+      await updateUsername(wallet, username);
       res.status(200).send("Profile Updated");
     } else {
       res.status(205).send("Profile not found!");

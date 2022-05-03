@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import sanity_client from "./lib/sanity.js";
 import upload from "./lib/multer.js";
 import nftRoutes from "./routes/nftRoutes.js";
+import mongoose from "mongoose";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const imgsDir = path.join(__dirname, "images");
@@ -22,6 +23,11 @@ const PORT = process.env.PORT || 9000;
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to the Fibbo API!");
