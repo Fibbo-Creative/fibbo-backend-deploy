@@ -191,7 +191,7 @@ export default (app, upload, imgsDir, sanity_client) => {
 
     allNftsForSale.forEach((_nftForSaleItem) => {
       if (!tokenIds.includes(_nftForSaleItem.tokenId)) {
-        tokenIds.push(_nftForSaleItem.itemId);
+        tokenIds.push(_nftForSaleItem.tokenId);
         finalList.push(_nftForSaleItem);
       }
     });
