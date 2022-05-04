@@ -57,5 +57,5 @@ export const registerTransferEvent = async (
   };
 
   const createdEvent = await Events.create(doc);
-  if (createdEvent) return createdEvent;
+  if (createdEvent) return createdEvent._doc;
 };
