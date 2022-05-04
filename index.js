@@ -24,7 +24,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://fibbo-market.web.app/",
+    origin: "https://fibbo-market.web.app",
   })
 );
 
