@@ -29,7 +29,7 @@ import {
   updateUsername,
 } from "../utils/profiles.js";
 import Profile from "../models/profile.js";
-import { ethers } from "ethers";
+/* import { ethers } from "ethers"; */
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 
@@ -78,14 +78,14 @@ export default (app, upload, imgsDir, sanity_client) => {
         collectionAddress: collection,
       });
 
-      const tx = await MARKET_CONTRACT.registerRoyalty(
+      /*  const tx = await MARKET_CONTRACT.registerRoyalty(
         creator,
         nftColectionAddress,
         parseInt(itemId),
         parseFloat(royalty)
       );
 
-      tx.wait(1);
+      tx.wait(1); */
 
       if (newCollection) {
         res.status(200).send(newCollection);
