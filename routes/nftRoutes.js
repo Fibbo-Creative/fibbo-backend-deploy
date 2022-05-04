@@ -29,6 +29,25 @@ import {
   updateUsername,
 } from "../utils/profiles.js";
 import Profile from "../models/profile.js";
+import { ethers } from "ethers";
+import { marketAddress, nftColectionAddress } from "../contracts/address.js";
+import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
+
+const provider = new ethers.providers.JsonRpcProvider(
+  "https://rpc.testnet.fantom.network/"
+);
+
+const wallet = new ethers.Wallet(
+  "3821d437efcd3bca28893b25eff8424fa2966589300b0d77b9adfa2153de41bf",
+  provider
+);
+
+const MARKET_CONTRACT = new ethers.Contract(marketAddress, marketAbi, wallet);
+const COLLECTION_CONTRACT = new ethers.Contract(
+  nftColectionAddress,
+  nftColectionAbi,
+  provider
+);
 
 export default (app, upload, imgsDir, sanity_client) => {
   //POST NFT ENDPOINTS
@@ -59,6 +78,15 @@ export default (app, upload, imgsDir, sanity_client) => {
         collectionAddress: collection,
       });
 
+      const tx = await MARKET_CONTRACT.registerRoyalty(
+        creator,
+        nftColectionAddress,
+        parseInt(itemId),
+        parseFloat(royalty)
+      );
+
+      tx.wait(1);
+
       if (newCollection) {
         res.status(200).send(newCollection);
 
@@ -67,6 +95,14 @@ export default (app, upload, imgsDir, sanity_client) => {
     } else {
       res.send("No collection Found");
     }
+  });
+
+  app.get("/royalties", async (req, res) => {
+    const minter = await MARKET_CONTRACT.minters(nftColectionAddress, 4);
+    const royalti = await MARKET_CONTRACT.royalties(nftColectionAddress, 4);
+    console.log(royalti);
+    console.log(minter);
+    res.send(minter);
   });
 
   app.post("/putForSale", async (req, res) => {
@@ -148,8 +184,26 @@ export default (app, upload, imgsDir, sanity_client) => {
     console.log("Fetching collections");
 
     const allNfts = await getAllNfts();
+    const allNftsForSale = await getAllNftsForSale();
 
-    res.status(200).send(allNfts);
+    let tokenIds = [];
+    let finalList = [];
+
+    allNftsForSale.forEach((_nftForSaleItem) => {
+      if (!tokenIds.includes(_nftForSaleItem.tokenId)) {
+        tokenIds.push(_nftForSaleItem.itemId);
+        finalList.push(_nftForSaleItem);
+      }
+    });
+
+    allNfts.forEach((_nftItem) => {
+      if (!tokenIds.includes(_nftItem.itemId)) {
+        tokenIds.push(_nftItem.itemId);
+        finalList.push(_nftItem);
+      }
+    });
+    console.log(tokenIds);
+    res.status(200).send(finalList);
   });
 
   app.get("/getNftsForSale", async (req, res) => {
