@@ -33,7 +33,7 @@ import Profile from "../models/profile.js";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 
-const provider = new ethers.providers.JsonRpcProvider(
+/* const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
 
@@ -47,7 +47,7 @@ const COLLECTION_CONTRACT = new ethers.Contract(
   nftColectionAddress,
   nftColectionAbi,
   provider
-);
+); */
 
 export default (app, upload, imgsDir, sanity_client) => {
   //POST NFT ENDPOINTS
