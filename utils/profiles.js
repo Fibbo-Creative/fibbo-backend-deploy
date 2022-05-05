@@ -6,7 +6,7 @@ export const getProfileInfo = async (wallet) => {
 };
 
 export const updateUsername = async (wallet, username) => {
-  const updatedProfile = await Profile.findOneAndUpdate(
+  const updatedProfile = await Profile.updateOne(
     { wallet: wallet },
     { username: username }
   );
@@ -14,7 +14,7 @@ export const updateUsername = async (wallet, username) => {
 };
 
 export const updateProfileImg = async (wallet, image) => {
-  const updatedProfile = await Profile.findOneAndUpdate(
+  const updatedProfile = await Profile.updateOne(
     { wallet: wallet },
     { profileImg: image }
   );
@@ -22,7 +22,7 @@ export const updateProfileImg = async (wallet, image) => {
 };
 
 export const updateProfileBanner = async (wallet, image) => {
-  const updatedProfile = await Profile.findOneAndUpdate(
+  const updatedProfile = await Profile.updateOne(
     { wallet: wallet },
     { profileBanner: image }
   );

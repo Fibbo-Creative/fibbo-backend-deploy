@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const nftForSaleSchema = mongoose.Schema({
   collectionAddress: String,
   name: String,
-  itemId: Number,
   tokenId: Number,
   image: String,
   price: Number,

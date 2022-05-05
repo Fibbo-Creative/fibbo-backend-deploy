@@ -16,7 +16,7 @@ export const getNftForSaleById = async (collectionAddress, tokenId) => {
 export const deleteNftForSale = async (collectionAddress, nftForSaleId) => {
   const deletedNft = await NftForSale.findOneAndDelete({
     collectionAddress: collectionAddress,
-    itemId: nftForSaleId,
+    tokenId: nftForSaleId,
   });
   return deletedNft;
 };

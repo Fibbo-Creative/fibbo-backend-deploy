@@ -29,11 +29,11 @@ import {
   updateUsername,
 } from "../utils/profiles.js";
 import Profile from "../models/profile.js";
-/* import { ethers } from "ethers"; */
+import { ethers } from "ethers";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 
-/* const provider = new ethers.providers.JsonRpcProvider(
+const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
 
@@ -47,7 +47,7 @@ const COLLECTION_CONTRACT = new ethers.Contract(
   nftColectionAddress,
   nftColectionAbi,
   provider
-); */
+);
 
 export default (app, upload, imgsDir, sanity_client) => {
   //POST NFT ENDPOINTS
@@ -57,7 +57,7 @@ export default (app, upload, imgsDir, sanity_client) => {
       name,
       description,
       creator,
-      itemId,
+      tokenId,
       royalty,
       sanityImgUrl,
     } = req.body;
@@ -72,53 +72,44 @@ export default (app, upload, imgsDir, sanity_client) => {
         description: description,
         owner: creator,
         creator: creator,
-        itemId: parseInt(itemId),
+        tokenId: parseInt(tokenId),
         royalty: parseFloat(royalty),
         image: sanityImgUrl,
         collectionAddress: collection,
       });
 
-      /*  const tx = await MARKET_CONTRACT.registerRoyalty(
+      const tx = await MARKET_CONTRACT.registerRoyalty(
         creator,
         nftColectionAddress,
-        parseInt(itemId),
-        parseFloat(royalty)
+        parseInt(tokenId),
+        parseFloat(royalty) * 100
       );
 
-      tx.wait(1); */
+      tx.wait(1);
 
       if (newCollection) {
         res.status(200).send(newCollection);
 
-        await registerMintEvent(collection, itemId, creator);
+        await registerMintEvent(collection, tokenId, creator);
       }
     } else {
       res.send("No collection Found");
     }
   });
 
-  app.get("/royalties", async (req, res) => {
-    const minter = await MARKET_CONTRACT.minters(nftColectionAddress, 4);
-    const royalti = await MARKET_CONTRACT.royalties(nftColectionAddress, 4);
-    console.log(royalti);
-    console.log(minter);
-    res.send(minter);
-  });
-
   app.post("/putForSale", async (req, res) => {
-    const { collectionAddress, itemId, forSaleItemId, owner, price } = req.body;
-    if (!itemId || !owner || !price) {
+    const { collectionAddress, tokenId, owner, price } = req.body;
+    if (!tokenId || !owner || !price) {
       res.status(204).send("No params supplied");
     }
 
-    const nft = await getNftInfo(owner, itemId, collectionAddress);
+    const nft = await getNftInfo(owner, tokenId, collectionAddress);
 
     if (nft) {
       const doc = {
         name: nft.name,
-        itemId: forSaleItemId,
         image: nft.image,
-        tokenId: itemId,
+        tokenId: tokenId,
         collectionAddress: collectionAddress,
         price: price,
         forSaleAt: new Date().toISOString().split("T")[0],
@@ -126,29 +117,28 @@ export default (app, upload, imgsDir, sanity_client) => {
 
       const createdDoc = await NftForSale.create(doc);
 
-      await registerListingEvent(collectionAddress, itemId, owner, price);
+      await registerListingEvent(collectionAddress, tokenId, owner, price);
       res.status(200).send(createdDoc);
     }
   });
 
   app.post("/nftBought", async (req, res) => {
-    const {
-      prevOwner,
-      newOwner,
-      boughtFor,
-      sanityItemId,
-      nftItemId,
-      nftForSaleItemId,
-      collectionAddress,
-    } = req.body;
-    if (!prevOwner || !newOwner || !boughtFor || !sanityItemId || !nftItemId) {
+    const { prevOwner, newOwner, boughtFor, tokenId, collectionAddress } =
+      req.body;
+    if (
+      !prevOwner ||
+      !newOwner ||
+      !boughtFor ||
+      !tokenId ||
+      !collectionAddress
+    ) {
       res.status(204).send("No params supplied");
     }
 
     try {
       //Update NFT new Owner...
       const updatedOwner = await changeNftOwner(
-        nftItemId,
+        tokenId,
         collectionAddress,
         prevOwner,
         newOwner
@@ -157,12 +147,12 @@ export default (app, upload, imgsDir, sanity_client) => {
       if (updatedOwner) {
         const deletedNftForSale = await deleteNftForSale(
           collectionAddress,
-          nftForSaleItemId
+          tokenId
         );
 
         const eventCreated = await registerTransferEvent(
           collectionAddress,
-          nftItemId,
+          tokenId,
           prevOwner,
           newOwner,
           boughtFor
@@ -188,7 +178,7 @@ export default (app, upload, imgsDir, sanity_client) => {
 
     let tokenIds = [];
     let finalList = [];
-
+    console.log(allNftsForSale);
     allNftsForSale.forEach((_nftForSaleItem) => {
       if (!tokenIds.includes(_nftForSaleItem.tokenId)) {
         tokenIds.push(_nftForSaleItem.tokenId);
@@ -197,8 +187,8 @@ export default (app, upload, imgsDir, sanity_client) => {
     });
 
     allNfts.forEach((_nftItem) => {
-      if (!tokenIds.includes(_nftItem.itemId)) {
-        tokenIds.push(_nftItem.itemId);
+      if (!tokenIds.includes(_nftItem.tokenId)) {
+        tokenIds.push(_nftItem.tokenId);
         finalList.push(_nftItem);
       }
     });
@@ -222,9 +212,10 @@ export default (app, upload, imgsDir, sanity_client) => {
     }
 
     const nft = await getNftInfoById(nftId, collection);
-
+    console.log(nft);
     if (nft) {
       const nftForSale = await getNftForSaleById(collection, nftId);
+
       let nftResult = nft;
       if (nftForSale) {
         nftResult = {
@@ -232,7 +223,6 @@ export default (app, upload, imgsDir, sanity_client) => {
           forSale: true,
           price: nftForSale.price,
           forSaleAt: nftForSale.forSaleAt,
-          forSaleItemId: nftForSale.itemId,
         };
       } else {
         nftResult = {
