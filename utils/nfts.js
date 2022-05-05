@@ -28,8 +28,8 @@ export const getNftsByAddress = async (ownerAddress) => {
 };
 
 export const changeNftOwner = async (
-  nftId,
   collectionAddress,
+  nftId,
   prevOwner,
   newOwner
 ) => {
@@ -37,5 +37,7 @@ export const changeNftOwner = async (
     { tokenId: nftId, collectionAddress: collectionAddress, owner: prevOwner },
     { owner: newOwner }
   );
-  return updatedNft._doc;
+  console.log("KE");
+  console.log(updatedNft);
+  return updatedNft;
 };

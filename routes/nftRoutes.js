@@ -138,8 +138,8 @@ export default (app, upload, imgsDir, sanity_client) => {
     try {
       //Update NFT new Owner...
       const updatedOwner = await changeNftOwner(
-        tokenId,
         collectionAddress,
+        tokenId,
         prevOwner,
         newOwner
       );
