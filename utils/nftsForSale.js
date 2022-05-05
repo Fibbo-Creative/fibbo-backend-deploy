@@ -20,3 +20,20 @@ export const deleteNftForSale = async (collectionAddress, tokenId) => {
   });
   return deletedNft;
 };
+
+export const changePrice = async (
+  collectionAddress,
+  tokenId,
+  owner,
+  newPrice
+) => {
+  const updatedListing = await NftForSale.updateOne(
+    {
+      collectionAddress: collectionAddress,
+      tokenId: tokenId,
+      owner: owner,
+    },
+    { price: newPrice }
+  );
+  return updatedListing;
+};

@@ -17,6 +17,7 @@ import {
 } from "../utils/nfts.js";
 import NftForSale from "../models/nftForSale.js";
 import {
+  changePrice,
   deleteNftForSale,
   getAllNftsForSale,
   getNftForSaleById,
@@ -112,6 +113,7 @@ export default (app, upload, imgsDir, sanity_client) => {
         tokenId: tokenId,
         collectionAddress: collectionAddress,
         price: price,
+        owner: owner,
         forSaleAt: new Date().toISOString().split("T")[0],
       };
 
@@ -165,6 +167,35 @@ export default (app, upload, imgsDir, sanity_client) => {
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
+    }
+  });
+
+  app.post("/changePrice", async (req, res) => {
+    const { collectionAddress, newPrice, owner, tokenId } = req.body;
+
+    const updatedListing = await changePrice(
+      collectionAddress,
+      tokenId,
+      owner,
+      newPrice
+    );
+
+    if (updatedListing) {
+      res.status(200).send("Item updated succesfully");
+    } else {
+      res.status(204).send("Error updating item");
+    }
+  });
+
+  app.post("/unlistItem", async (req, res) => {
+    const { collectionAddress, owner, tokenId } = req.body;
+
+    const deletedItem = await deleteNftForSale(collectionAddress, tokenId);
+
+    if (deletedItem) {
+      res.status(200).send("Item deleted succesfully");
+    } else {
+      res.status(204).send("Error deleting item");
     }
   });
 

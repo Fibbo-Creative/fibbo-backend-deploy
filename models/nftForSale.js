@@ -6,6 +6,7 @@ const nftForSaleSchema = mongoose.Schema({
   tokenId: Number,
   image: String,
   price: Number,
+  owner: String,
   forSaleAt: Date,
 });
 
