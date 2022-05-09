@@ -12,6 +12,7 @@ import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
 import Nft from "../models/nft.js";
 import {
   changeNftOwner,
+  filterItemsByTitle,
   getAllNfts,
   getNftInfo,
   getNftInfoById,
@@ -26,6 +27,7 @@ import {
 } from "../utils/nftsForSale.js";
 import { getEventsFromNft } from "../utils/events.js";
 import {
+  filterProfilesByUsername,
   getProfileInfo,
   updateProfileBanner,
   updateProfileImg,
@@ -294,6 +296,19 @@ export default (app, upload, imgsDir, sanity_client) => {
     const nfts = await getNftsByAddress(address);
 
     res.status(200).send(nfts);
+  });
+
+  app.get("/searchItems", async (req, res) => {
+    const { query } = req.query;
+
+    //Buscaremos primero en los títulos de los items
+
+    const filteredItems = await filterItemsByTitle(query);
+    const filteredProfiles = await filterProfilesByUsername(query);
+    res.send({
+      items: filteredItems,
+      profiles: filteredProfiles,
+    });
   });
 
   //UPLOAD IMG ENDPOINTS

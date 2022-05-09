@@ -28,3 +28,17 @@ export const updateProfileBanner = async (wallet, image) => {
   );
   return updatedProfile;
 };
+
+export const filterProfilesByUsername = async (filterQuery) => {
+  const usernameFilteredItems = await Profile.find({
+    username: { $regex: ".*" + filterQuery + ".*", $options: "i" },
+  });
+
+  //Quitar los fibbo artists
+
+  const result = usernameFilteredItems.filter(
+    (profile) => profile.username !== "Fibbo Artist"
+  );
+
+  return result;
+};

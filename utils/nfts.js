@@ -6,13 +6,13 @@ export const getNftInfo = async (owner, nftId, collectionAddress) => {
     tokenId: nftId,
     collectionAddress: collectionAddress,
   });
-  console.log(_nft);
+
   if (_nft) return _nft._doc;
 };
 
 export const getAllNfts = async () => {
   const allNfts = await Nft.find();
-  console.log(allNfts);
+
   return allNfts;
 };
 
@@ -39,7 +39,14 @@ export const changeNftOwner = async (
     { tokenId: nftId, collectionAddress: collectionAddress, owner: prevOwner },
     { owner: newOwner }
   );
-  console.log("KE");
-  console.log(updatedNft);
+
   return updatedNft;
+};
+
+export const filterItemsByTitle = async (filterQuery) => {
+  const titleFilteredItems = await Nft.find({
+    name: { $regex: ".*" + filterQuery + ".*", $options: "i" },
+  });
+
+  return titleFilteredItems;
 };
