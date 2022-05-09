@@ -9,6 +9,7 @@ const nftSchema = mongoose.Schema({
   tokenId: Number,
   image: String,
   royalty: Number,
+  createdAt: Date,
 });
 
 export default mongoose.model("nfts", nftSchema);

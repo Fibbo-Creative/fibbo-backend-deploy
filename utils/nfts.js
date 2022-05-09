@@ -6,11 +6,13 @@ export const getNftInfo = async (owner, nftId, collectionAddress) => {
     tokenId: nftId,
     collectionAddress: collectionAddress,
   });
+  console.log(_nft);
   if (_nft) return _nft._doc;
 };
 
 export const getAllNfts = async () => {
   const allNfts = await Nft.find();
+  console.log(allNfts);
   return allNfts;
 };
 

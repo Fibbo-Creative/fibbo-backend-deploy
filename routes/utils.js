@@ -8,7 +8,7 @@ export const registerMintEvent = async (collectionAddress, tokenId, to) => {
     collectionAddress: collectionAddress,
     from: ADDRESS_ZERO,
     to: to,
-    timestamp: new Date().toISOString().split("T")[0],
+    timestamp: new Date().toISOString(),
     price: 0,
   };
 
@@ -31,7 +31,7 @@ export const registerListingEvent = async (
     collectionAddress: collectionAddress,
     from: from,
     to: ADDRESS_ZERO,
-    timestamp: new Date().toISOString().split("T")[0],
+    timestamp: new Date().toISOString(),
     price: price,
   };
 
@@ -52,7 +52,7 @@ export const registerTransferEvent = async (
     collectionAddress: collectionAddress,
     from: from,
     to: to,
-    timestamp: new Date().toISOString().split("T")[0],
+    timestamp: new Date().toISOString(),
     price: price,
   };
 

@@ -6,7 +6,7 @@ import {
 
 import { uploadToCDN } from "../utils/sanity.js";
 import { removeFiles } from "../utils/multer.js";
-import { getCollectionInfo } from "../utils/collections.js";
+import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
 import Nft from "../models/nft.js";
 import {
   changeNftOwner,
@@ -88,6 +88,8 @@ export default (app, upload, imgsDir, sanity_client) => {
       );
 
       tx.wait(1);
+
+      await updateTotalNfts(collection, collectionInfo.numberOfItems);
 
       if (newCollection) {
         res.status(200).send(newCollection);
