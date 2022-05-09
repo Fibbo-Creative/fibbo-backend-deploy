@@ -117,7 +117,7 @@ export default (app, upload, imgsDir, sanity_client) => {
         collectionAddress: collectionAddress,
         price: price,
         owner: owner,
-        forSaleAt: new Date().toISOString().split("T")[0],
+        forSaleAt: new Date().toISOString(),
       };
 
       const createdDoc = await NftForSale.create(doc);
