@@ -27,6 +27,7 @@ export const changePrice = async (
   owner,
   newPrice
 ) => {
+  //Change item price
   const updatedListing = await NftForSale.updateOne(
     {
       collectionAddress: collectionAddress,
