@@ -59,3 +59,38 @@ export const registerTransferEvent = async (
   const createdEvent = await Events.create(doc);
   if (createdEvent) return createdEvent._doc;
 };
+
+export const registerChangePriceEvent = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price
+) => {
+  const doc = {
+    eventType: "CHANGE PRICE",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+  };
+
+  const createdEvent = await Events.create(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
+  const doc = {
+    eventType: "UNLISTED",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: 0,
+  };
+
+  const createdEvent = await Events.create(doc);
+  if (createdEvent) return createdEvent._doc;
+};

@@ -1,7 +1,9 @@
 import {
+  registerChangePriceEvent,
   registerListingEvent,
   registerMintEvent,
   registerTransferEvent,
+  registerUnlistItem,
 } from "./utils.js";
 
 import { uploadToCDN } from "../utils/sanity.js";
@@ -183,6 +185,13 @@ export default (app, upload, imgsDir, sanity_client) => {
       newPrice
     );
 
+    const eventRegistered = await registerChangePriceEvent(
+      collectionAddress,
+      tokenId,
+      owner,
+      newPrice
+    );
+
     if (updatedListing) {
       res.status(200).send("Item updated succesfully");
     } else {
@@ -195,6 +204,11 @@ export default (app, upload, imgsDir, sanity_client) => {
 
     const deletedItem = await deleteNftForSale(collectionAddress, tokenId);
 
+    const registeredEvent = await registerUnlistItem(
+      collectionAddress,
+      tokenId,
+      owner
+    );
     if (deletedItem) {
       res.status(200).send("Item deleted succesfully");
     } else {
