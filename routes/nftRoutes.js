@@ -34,6 +34,7 @@ import { ethers } from "ethers";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 
+const ADDRES_REGISTRY = "";
 const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
