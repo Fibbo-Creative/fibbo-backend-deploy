@@ -42,3 +42,11 @@ export const filterProfilesByUsername = async (filterQuery) => {
 
   return result;
 };
+
+export const updateFTMSended = async (wallet) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    { ftmSended: true }
+  );
+  return updatedProfile;
+};

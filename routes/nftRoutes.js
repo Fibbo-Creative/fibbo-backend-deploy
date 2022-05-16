@@ -29,6 +29,7 @@ import { getEventsFromNft } from "../utils/events.js";
 import {
   filterProfilesByUsername,
   getProfileInfo,
+  updateFTMSended,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -37,22 +38,30 @@ import Profile from "../models/profile.js";
 import { ethers } from "ethers";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
+import dotenv from "dotenv";
+import { parseEther } from "ethers/lib/utils.js";
+
+dotenv.config();
 
 const ADDRES_REGISTRY = "";
 const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
 
-const wallet = new ethers.Wallet(
-  "3821d437efcd3bca28893b25eff8424fa2966589300b0d77b9adfa2153de41bf",
+const managerWallet = new ethers.Wallet(
+  process.env.MANAGER_PRIVATE_KEY,
   provider
 );
 
-const MARKET_CONTRACT = new ethers.Contract(marketAddress, marketAbi, wallet);
-const COLLECTION_CONTRACT = new ethers.Contract(
-  nftColectionAddress,
-  nftColectionAbi,
+const faucetWallet = new ethers.Wallet(
+  process.env.FAUCET_PRIVATE_KEY,
   provider
+);
+
+const MARKET_CONTRACT = new ethers.Contract(
+  marketAddress,
+  marketAbi,
+  managerWallet
 );
 
 export default (app, upload, imgsDir, sanity_client) => {
@@ -411,7 +420,10 @@ export default (app, upload, imgsDir, sanity_client) => {
         profileBanner: "",
         following: [],
         followers: [],
+        ftmSended: true,
       };
+
+      //Send FTM to this address
 
       const createdProfile = await Profile.create(profileDoc);
       res.status(200).send(createdProfile);
@@ -423,6 +435,17 @@ export default (app, upload, imgsDir, sanity_client) => {
 
     const userProfile = await getProfileInfo(wallet);
     if (userProfile) {
+      if (!userProfile.ftmSended) {
+        const tx = {
+          from: faucetWallet.address,
+          to: wallet,
+          value: parseEther("5"),
+          nonce: faucetWallet.getTransactionCount(),
+        };
+
+        await faucetWallet.sendTransaction(tx);
+        await updateFTMSended(wallet);
+      }
       res.status(200).send(userProfile);
     } else {
       res.status(205).send("Profile not found!");
