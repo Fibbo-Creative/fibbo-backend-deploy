@@ -39,7 +39,6 @@ import { ethers } from "ethers";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 import dotenv from "dotenv";
-import { parseEther } from "ethers/lib/utils.js";
 
 dotenv.config();
 
@@ -423,6 +422,15 @@ export default (app, upload, imgsDir, sanity_client) => {
         ftmSended: true,
       };
 
+      const tx = {
+        from: faucetWallet.address,
+        to: wallet,
+        value: ethers.utils.parseEther("5"),
+        nonce: faucetWallet.getTransactionCount(),
+      };
+
+      await faucetWallet.sendTransaction(tx);
+
       //Send FTM to this address
 
       const createdProfile = await Profile.create(profileDoc);
@@ -439,7 +447,7 @@ export default (app, upload, imgsDir, sanity_client) => {
         const tx = {
           from: faucetWallet.address,
           to: wallet,
-          value: parseEther("5"),
+          value: ethers.utils.parseEther("5"),
           nonce: faucetWallet.getTransactionCount(),
         };
 
