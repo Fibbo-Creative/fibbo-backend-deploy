@@ -39,6 +39,7 @@ import { ethers } from "ethers";
 import { marketAddress, nftColectionAddress } from "../contracts/address.js";
 import { marketAbi, nftColectionAbi } from "../contracts/abi.js";
 import dotenv from "dotenv";
+import Suggestions from "../models/suggestions.js";
 
 dotenv.config();
 
@@ -500,5 +501,19 @@ export default (app, upload, imgsDir, sanity_client) => {
     }
 
     res.status(200).send("OK");
+  });
+
+  app.post("/newSuggestion", async (req, res) => {
+    const { wallet, title, description } = req.body;
+
+    const suggestionDoc = {
+      proposer: wallet,
+      title: title,
+      description: description,
+    };
+
+    const createdDoc = await Suggestions.create(suggestionDoc);
+
+    res.status(200).send(createdDoc);
   });
 };
