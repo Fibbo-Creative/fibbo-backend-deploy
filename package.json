@@ -14,10 +14,15 @@
   "dependencies": {
     "@sanity/client": "^3.3.0",
     "@types/multer": "^1.4.7",
+    "bcrypt-nodejs": "^0.0.3",
+    "coingecko-api": "^1.0.10",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "ethereumjs-wallet": "^1.0.2",
     "ethers": "^5.6.5",
     "express": "^4.17.3",
+    "jwt-simple": "^0.5.6",
+    "moment": "^2.29.3",
     "mongoose": "^6.3.2",
     "multer": "^1.4.4"
   },
