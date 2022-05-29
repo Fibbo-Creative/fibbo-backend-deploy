@@ -8,6 +8,7 @@ const profileSchema = mongoose.Schema({
   followers: Array,
   following: Array,
   ftmSended: Boolean,
+  verified: Boolean,
 });
 
 export default mongoose.model("profiles", profileSchema);

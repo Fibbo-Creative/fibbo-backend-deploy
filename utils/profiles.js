@@ -8,7 +8,12 @@ export const createProfile = async (doc) => {
 };
 export const getProfileInfo = async (wallet) => {
   const profileInfo = await Profile.findOne({ wallet: wallet });
-  if (profileInfo) return profileInfo;
+  if (profileInfo) return profileInfo._doc;
+};
+
+export const getVerifiedArtists = async () => {
+  const verified = await Profile.find({ verified: true });
+  if (verified) return verified;
 };
 
 export const updateUsername = async (wallet, username) => {

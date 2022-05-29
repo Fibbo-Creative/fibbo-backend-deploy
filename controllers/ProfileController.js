@@ -4,6 +4,7 @@ import Profile from "../models/profile.js";
 import {
   createProfile,
   getProfileInfo,
+  getVerifiedArtists,
   updateFTMSended,
   updateProfileBanner,
   updateProfileImg,
@@ -35,6 +36,15 @@ export default class ProfileController {
         }
         res.status(200).send(userProfile);
       }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getVerifiedArtists(req, res) {
+    try {
+      const verified = await getVerifiedArtists();
+      res.status(200).send(verified);
     } catch (e) {
       res.status(500).send(e);
     }

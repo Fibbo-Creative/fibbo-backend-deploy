@@ -8,6 +8,7 @@ import GeneralRouter from "./routes/GeneralRouter.js";
 import ProfileRouter from "./routes/ProfileRouter.js";
 import SuggestionRouter from "./routes/SuggestionRouter.js";
 import CollectionRouter from "./routes/CollectionRouter.js";
+import VerifyRouter from "./routes/VerifyRouter.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use("/collections", CollectionRouter);
 app.use("/nfts", NftRouter);
 app.use("/users", ProfileRouter);
 app.use("/suggestions", SuggestionRouter);
+app.use("/verify", VerifyRouter);
 
 app.listen(PORT, () => {
   console.log("Server listening!");
