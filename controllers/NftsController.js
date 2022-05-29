@@ -13,6 +13,7 @@ import {
 } from "../utils/events.js";
 import {
   changeNftOwner,
+  createNft,
   filterItemsByTitle,
   getAllNfts,
   getNftInfo,
@@ -21,6 +22,7 @@ import {
 } from "../utils/nfts.js";
 import {
   changePrice,
+  createNftForSale,
   deleteNftForSale,
   getAllNftsForSale,
   getNftForSaleById,
@@ -145,7 +147,7 @@ export default class NftController {
       const collectionInfo = await getCollectionInfo(collection);
 
       if (collectionInfo) {
-        const newCollection = await Nft.create({
+        const newNft = await createNft({
           name: name,
           description: description,
           owner: creator,
@@ -167,8 +169,8 @@ export default class NftController {
 
         await updateTotalNfts(collection, collectionInfo.numberOfItems);
 
-        if (newCollection) {
-          res.status(200).send(newCollection);
+        if (newNft) {
+          res.status(200).send(newNft);
 
           await registerMintEvent(collection, tokenId, creator);
         }
@@ -176,6 +178,7 @@ export default class NftController {
         res.send("No collection Found");
       }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }
@@ -200,7 +203,7 @@ export default class NftController {
           forSaleAt: new Date().toISOString(),
         };
 
-        const createdDoc = await NftForSale.create(doc);
+        const createdDoc = await createNftForSale(doc);
 
         await registerListingEvent(collectionAddress, tokenId, owner, price);
         res.status(200).send(createdDoc);

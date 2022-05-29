@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { SUGGESTION_CONTRACT } from "../contracts/index.js";
 import Suggestions from "../models/suggestions.js";
 import {

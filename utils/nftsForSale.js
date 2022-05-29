@@ -1,5 +1,12 @@
 import NftForSale from "../models/nftForSale.js";
 
+export const createNftForSale = async (doc) => {
+  const _nftCreated = await NftForSale.create(doc);
+  if (_nftCreated) {
+    return _nftCreated._doc;
+  }
+};
+
 export const getAllNftsForSale = async () => {
   const allNfts = await NftForSale.find();
   return allNfts;

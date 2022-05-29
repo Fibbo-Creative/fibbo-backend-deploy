@@ -1,5 +1,12 @@
 import Suggestions from "../models/suggestions.js";
 
+export const createSuggestion = async (doc) => {
+  const newSuggestion = await Suggestions.create(doc);
+  if (newSuggestion) {
+    return newSuggestion._doc;
+  }
+};
+
 export const getSuggestionInfo = async (title, proposer) => {
   const suggInfo = await Suggestions.findOne({
     title: title,

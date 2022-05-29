@@ -1,5 +1,11 @@
 import Profile from "../models/profile.js";
 
+export const createProfile = async (doc) => {
+  const newProfile = await Profile.create(doc);
+  if (newProfile) {
+    return newProfile._doc;
+  }
+};
 export const getProfileInfo = async (wallet) => {
   const profileInfo = await Profile.findOne({ wallet: wallet });
   if (profileInfo) return profileInfo;

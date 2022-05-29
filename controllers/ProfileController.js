@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { faucetWallet } from "../contracts/index.js";
 import Profile from "../models/profile.js";
 import {
+  createProfile,
   getProfileInfo,
   updateFTMSended,
   updateProfileBanner,
@@ -70,7 +71,7 @@ export default class ProfileController {
 
         //Send FTM to this address
 
-        const createdProfile = await Profile.create(profileDoc);
+        const createdProfile = await createProfile(profileDoc);
         res.status(200).send(createdProfile);
       }
     } catch (e) {

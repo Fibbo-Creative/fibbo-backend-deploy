@@ -8,6 +8,13 @@ export const getEventsFromNft = async (collectionAddress, tokenId) => {
   return eventsResult;
 };
 
+export const createEvent = async (doc) => {
+  const newEvent = await Events.create(doc);
+  if (newEvent) {
+    return newEvent._doc;
+  }
+};
+
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
@@ -20,7 +27,7 @@ export const registerMintEvent = async (collectionAddress, tokenId, to) => {
     price: 0,
   };
 
-  const createdEvent = await Events.create(doc);
+  const createdEvent = await createEvent(doc);
 
   if (createdEvent) {
     return createdEvent;
@@ -43,7 +50,7 @@ export const registerListingEvent = async (
     price: price,
   };
 
-  const createdEvent = await Events.create(doc);
+  const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent;
 };
 
@@ -64,7 +71,7 @@ export const registerTransferEvent = async (
     price: price,
   };
 
-  const createdEvent = await Events.create(doc);
+  const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent._doc;
 };
 
@@ -84,7 +91,7 @@ export const registerChangePriceEvent = async (
     price: price,
   };
 
-  const createdEvent = await Events.create(doc);
+  const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent._doc;
 };
 
@@ -99,6 +106,6 @@ export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
     price: 0,
   };
 
-  const createdEvent = await Events.create(doc);
+  const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent._doc;
 };

@@ -1,5 +1,12 @@
 import Nft from "../models/nft.js";
 
+export const createNft = async (doc) => {
+  const _nftCreated = await Nft.create(doc);
+  if (_nftCreated) {
+    return _nftCreated._doc;
+  }
+};
+
 export const getNftInfo = async (owner, nftId, collectionAddress) => {
   const _nft = await Nft.findOne({
     owner: owner,
