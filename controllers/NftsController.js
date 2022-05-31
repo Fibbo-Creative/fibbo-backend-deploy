@@ -286,7 +286,6 @@ export default class NftController {
   static async unlistItem(req, res) {
     try {
       const { collectionAddress, owner, tokenId } = req.body;
-
       const deletedItem = await deleteNftForSale(collectionAddress, tokenId);
 
       const registeredEvent = await registerUnlistItem(
@@ -300,6 +299,7 @@ export default class NftController {
         res.status(204).send("Error deleting item");
       }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

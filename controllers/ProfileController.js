@@ -35,6 +35,8 @@ export default class ProfileController {
           await updateFTMSended(wallet);
         }
         res.status(200).send(userProfile);
+      } else {
+        res.status(205).send("No User");
       }
     } catch (e) {
       res.status(500).send(e);
@@ -68,6 +70,7 @@ export default class ProfileController {
           following: [],
           followers: [],
           ftmSended: true,
+          verified: false,
         };
 
         const tx = {

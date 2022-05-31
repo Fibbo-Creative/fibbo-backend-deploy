@@ -1,4 +1,4 @@
-const marketAddress = "0xF15779f643E9a0E7eA93E506fDD5aedE93E30B9B";
-const nftColectionAddress = "0x55560098f3eF780096EdCBE8180Af1ec55b14079";
-const suggestionsAddress = "0x0DE8617A83F6A31a9685461A33b3DC0B5EFdb2F2";
+const marketAddress = "0xb1c608f510fdB4a8B4666406360050Dc76e3A8Fa";
+const nftColectionAddress = "0xd2aac2Afba749761c3DB3f093cE7Bab7fA4EbcaB";
+const suggestionsAddress = "0x620A8C1Fb3dEa4277feAfb3c3750ACbc7a41f4bE";
 export { marketAddress, nftColectionAddress, suggestionsAddress };
