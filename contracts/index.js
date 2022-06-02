@@ -1,7 +1,11 @@
 import dotenv from "dotenv";
 import { ethers } from "ethers";
-import { suggestionsAddress, marketAddress } from "./address.js";
-import { MARKETPLACE_ABI, COMMUNITY_ABI } from "./abi.js";
+import {
+  suggestionsAddress,
+  marketAddress,
+  verificationAddress,
+} from "./address.js";
+import { MARKETPLACE_ABI, COMMUNITY_ABI, VERIFICATION_ABI } from "./abi.js";
 dotenv.config();
 
 const web3provider = new ethers.providers.JsonRpcProvider(
@@ -30,10 +34,17 @@ const MARKET_CONTRACT = new ethers.Contract(
   managerWallet
 );
 
+const VERIFICATION_CONTRACT = new ethers.Contract(
+  verificationAddress,
+  VERIFICATION_ABI,
+  managerWallet
+);
+
 export {
   web3provider,
   managerWallet,
   faucetWallet,
   SUGGESTION_CONTRACT,
   MARKET_CONTRACT,
+  VERIFICATION_CONTRACT,
 };

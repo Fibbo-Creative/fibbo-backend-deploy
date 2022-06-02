@@ -415,52 +415,6 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_nftContract",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_tokenId",
-        type: "uint256",
-      },
-    ],
-    name: "cancelOffer",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_nftContract",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_price",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_deadline",
-        type: "uint256",
-      },
-    ],
-    name: "createOffer",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "feeReceipient",
     outputs: [
@@ -711,6 +665,19 @@ export const MARKETPLACE_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "_verification",
+        type: "address",
+      },
+    ],
+    name: "updateFibboVerification",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_nftContract",
         type: "address",
       },
@@ -818,6 +785,25 @@ export const COLLECTION_ABI = [
       },
     ],
     name: "ApprovalForAll",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
     type: "event",
   },
   {
@@ -984,6 +970,19 @@ export const COLLECTION_ABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -1000,6 +999,13 @@ export const COLLECTION_ABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -1149,6 +1155,19 @@ export const COLLECTION_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_verification",
         type: "address",
       },
@@ -1185,7 +1204,7 @@ export const COMMUNITY_ABI = [
           },
           {
             internalType: "address payable",
-            name: "creator",
+            name: "proposer",
             type: "address",
           },
           {
@@ -1263,7 +1282,7 @@ export const COMMUNITY_ABI = [
           },
           {
             internalType: "address payable",
-            name: "creator",
+            name: "proposer",
             type: "address",
           },
           {
@@ -1309,7 +1328,7 @@ export const COMMUNITY_ABI = [
           },
           {
             internalType: "address payable",
-            name: "creator",
+            name: "proposer",
             type: "address",
           },
           {
@@ -1367,10 +1386,28 @@ export const COMMUNITY_ABI = [
         name: "_totalAmount",
         type: "uint256",
       },
+      {
+        internalType: "address",
+        name: "proposer",
+        type: "address",
+      },
     ],
     name: "createSuggestion",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "fibboVerification",
+    outputs: [
+      {
+        internalType: "contract IFibboVerification",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1457,6 +1494,11 @@ export const COMMUNITY_ABI = [
             type: "uint256",
           },
           {
+            internalType: "address payable",
+            name: "proposer",
+            type: "address",
+          },
+          {
             internalType: "string",
             name: "title",
             type: "string",
@@ -1516,7 +1558,13 @@ export const COMMUNITY_ABI = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "uint16",
+        name: "_proposerFee",
+        type: "uint16",
+      },
+    ],
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
@@ -1530,6 +1578,19 @@ export const COMMUNITY_ABI = [
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "proposerFee",
+    outputs: [
+      {
+        internalType: "uint16",
+        name: "",
+        type: "uint16",
       },
     ],
     stateMutability: "view",
@@ -1559,7 +1620,7 @@ export const COMMUNITY_ABI = [
       },
       {
         internalType: "address payable",
-        name: "creator",
+        name: "proposer",
         type: "address",
       },
       {
@@ -1622,6 +1683,19 @@ export const COMMUNITY_ABI = [
       },
     ],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_verification",
+        type: "address",
+      },
+    ],
+    name: "updateFibboVerification",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -1776,6 +1850,19 @@ export const VERIFICATION_ABI = [
       },
     ],
     name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_toVerificate",
+        type: "address",
+      },
+    ],
+    name: "unverifyAddress",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
