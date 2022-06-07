@@ -11,3 +11,10 @@ export const getAllRequests = async () => {
   const requests = await VerifyRequests.find();
   if (requests) return requests;
 };
+
+export const deleteRequest = async (proposer) => {
+  const deletedReq = await VerifyRequests.deleteOne({
+    proposer: proposer,
+  });
+  if (deletedReq) return deletedReq;
+};

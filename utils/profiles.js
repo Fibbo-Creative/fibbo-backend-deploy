@@ -16,6 +16,14 @@ export const getVerifiedArtists = async () => {
   if (verified) return verified;
 };
 
+export const verifyArtistInDb = async (address) => {
+  const verified = await Profile.updateOne(
+    { wallet: address },
+    { verified: true }
+  );
+  if (verified) return verified;
+};
+
 export const updateUsername = async (wallet, username) => {
   const updatedProfile = await Profile.updateOne(
     { wallet: wallet },

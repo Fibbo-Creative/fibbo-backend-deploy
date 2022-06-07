@@ -17,6 +17,7 @@
     "bcrypt-nodejs": "^0.0.3",
     "coingecko-api": "^1.0.10",
     "cors": "^2.8.5",
+    "deepai": "^1.0.21",
     "dotenv": "^16.0.0",
     "ethereumjs-wallet": "^1.0.2",
     "ethers": "^5.6.5",

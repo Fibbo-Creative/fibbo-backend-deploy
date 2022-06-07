@@ -48,7 +48,8 @@ export default class SuggestionController {
         const txCreateSugg = await SUGGESTION_CONTRACT.createSuggestion(
           suggInfo.title,
           suggInfo.description,
-          ethers.utils.parseEther(value)
+          ethers.utils.parseEther(value),
+          proposer
         );
 
         txCreateSugg.wait(1);
@@ -58,6 +59,7 @@ export default class SuggestionController {
 
       res.status(200).send("Suggestion accepted");
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

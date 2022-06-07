@@ -3,6 +3,7 @@ import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
 import { filterProfilesByUsername } from "../utils/profiles.js";
 import { filterItemsByTitle } from "../utils/nfts.js";
+import { checkNFSW } from "../lib/deepai.js";
 
 export default class GeneralController {
   constructor() {}
@@ -33,9 +34,18 @@ export default class GeneralController {
         imgsDir
       );
 
-      await removeFiles(imgsDir);
+      console.log(uploadedImgSanity.url);
+      const { id, output } = await checkNFSW(uploadedImgSanity.url);
+      const { detections, nsfw_score } = output;
 
-      res.send(uploadedImgSanity.url);
+      if (nsfw_score > 0.4) {
+        console.log(nsfw_score);
+        res.status(207).send("INVALID IMG");
+      } else {
+        await removeFiles(imgsDir);
+
+        res.send(uploadedImgSanity.url);
+      }
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
