@@ -4,6 +4,7 @@ import Nft from "../models/nft.js";
 import NftForSale from "../models/nftForSale.js";
 import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
 import {
+  formatHistory,
   getEventsFromNft,
   registerChangePriceEvent,
   registerListingEvent,
@@ -124,9 +125,11 @@ export default class NftController {
       const { collection, tokenId } = req.query;
 
       const result = await getEventsFromNft(collection, tokenId);
-
-      res.status(200).send(result);
+      const formattedResult = await formatHistory(result);
+      console.log(formattedResult);
+      res.status(200).send(formattedResult);
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

@@ -153,6 +153,19 @@ export const ADDRESS_REGISTRY_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "_utilityCollection",
+        type: "address",
+      },
+    ],
+    name: "updateUtilityCollection",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_verification",
         type: "address",
       },
@@ -160,6 +173,19 @@ export const ADDRESS_REGISTRY_ABI = [
     name: "updateVerification",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "utilityCollection",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

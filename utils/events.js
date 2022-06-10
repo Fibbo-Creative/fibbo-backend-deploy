@@ -1,4 +1,5 @@
 import Events from "../models/events.js";
+import { getProfileInfo } from "./profiles.js";
 
 export const getEventsFromNft = async (collectionAddress, tokenId) => {
   const eventsResult = await Events.find({
@@ -6,6 +7,38 @@ export const getEventsFromNft = async (collectionAddress, tokenId) => {
     tokenId: tokenId,
   });
   return eventsResult;
+};
+
+export const formatHistory = async (historyData) => {
+  try {
+    let formatted = await Promise.all(
+      historyData.map(async (item) => {
+        const { from, to } = item;
+        const fromInfo = await getProfileInfo(from);
+        const toInfo = await getProfileInfo(to);
+        if (from === ADDRESS_ZERO && to !== ADDRESS_ZERO) {
+          return {
+            ...item._doc,
+            to: toInfo,
+          };
+        } else if (from !== ADDRESS_ZERO && to === ADDRESS_ZERO) {
+          return {
+            ...item._doc,
+            from: fromInfo,
+          };
+        } else {
+          return {
+            ...item._doc,
+            from: fromInfo,
+            to: toInfo,
+          };
+        }
+      })
+    );
+    return formatted;
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export const createEvent = async (doc) => {
