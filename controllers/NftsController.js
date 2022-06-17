@@ -63,7 +63,23 @@ export default class NftController {
     try {
       const allNftsForSale = await getAllNftsForSale();
 
-      res.status(200).send(allNftsForSale);
+      let formatted = await Promise.all(
+        allNftsForSale.map(async (item) => {
+          const nftId = item.tokenId;
+          const collection = item.collectionAddress;
+
+          const nftInfo = await Nft.findOne({
+            tokenId: nftId,
+            collectionAddress: collection,
+          });
+          return {
+            ...item._doc,
+            createdAt: nftInfo.createdAt,
+          };
+        })
+      );
+
+      res.status(200).send(formatted);
     } catch (e) {
       res.status(500).send(e);
     }
@@ -80,7 +96,7 @@ export default class NftController {
       const nft = await getNftInfoById(nftId, collection);
       if (nft) {
         const nftForSale = await getNftForSaleById(collection, nftId);
-
+        console.log(nft);
         let nftResult = nft;
         if (nftForSale) {
           nftResult = {
@@ -126,7 +142,7 @@ export default class NftController {
 
       const result = await getEventsFromNft(collection, tokenId);
       const formattedResult = await formatHistory(result);
-      console.log(formattedResult);
+
       res.status(200).send(formattedResult);
     } catch (e) {
       console.log(e);
@@ -145,12 +161,13 @@ export default class NftController {
         tokenId,
         royalty,
         sanityImgUrl,
+        additionalContent,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
 
       if (collectionInfo) {
-        const newNft = await createNft({
+        let doc = {
           name: name,
           description: description,
           owner: creator,
@@ -159,7 +176,15 @@ export default class NftController {
           royalty: parseFloat(royalty),
           image: sanityImgUrl,
           collectionAddress: collection,
-        });
+          createdAt: new Date().toISOString(),
+        };
+        if (additionalContent) {
+          doc = {
+            ...doc,
+            additionalContent: additionalContent,
+          };
+        }
+        const newNft = await createNft(doc);
 
         const tx = await MARKET_CONTRACT.registerRoyalty(
           creator,
