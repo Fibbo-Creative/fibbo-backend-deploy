@@ -139,8 +139,11 @@ export default class NftController {
 
   static async getItemHistory(req, res) {
     try {
-      const result = await getAllTransfers(collection, tokenId);
-      res.status(200).send(result);
+      const { collection, tokenId } = req.query;
+
+      const result = await getEventsFromNft(collection, tokenId);
+      const formattedResult = await formatHistory(result);
+      res.status(200).send(formattedResult);
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
