@@ -3,6 +3,7 @@ import { faucetWallet } from "../contracts/index.js";
 import Profile from "../models/profile.js";
 import {
   createProfile,
+  getAllProfiles,
   getProfileInfo,
   getVerifiedArtists,
   updateFTMSended,
@@ -51,6 +52,16 @@ export default class ProfileController {
       res.status(500).send(e);
     }
   }
+
+  static async getAllProfiles(req, res) {
+    try {
+      const allProfiles = await getAllProfiles();
+      res.status(200).send(allProfiles);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
   //POST
 
   static async newProfile(req, res) {

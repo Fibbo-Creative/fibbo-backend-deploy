@@ -10,6 +10,7 @@ ProfileRouter.use((req, res, next) => {
 
 //GET
 ProfileRouter.get("/profile", ProfileController.getProfileData);
+ProfileRouter.get("/all", ProfileController.getAllProfiles);
 ProfileRouter.get("/verified", ProfileController.getVerifiedArtists);
 //POST
 ProfileRouter.post("/newProfile", ProfileController.newProfile);

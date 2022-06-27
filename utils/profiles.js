@@ -11,6 +11,11 @@ export const getProfileInfo = async (wallet) => {
   if (profileInfo) return profileInfo._doc;
 };
 
+export const getAllProfiles = async (wallet) => {
+  const profileInfo = await Profile.find();
+  if (profileInfo) return profileInfo;
+};
+
 export const getVerifiedArtists = async () => {
   const verified = await Profile.find({ verified: true });
   if (verified) return verified;

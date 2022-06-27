@@ -9,6 +9,11 @@ export const getEventsFromNft = async (collectionAddress, tokenId) => {
   return eventsResult;
 };
 
+export const getAllTransfers = async () => {
+  const eventsResult = await Events.count({ eventType: "TRANSFER" });
+  return eventsResult;
+};
+
 export const formatHistory = async (historyData) => {
   try {
     let formatted = await Promise.all(
