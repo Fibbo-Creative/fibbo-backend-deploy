@@ -1,5 +1,5 @@
 import { nftColectionAddress } from "../contracts/address.js";
-import { MARKET_CONTRACT } from "../contracts/index.js";
+import { MARKET_CONTRACT, VERIFICATION_CONTRACT } from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import NftForSale from "../models/nftForSale.js";
 import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
@@ -272,6 +272,16 @@ export default class NftController {
         newOwner
       );
 
+      const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(
+        newOwner
+      );
+      if (!verificated) {
+        const verifyTx = await VERIFICATION_CONTRACT.verificateInversor(
+          newOwner
+        );
+        await verifyTx.wait();
+      }
+
       if (updatedOwner) {
         const deletedNftForSale = await deleteNftForSale(
           collectionAddress,
@@ -289,6 +299,7 @@ export default class NftController {
         res.status(200).send(eventCreated);
       }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

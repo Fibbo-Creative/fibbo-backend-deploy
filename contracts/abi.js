@@ -1790,6 +1790,11 @@ export const COMMUNITY_ABI = [
 
 export const VERIFICATION_ABI = [
   {
+    inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -1841,10 +1846,22 @@ export const VERIFICATION_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "initialize",
-    outputs: [],
-    stateMutability: "nonpayable",
+    inputs: [
+      {
+        internalType: "address",
+        name: "_address",
+        type: "address",
+      },
+    ],
+    name: "checkIfVerifiedInversor",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1902,6 +1919,19 @@ export const VERIFICATION_ABI = [
       },
     ],
     name: "verificateAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_toVerificate",
+        type: "address",
+      },
+    ],
+    name: "verificateInversor",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
