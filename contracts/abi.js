@@ -1918,6 +1918,19 @@ export const VERIFICATION_ABI = [
         type: "address",
       },
     ],
+    name: "unverifyInversor",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_toVerificate",
+        type: "address",
+      },
+    ],
     name: "verificateAddress",
     outputs: [],
     stateMutability: "nonpayable",
