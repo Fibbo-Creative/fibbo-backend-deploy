@@ -29,7 +29,6 @@ export default class VerifyController {
           };
         })
       );
-      console.log(formatted);
       res.status(200).send(formatted);
     } catch (e) {
       res.status(500).send(e);

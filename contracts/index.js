@@ -6,6 +6,7 @@ import {
   verificationAddress,
 } from "./address.js";
 import { MARKETPLACE_ABI, COMMUNITY_ABI, VERIFICATION_ABI } from "./abi.js";
+import { listenToMarketEvents } from "./eventListeners/marketListener.js";
 dotenv.config();
 
 const web3provider = new ethers.providers.JsonRpcProvider(
@@ -47,4 +48,10 @@ export {
   SUGGESTION_CONTRACT,
   MARKET_CONTRACT,
   VERIFICATION_CONTRACT,
+};
+
+export const listenToEvents = () => {
+  if (MARKET_CONTRACT !== undefined) {
+    listenToMarketEvents();
+  }
 };

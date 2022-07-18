@@ -17,9 +17,5 @@ NftRouter.get("/allTransfers", NftController.getAllTransfers);
 
 //POST
 NftRouter.post("/newItem", NftController.newItem);
-NftRouter.post("/putForSale", NftController.putForSale);
-NftRouter.post("/nftBought", NftController.nftBought);
-NftRouter.post("/changePrice", NftController.changePrice);
-NftRouter.post("/unlistItem", NftController.unlistItem);
 
 export default NftRouter;

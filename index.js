@@ -9,6 +9,8 @@ import ProfileRouter from "./routes/ProfileRouter.js";
 import SuggestionRouter from "./routes/SuggestionRouter.js";
 import CollectionRouter from "./routes/CollectionRouter.js";
 import VerifyRouter from "./routes/VerifyRouter.js";
+import { listenToEvents } from "./contracts/index.js";
+import OffersRouter from "./routes/OffersRouter.js";
 
 dotenv.config();
 
@@ -34,10 +36,12 @@ app.get("/", (req, res) => {
 app.use("/api", GeneralRouter);
 app.use("/collections", CollectionRouter);
 app.use("/nfts", NftRouter);
+app.use("/offers", OffersRouter);
 app.use("/users", ProfileRouter);
 app.use("/suggestions", SuggestionRouter);
 app.use("/verify", VerifyRouter);
 
 app.listen(PORT, () => {
   console.log("Server listening!");
+  listenToEvents();
 });

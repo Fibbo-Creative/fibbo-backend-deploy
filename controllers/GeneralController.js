@@ -34,12 +34,10 @@ export default class GeneralController {
         imgsDir
       );
 
-      console.log(uploadedImgSanity.url);
       const { id, output } = await checkNFSW(uploadedImgSanity.url);
       const { detections, nsfw_score } = output;
 
       if (nsfw_score > 0.4) {
-        console.log(nsfw_score);
         res.status(207).send("INVALID IMG");
       } else {
         await removeFiles(imgsDir);
