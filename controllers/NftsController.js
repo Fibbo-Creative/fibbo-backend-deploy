@@ -2,6 +2,7 @@ import { nftColectionAddress } from "../contracts/address.js";
 import { MARKET_CONTRACT, VERIFICATION_CONTRACT } from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import NftForSale from "../models/nftForSale.js";
+import offers from "../models/offers.js";
 import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
 import {
   formatHistory,
@@ -29,6 +30,7 @@ import {
   getAllNftsForSale,
   getNftForSaleById,
 } from "../utils/nftsForSale.js";
+import { getItemOffers, sortHigherOffer } from "../utils/offers.js";
 
 export default class NftController {
   constructor() {}
@@ -54,8 +56,37 @@ export default class NftController {
           finalList.push(_nftItem);
         }
       });
-      res.status(200).send(finalList);
+
+      let formatted = await Promise.all(
+        finalList.map(async (item) => {
+          let collectionInfo = await getCollectionInfo(item.collectionAddress);
+          let offers = await getItemOffers(
+            item.collectionAddress,
+            item.tokenId
+          );
+          if (offers.length > 0) {
+            let higherOffer;
+            if (offers.length === 1) {
+              higherOffer = offers[0];
+            } else {
+              let higherOffers = offers.sort(sortHigherOffer);
+
+              higherOffer = higherOffers[0];
+            }
+
+            return {
+              ...item._doc,
+              collection: collectionInfo,
+              offer: higherOffer,
+            };
+          } else {
+            return { ...item._doc, collection: collectionInfo };
+          }
+        })
+      );
+      res.status(200).send(formatted);
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

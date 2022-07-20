@@ -9,6 +9,16 @@ export const getItemOffers = async (collectionAddress, tokenId) => {
   return offers;
 };
 
+export const sortHigherOffer = (a, b) => {
+  if (a.price > b.price) {
+    return -1;
+  }
+  if (a.price < b.price) {
+    return 1;
+  }
+  return 0;
+};
+
 export const getOffer = async (collectionAddress, tokenId, creator) => {
   const offers = await Offers.findOne({
     collectionAddress: collectionAddress,
