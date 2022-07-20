@@ -1,5 +1,11 @@
+import { formatEther } from "ethers/lib/utils.js";
 import { nftColectionAddress } from "../contracts/address.js";
-import { MARKET_CONTRACT, VERIFICATION_CONTRACT } from "../contracts/index.js";
+import {
+  ADDRESS_ZERO,
+  AUCTION_CONTRACT,
+  MARKET_CONTRACT,
+  VERIFICATION_CONTRACT,
+} from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import NftForSale from "../models/nftForSale.js";
 import offers from "../models/offers.js";
@@ -60,27 +66,59 @@ export default class NftController {
       let formatted = await Promise.all(
         finalList.map(async (item) => {
           let collectionInfo = await getCollectionInfo(item.collectionAddress);
+          let auction = await AUCTION_CONTRACT.auctions(
+            item.collectionAddress,
+            item.tokenId
+          );
           let offers = await getItemOffers(
             item.collectionAddress,
             item.tokenId
           );
-          if (offers.length > 0) {
-            let higherOffer;
-            if (offers.length === 1) {
-              higherOffer = offers[0];
+          if (auction.owner != ADDRESS_ZERO) {
+            let highestBid = await AUCTION_CONTRACT.highestBids(
+              item.collectionAddress,
+              item.tokenId
+            );
+            if (highestBid.bidder != ADDRESS_ZERO) {
+              return {
+                ...item._doc,
+                collection: collectionInfo,
+                auction: {
+                  topBid: formatEther(highestBid.bid),
+                  startTime: auction.startTime.toNumber() * 1000,
+                  endTime: auction.endTime.toNumber(),
+                },
+              };
             } else {
-              let higherOffers = offers.sort(sortHigherOffer);
-
-              higherOffer = higherOffers[0];
+              return {
+                ...item._doc,
+                collection: collectionInfo,
+                auction: {
+                  bid: formatEther(auction.minBid),
+                  startTime: auction.startTime.toNumber(),
+                  endTime: auction.endTime.toNumber(),
+                },
+              };
             }
-
-            return {
-              ...item._doc,
-              collection: collectionInfo,
-              offer: higherOffer,
-            };
           } else {
-            return { ...item._doc, collection: collectionInfo };
+            if (offers.length > 0) {
+              let higherOffer;
+              if (offers.length === 1) {
+                higherOffer = offers[0];
+              } else {
+                let higherOffers = offers.sort(sortHigherOffer);
+
+                higherOffer = higherOffers[0];
+              }
+
+              return {
+                ...item._doc,
+                collection: collectionInfo,
+                offer: higherOffer,
+              };
+            } else {
+              return { ...item._doc, collection: collectionInfo };
+            }
           }
         })
       );
