@@ -11,6 +11,7 @@ import CollectionRouter from "./routes/CollectionRouter.js";
 import VerifyRouter from "./routes/VerifyRouter.js";
 import { listenToEvents } from "./contracts/index.js";
 import OffersRouter from "./routes/OffersRouter.js";
+import initScheduledJobs from "./contracts/eventListeners/auctionSheduled.js";
 
 dotenv.config();
 
@@ -40,6 +41,8 @@ app.use("/offers", OffersRouter);
 app.use("/users", ProfileRouter);
 app.use("/suggestions", SuggestionRouter);
 app.use("/verify", VerifyRouter);
+
+initScheduledJobs();
 
 app.listen(PORT, () => {
   console.log("Server listening!");
