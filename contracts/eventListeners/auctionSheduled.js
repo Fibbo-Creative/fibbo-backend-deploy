@@ -1,7 +1,9 @@
 import CronJob from "node-cron";
+import { getAuctions } from "../../utils/auctions.js";
 
-const scheduledJobFunction = CronJob.schedule("* * * * *", () => {
-  console.log("I'm executed on a schedule!");
+const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
+  const auctions = await getAuctions();
+  console.log(auctions);
 });
 
 const initScheduledJobs = () => {
