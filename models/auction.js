@@ -5,6 +5,7 @@ const auctionSchema = mongoose.Schema({
   tokenId: Number,
   payToken: String,
   reservePrice: Number,
+  buyNowPrice: Number,
   startTime: Number,
   endTime: Number,
 });

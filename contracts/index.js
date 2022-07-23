@@ -5,12 +5,16 @@ import {
   marketAddress,
   verificationAddress,
   auctionAddress,
+  wftmAddress,
+  nftColectionAddress,
 } from "./address.js";
 import {
   MARKETPLACE_ABI,
   COMMUNITY_ABI,
   VERIFICATION_ABI,
   AUCTION_ABI,
+  WFTM_ABI,
+  COLLECTION_ABI,
 } from "./abi.js";
 import { listenToMarketEvents } from "./eventListeners/marketListener.js";
 import { listenToAuctionEvents } from "./eventListeners/auctionListener.js";
@@ -49,11 +53,20 @@ const AUCTION_CONTRACT = new ethers.Contract(
   AUCTION_ABI,
   managerWallet
 );
+
 const VERIFICATION_CONTRACT = new ethers.Contract(
   verificationAddress,
   VERIFICATION_ABI,
   managerWallet
 );
+
+const COLLECTION_CONTRACT = new ethers.Contract(
+  nftColectionAddress,
+  COLLECTION_ABI,
+  managerWallet
+);
+
+const WFTM_CONTRACT = new ethers.Contract(wftmAddress, WFTM_ABI, managerWallet);
 
 export {
   web3provider,
@@ -64,6 +77,8 @@ export {
   MARKET_CONTRACT,
   VERIFICATION_CONTRACT,
   AUCTION_CONTRACT,
+  WFTM_CONTRACT,
+  COLLECTION_CONTRACT,
 };
 
 export const listenToEvents = () => {
