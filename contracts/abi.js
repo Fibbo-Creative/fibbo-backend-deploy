@@ -2721,6 +2721,24 @@ export const AUCTION_ABI = [
         name: "_tokenId",
         type: "uint256",
       },
+    ],
+    name: "clearAuction",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_nftContract",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
       {
         internalType: "address",
         name: "_payToken",
@@ -2785,6 +2803,11 @@ export const AUCTION_ABI = [
       {
         internalType: "uint256",
         name: "_reservePrice",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_buyNowPrice",
         type: "uint256",
       },
       {

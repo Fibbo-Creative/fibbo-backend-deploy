@@ -18,7 +18,6 @@ export const listenToAuctionEvents = () => {
         collection,
         tokenId
       );
-
       const doc = {
         collectionAddress: collection,
         tokenId: tokenId,

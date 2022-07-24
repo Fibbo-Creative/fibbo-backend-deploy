@@ -1,6 +1,8 @@
+import { formatEther } from "ethers/lib/utils.js";
 import CronJob from "node-cron";
 import { getAuctions } from "../../utils/auctions.js";
 import {
+  ADDRESS_ZERO,
   AUCTION_CONTRACT,
   COLLECTION_CONTRACT,
   managerWallet,
@@ -25,44 +27,64 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
               auction.collectionAddress,
               auction.tokenId
             );
+            console.log(highestBider._bidder);
+            if (highestBider._bidder !== ADDRESS_ZERO) {
+              const reservePrice = auction.reservePrice;
+              const bid = highestBider._bid;
+              if (formatEther(bid) < reservePrice) {
+                const clearAuctionTx = await AUCTION_CONTRACT.clearAuction(
+                  auction.collectionAddress,
+                  auction.tokenId
+                );
+                await clearAuctionTx.wait();
+                console.log("Cleared Auction");
+              } else {
+                const isApprovedForAll =
+                  await COLLECTION_CONTRACT.isApprovedForAll(
+                    managerWallet.address,
+                    AUCTION_CONTRACT.address
+                  );
 
-            const bid = highestBider._bid;
+                if (!isApprovedForAll) {
+                  const approveTx = await COLLECTION_CONTRACT.setApprovalForAll(
+                    AUCTION_CONTRACT.address,
+                    true
+                  );
+                  await approveTx.wait();
+                }
 
-            const isApprovedForAll = await COLLECTION_CONTRACT.isApprovedForAll(
-              managerWallet.address,
-              AUCTION_CONTRACT.address
-            );
+                const allowance = await WFTM_CONTRACT.allowance(
+                  managerWallet.address,
+                  AUCTION_CONTRACT.address
+                );
 
-            if (!isApprovedForAll) {
-              const approveTx = await COLLECTION_CONTRACT.setApprovalForAll(
-                AUCTION_CONTRACT.address,
-                true
+                if (allowance.lt(bid)) {
+                  const tx = await WFTM_CONTRACT.approve(
+                    AUCTION_CONTRACT.address,
+                    bid
+                  );
+                  await tx.wait();
+                }
+
+                console.log("RESOLVING");
+
+                const resolveTx = await AUCTION_CONTRACT.resultAuction(
+                  auction.collectionAddress,
+                  auction.tokenId
+                );
+
+                await resolveTx.wait();
+                console.log("Resolved!");
+              }
+            } else {
+              console.log("Has no bids!");
+              const clearAuctionTx = AUCTION_CONTRACT.clearAuction(
+                auction.collectionAddress,
+                auction.tokenId
               );
-              await approveTx.wait();
+              await clearAuctionTx.wait();
+              console.log("Cleared Auction");
             }
-
-            const allowance = await WFTM_CONTRACT.allowance(
-              managerWallet.address,
-              AUCTION_CONTRACT.address
-            );
-
-            if (allowance.lt(bid)) {
-              const tx = await WFTM_CONTRACT.approve(
-                AUCTION_CONTRACT.address,
-                bid
-              );
-              await tx.wait();
-            }
-
-            console.log("RESOLVING");
-
-            const resolveTx = await AUCTION_CONTRACT.resultAuction(
-              auction.collectionAddress,
-              auction.tokenId
-            );
-
-            await resolveTx.wait();
-            console.log("Resolved!");
           } catch (e) {
             console.log(e);
           }
