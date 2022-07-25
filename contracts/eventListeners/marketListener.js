@@ -155,16 +155,21 @@ export const listenToMarketEvents = () => {
   MARKET_CONTRACT.on(
     "OfferCreated",
     async (creator, collection, tokenId, payToken, price, deadline) => {
-      const doc = {
-        creator: creator,
-        collectionAddress: collection,
-        tokenId: tokenId,
-        payToken: payToken,
-        price: formatEther(price),
-        deadline: deadline,
-      };
-      await addNewOffer(doc);
-      console.log("CreatedOffer");
+      const offer = await getOffer(collection, tokenId, creator);
+
+      if (!offer) {
+        const doc = {
+          creator: creator,
+          collectionAddress: collection,
+          tokenId: tokenId,
+          payToken: payToken,
+          price: formatEther(price),
+          deadline: deadline,
+        };
+
+        await addNewOffer(doc);
+        console.log("CreatedOffer");
+      }
     }
   );
   MARKET_CONTRACT.on("OfferCanceled", async (creator, collection, tokenId) => {

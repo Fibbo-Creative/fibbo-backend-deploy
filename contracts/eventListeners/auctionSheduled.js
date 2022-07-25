@@ -11,7 +11,6 @@ import {
 
 const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
   const auctions = await getAuctions();
-  console.log("======");
   await Promise.all(
     auctions.map(async (auction) => {
       const now = new Date().getTime();
@@ -20,8 +19,6 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
 
       if (now > startTime) {
         if (now > endTime) {
-          console.log("auction has ended");
-
           try {
             const highestBider = await AUCTION_CONTRACT.getHighestBidder(
               auction.collectionAddress,
@@ -37,7 +34,6 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                   auction.tokenId
                 );
                 await clearAuctionTx.wait();
-                console.log("Cleared Auction");
               } else {
                 const isApprovedForAll =
                   await COLLECTION_CONTRACT.isApprovedForAll(
@@ -66,33 +62,26 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                   await tx.wait();
                 }
 
-                console.log("RESOLVING");
-
                 const resolveTx = await AUCTION_CONTRACT.resultAuction(
                   auction.collectionAddress,
                   auction.tokenId
                 );
 
                 await resolveTx.wait();
-                console.log("Resolved!");
               }
             } else {
-              console.log("Has no bids!");
               const clearAuctionTx = AUCTION_CONTRACT.clearAuction(
                 auction.collectionAddress,
                 auction.tokenId
               );
               await clearAuctionTx.wait();
-              console.log("Cleared Auction");
             }
           } catch (e) {
             console.log(e);
           }
         } else {
-          console.log("Auction has not finished");
         }
       } else {
-        console.log("Auction has not started");
       }
     })
   );

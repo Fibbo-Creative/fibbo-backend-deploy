@@ -2,6 +2,7 @@ import { formatEther } from "ethers/lib/utils.js";
 import {
   addNewAuction,
   deleteAuction,
+  getAuction,
   updateEndTime,
   updateReservePrice,
   updateStartTime,
@@ -14,21 +15,26 @@ export const listenToAuctionEvents = () => {
   AUCTION_CONTRACT.on(
     "AuctionCreated",
     async (collection, tokenId, payToken) => {
-      const auctionInfo = await AUCTION_CONTRACT.getAuction(
-        collection,
-        tokenId
-      );
-      const doc = {
-        collectionAddress: collection,
-        tokenId: tokenId,
-        payToken: payToken,
-        reservePrice: formatEther(auctionInfo._reservePrice),
-        buyNowPrice: formatEther(auctionInfo._buyNowPrice),
-        startTime: auctionInfo._startTime,
-        endTime: auctionInfo._endTime,
-      };
+      const auctionInDb = await getAuction(collection, tokenId);
 
-      await addNewAuction(doc);
+      if (auctionInDb) {
+        const auctionInfo = await AUCTION_CONTRACT.getAuction(
+          collection,
+          tokenId
+        );
+
+        const doc = {
+          collectionAddress: collection,
+          tokenId: tokenId,
+          payToken: payToken,
+          reservePrice: formatEther(auctionInfo._reservePrice),
+          buyNowPrice: formatEther(auctionInfo._buyNowPrice),
+          startTime: auctionInfo._startTime,
+          endTime: auctionInfo._endTime,
+        };
+
+        await addNewAuction(doc);
+      }
     }
   );
   AUCTION_CONTRACT.on("AuctionCancelled", async (collection, tokenId) => {
