@@ -49,17 +49,24 @@ export default class NftController {
 
       let tokenIds = [];
       let finalList = [];
-      allNftsForSale.forEach((_nftForSaleItem) => {
-        if (!tokenIds.includes(_nftForSaleItem.tokenId)) {
-          tokenIds.push(_nftForSaleItem.tokenId);
-          finalList.push(_nftForSaleItem);
-        }
-      });
 
       allNfts.forEach((_nftItem) => {
         if (!tokenIds.includes(_nftItem.tokenId)) {
+          let finalItem = _nftItem;
           tokenIds.push(_nftItem.tokenId);
-          finalList.push(_nftItem);
+          let forSale = allNftsForSale.find(
+            (item) =>
+              item.tokenId === finalItem.tokenId &&
+              item.collectionAddress === finalItem.collectionAddress
+          );
+          if (forSale) {
+            finalItem = {
+              ..._nftItem._doc,
+              forSaleAt: forSale.forSaleAt,
+              price: forSale.price,
+            };
+          }
+          finalList.push(finalItem);
         }
       });
 
@@ -101,7 +108,7 @@ export default class NftController {
               };
             }
           } else {
-            if (offers.length > 0) {
+            if (offers.length > 0 && item.price === undefined) {
               let higherOffer;
               if (offers.length === 1) {
                 higherOffer = offers[0];
@@ -117,7 +124,11 @@ export default class NftController {
                 offer: higherOffer,
               };
             } else {
-              return { ...item._doc, collection: collectionInfo };
+              if (item._doc) {
+                return { ...item._doc, collection: collectionInfo };
+              } else {
+                return { ...item, collection: collectionInfo };
+              }
             }
           }
         })
