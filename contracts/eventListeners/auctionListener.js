@@ -91,7 +91,6 @@ export const listenToAuctionEvents = () => {
 
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await updateEndTime(collection, tokenId.toNumber(), endTime);
-        console.log("UPDATED END TIME");
       }
     }
   );
