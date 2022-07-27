@@ -60,7 +60,6 @@ export const listenToAuctionEvents = () => {
           tokenId.toNumber(),
           formatEther(reservePrice)
         );
-        console.log("UPDATED Reserve Price");
       }
     }
   );
