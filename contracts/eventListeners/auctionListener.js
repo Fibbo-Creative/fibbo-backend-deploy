@@ -77,7 +77,6 @@ export const listenToAuctionEvents = () => {
           tokenId.toNumber(),
           formatEther(_startTime)
         );
-        console.log("UPDATED START TIME");
       }
     }
   );
