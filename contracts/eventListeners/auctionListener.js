@@ -98,8 +98,6 @@ export const listenToAuctionEvents = () => {
   AUCTION_CONTRACT.on(
     "AuctionResulted",
     async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
-      console.log(prevOwner);
-
       await deleteAuction(collection, tokenId);
 
       //Actualizar token Info
