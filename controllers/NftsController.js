@@ -36,7 +36,11 @@ import {
   getAllNftsForSale,
   getNftForSaleById,
 } from "../utils/nftsForSale.js";
-import { getItemOffers, sortHigherOffer } from "../utils/offers.js";
+import {
+  formatOffers,
+  getItemOffers,
+  sortHigherOffer,
+} from "../utils/offers.js";
 
 export default class NftController {
   constructor() {}
@@ -177,25 +181,46 @@ export default class NftController {
       const nft = await getNftInfoById(nftId, collection);
       if (nft) {
         const nftForSale = await getNftForSaleById(collection, nftId);
-        let nftResult = nft;
+        let nftResult = {
+          nftData: nft,
+        };
         if (nftForSale) {
           nftResult = {
-            ...nft,
-            forSale: true,
-            price: nftForSale.price,
-            forSaleAt: nftForSale.forSaleAt,
+            ...nftResult,
+            listing: {
+              forSale: true,
+              price: nftForSale.price,
+              forSaleAt: nftForSale.forSaleAt,
+            },
           };
         } else {
           nftResult = {
-            ...nft,
-            forSale: false,
+            ...nftResult,
           };
         }
+
+        //Get offers
+        let offers = await getItemOffers(collection, nftId);
+        offers = await formatOffers(offers);
+        nftResult = {
+          ...nftResult,
+          offers: offers,
+        };
+
+        //Get history
+        let history = await getEventsFromNft(collection, nftId);
+        history = await formatHistory(history);
+        nftResult = {
+          ...nftResult,
+          history: history,
+        };
+
         res.status(200).send(nftResult);
       } else {
         res.status(205).send("Nft with id not found!");
       }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }
