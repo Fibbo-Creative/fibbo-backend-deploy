@@ -9,6 +9,10 @@ GeneralRouter.use((req, res, next) => {
 
 //GET
 GeneralRouter.get("/search", GeneralController.searchItems);
+
+GeneralRouter.get("/payTokens", GeneralController.getAllPayTokens);
+GeneralRouter.get("/payToken", GeneralController.getPayTokenInfo);
+
 //POST
 GeneralRouter.post(
   "/uploadImg",

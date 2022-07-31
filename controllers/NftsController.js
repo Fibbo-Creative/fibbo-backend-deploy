@@ -14,6 +14,7 @@ import {
   formatHistory,
   getAllTransfers,
   getEventsFromNft,
+  getEventsFromWallet,
   registerChangePriceEvent,
   registerListingEvent,
   registerMintEvent,
@@ -25,9 +26,11 @@ import {
   createNft,
   filterItemsByTitle,
   getAllNfts,
+  getAllNftsInfo,
   getNftInfo,
   getNftInfoById,
   getNftsByAddress,
+  getNftsByCreator,
 } from "../utils/nfts.js";
 import {
   changePrice,
@@ -39,8 +42,10 @@ import {
 import {
   formatOffers,
   getItemOffers,
+  getOffersFromWallet,
   sortHigherOffer,
 } from "../utils/offers.js";
+import { getPayTokenInfo } from "../utils/payTokens.js";
 
 export default class NftController {
   constructor() {}
@@ -49,94 +54,8 @@ export default class NftController {
   static async getAllNfts(req, res) {
     try {
       const allNfts = await getAllNfts();
-      const allNftsForSale = await getAllNftsForSale();
 
-      let tokenIds = [];
-      let finalList = [];
-
-      allNfts.forEach((_nftItem) => {
-        if (!tokenIds.includes(_nftItem.tokenId)) {
-          let finalItem = _nftItem;
-          tokenIds.push(_nftItem.tokenId);
-          let forSale = allNftsForSale.find(
-            (item) =>
-              item.tokenId === finalItem.tokenId &&
-              item.collectionAddress === finalItem.collectionAddress
-          );
-          if (forSale) {
-            finalItem = {
-              ..._nftItem._doc,
-              forSaleAt: forSale.forSaleAt,
-              price: forSale.price,
-            };
-          }
-          finalList.push(finalItem);
-        }
-      });
-
-      let formatted = await Promise.all(
-        finalList.map(async (item) => {
-          let collectionInfo = await getCollectionInfo(item.collectionAddress);
-          let auction = await AUCTION_CONTRACT.auctions(
-            item.collectionAddress,
-            item.tokenId
-          );
-          let offers = await getItemOffers(
-            item.collectionAddress,
-            item.tokenId
-          );
-          if (auction.owner != ADDRESS_ZERO) {
-            let highestBid = await AUCTION_CONTRACT.highestBids(
-              item.collectionAddress,
-              item.tokenId
-            );
-            if (highestBid.bidder != ADDRESS_ZERO) {
-              return {
-                ...item._doc,
-                collection: collectionInfo,
-                auction: {
-                  topBid: formatEther(highestBid.bid),
-                  startTime: auction.startTime.toNumber() * 1000,
-                  endTime: auction.endTime.toNumber(),
-                },
-              };
-            } else {
-              return {
-                ...item._doc,
-                collection: collectionInfo,
-                auction: {
-                  bid: formatEther(auction.minBid),
-                  startTime: auction.startTime.toNumber(),
-                  endTime: auction.endTime.toNumber(),
-                },
-              };
-            }
-          } else {
-            if (offers.length > 0 && item.price === undefined) {
-              let higherOffer;
-              if (offers.length === 1) {
-                higherOffer = offers[0];
-              } else {
-                let higherOffers = offers.sort(sortHigherOffer);
-
-                higherOffer = higherOffers[0];
-              }
-
-              return {
-                ...item._doc,
-                collection: collectionInfo,
-                offer: higherOffer,
-              };
-            } else {
-              if (item._doc) {
-                return { ...item._doc, collection: collectionInfo };
-              } else {
-                return { ...item, collection: collectionInfo };
-              }
-            }
-          }
-        })
-      );
+      let formatted = await getAllNftsInfo(allNfts);
       res.status(200).send(formatted);
     } catch (e) {
       console.log(e);
@@ -184,13 +103,16 @@ export default class NftController {
         let nftResult = {
           nftData: nft,
         };
+
         if (nftForSale) {
+          const payTokenInfo = await getPayTokenInfo(nftForSale.payToken);
           nftResult = {
             ...nftResult,
             listing: {
               forSale: true,
               price: nftForSale.price,
               forSaleAt: nftForSale.forSaleAt,
+              payToken: payTokenInfo,
             },
           };
         } else {
@@ -235,7 +157,25 @@ export default class NftController {
 
       const nfts = await getNftsByAddress(address);
 
-      res.status(200).send(nfts);
+      let formatted = await getAllNftsInfo(nfts);
+      res.status(200).send(formatted);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getNftsByCreator(req, res) {
+    try {
+      const { address } = req.query;
+
+      if (!address) {
+        res.status(204).send("No address supplied");
+      }
+
+      const nfts = await getNftsByCreator(address);
+
+      let formatted = await getAllNftsInfo(nfts);
+      res.status(200).send(formatted);
     } catch (e) {
       res.status(500).send(e);
     }
@@ -246,6 +186,19 @@ export default class NftController {
       const { collection, tokenId } = req.query;
 
       const result = await getEventsFromNft(collection, tokenId);
+      const formattedResult = await formatHistory(result);
+      res.status(200).send(formattedResult);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getWalletHistory(req, res) {
+    try {
+      const { address } = req.query;
+
+      const result = await getEventsFromWallet(address);
       const formattedResult = await formatHistory(result);
       res.status(200).send(formattedResult);
     } catch (e) {

@@ -8,6 +8,7 @@ const eventSchema = mongoose.Schema({
   to: String,
   timestamp: Date,
   price: Number,
+  payToken: String,
 });
 
 export default mongoose.model("events", eventSchema);

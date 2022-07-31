@@ -1,12 +1,33 @@
 import Events from "../models/events.js";
+import { getPayTokenInfo } from "./payTokens.js";
 import { getProfileInfo } from "./profiles.js";
 
+const orderHistory = (a, b) => {
+  if (a.timestamp > b.timestamp) {
+    return 1;
+  } else {
+    return -1;
+  }
+};
 export const getEventsFromNft = async (collectionAddress, tokenId) => {
   const eventsResult = await Events.find({
     collectionAddress: collectionAddress,
     tokenId: tokenId,
   });
   return eventsResult;
+};
+
+export const getEventsFromWallet = async (wallet) => {
+  const fromEventsResult = await Events.find({
+    from: wallet,
+  });
+  const toEventsResult = await Events.find({
+    to: wallet,
+  });
+  const eventResult = fromEventsResult
+    .concat(toEventsResult)
+    .sort(orderHistory);
+  return eventResult;
 };
 
 export const getAllTransfers = async () => {
@@ -21,22 +42,49 @@ export const formatHistory = async (historyData) => {
         const { from, to } = item;
         const fromInfo = await getProfileInfo(from);
         const toInfo = await getProfileInfo(to);
-        if (from === ADDRESS_ZERO && to !== ADDRESS_ZERO) {
-          return {
-            ...item._doc,
-            to: toInfo,
-          };
-        } else if (from !== ADDRESS_ZERO && to === ADDRESS_ZERO) {
-          return {
-            ...item._doc,
-            from: fromInfo,
-          };
+        const payTokenInfo = await getPayTokenInfo(item.payToken);
+        if (item._doc) {
+          if (from === ADDRESS_ZERO && to !== ADDRESS_ZERO) {
+            return {
+              ...item._doc,
+              to: toInfo,
+              payToken: payTokenInfo,
+            };
+          } else if (from !== ADDRESS_ZERO && to === ADDRESS_ZERO) {
+            return {
+              ...item._doc,
+              from: fromInfo,
+              payToken: payTokenInfo,
+            };
+          } else {
+            return {
+              ...item._doc,
+              from: fromInfo,
+              to: toInfo,
+              payToken: payTokenInfo,
+            };
+          }
         } else {
-          return {
-            ...item._doc,
-            from: fromInfo,
-            to: toInfo,
-          };
+          if (from === ADDRESS_ZERO && to !== ADDRESS_ZERO) {
+            return {
+              ...item,
+              to: toInfo,
+              payToken: payTokenInfo,
+            };
+          } else if (from !== ADDRESS_ZERO && to === ADDRESS_ZERO) {
+            return {
+              ...item,
+              from: fromInfo,
+              payToken: payTokenInfo,
+            };
+          } else {
+            return {
+              ...item,
+              from: fromInfo,
+              to: toInfo,
+              payToken: payTokenInfo,
+            };
+          }
         }
       })
     );
@@ -54,6 +102,7 @@ export const createEvent = async (doc) => {
 };
 
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
+
 export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
     eventType: "MINT",
@@ -76,7 +125,8 @@ export const registerListingEvent = async (
   collectionAddress,
   tokenId,
   from,
-  price
+  price,
+  payToken
 ) => {
   const doc = {
     tokenId: tokenId,
@@ -86,6 +136,7 @@ export const registerListingEvent = async (
     to: ADDRESS_ZERO,
     timestamp: new Date().toISOString(),
     price: price,
+    payToken: payToken,
   };
 
   const createdEvent = await createEvent(doc);
@@ -97,7 +148,8 @@ export const registerTransferEvent = async (
   tokenId,
   from,
   to,
-  price
+  price,
+  payToken
 ) => {
   const doc = {
     eventType: "TRANSFER",
@@ -107,6 +159,7 @@ export const registerTransferEvent = async (
     to: to,
     timestamp: new Date().toISOString(),
     price: price,
+    payToken: payToken,
   };
 
   const createdEvent = await createEvent(doc);
@@ -117,7 +170,8 @@ export const registerChangePriceEvent = async (
   collectionAddress,
   tokenId,
   from,
-  price
+  price,
+  payToken
 ) => {
   const doc = {
     eventType: "CHANGE PRICE",
@@ -127,6 +181,7 @@ export const registerChangePriceEvent = async (
     to: from,
     timestamp: new Date().toISOString(),
     price: price,
+    payToken: payToken,
   };
 
   const createdEvent = await createEvent(doc);

@@ -1,10 +1,18 @@
 import Offers from "../models/offers.js";
+import { getPayTokenInfo } from "./payTokens.js";
 import { getProfileInfo } from "./profiles.js";
 
 export const getItemOffers = async (collectionAddress, tokenId) => {
   const offers = await Offers.find({
     collectionAddress: collectionAddress,
     tokenId: tokenId,
+  });
+  return offers;
+};
+
+export const getOffersFromWallet = async (address) => {
+  const offers = await Offers.find({
+    creator: address,
   });
   return offers;
 };
@@ -33,10 +41,20 @@ export const formatOffers = async (offersData) => {
     offersData.map(async (item) => {
       const { creator } = item;
       const fromInfo = await getProfileInfo(creator);
-      return {
-        ...item._doc,
-        creator: fromInfo,
-      };
+      const payTokenInfo = await getPayTokenInfo(item.payToken);
+      if (item._doc) {
+        return {
+          ...item._doc,
+          creator: fromInfo,
+          payToken: payTokenInfo,
+        };
+      } else {
+        return {
+          ...item,
+          creator: fromInfo,
+          payToken: payTokenInfo,
+        };
+      }
     })
   );
   return formatted;

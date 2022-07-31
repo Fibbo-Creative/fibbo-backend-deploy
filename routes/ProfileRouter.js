@@ -12,6 +12,9 @@ ProfileRouter.use((req, res, next) => {
 ProfileRouter.get("/profile", ProfileController.getProfileData);
 ProfileRouter.get("/all", ProfileController.getAllProfiles);
 ProfileRouter.get("/verified", ProfileController.getVerifiedArtists);
+ProfileRouter.get("/history", ProfileController.getWalletHistory);
+ProfileRouter.get("/offers", ProfileController.getWalletOffers);
+
 //POST
 ProfileRouter.post("/newProfile", ProfileController.newProfile);
 ProfileRouter.post(

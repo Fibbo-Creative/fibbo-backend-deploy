@@ -9,6 +9,7 @@ const nftForSaleSchema = mongoose.Schema({
   price: Number,
   owner: String,
   forSaleAt: Date,
+  payToken: String,
 });
 
 export default mongoose.model("nftsForSale", nftForSaleSchema);

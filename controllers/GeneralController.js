@@ -4,6 +4,7 @@ import sanity_client from "../lib/sanity.js";
 import { filterProfilesByUsername } from "../utils/profiles.js";
 import { filterItemsByTitle } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
+import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 
 export default class GeneralController {
   constructor() {}
@@ -20,6 +21,30 @@ export default class GeneralController {
         items: filteredItems,
         profiles: filteredProfiles,
       });
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getAllPayTokens(req, res) {
+    try {
+      //Buscaremos primero en los títulos de los items
+
+      const payTokens = await getPayTokens();
+
+      res.send(payTokens);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+  static async getPayTokenInfo(req, res) {
+    try {
+      const { address } = req.query;
+
+      //Buscaremos primero en los títulos de los items
+
+      const payTokenInfo = await getPayTokenInfo(address);
+      res.send(payTokenInfo);
     } catch (e) {
       res.status(500).send(e);
     }

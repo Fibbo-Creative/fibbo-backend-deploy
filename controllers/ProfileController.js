@@ -14,6 +14,14 @@ import {
 import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
+import { formatHistory, getEventsFromWallet } from "../utils/events.js";
+import {
+  formatOffers,
+  getItemOffers,
+  getOffersFromWallet,
+} from "../utils/offers.js";
+import NftController from "./NftsController.js";
+import { getNftInfo, getNftInfoById, getNftsByAddress } from "../utils/nfts.js";
 
 export default class ProfileController {
   constructor() {}
@@ -62,6 +70,92 @@ export default class ProfileController {
     }
   }
 
+  static async getWalletHistory(req, res) {
+    try {
+      const { address } = req.query;
+
+      const result = await getEventsFromWallet(address);
+      let finalResullt = [];
+      await Promise.all(
+        result.map(async (item) => {
+          const itemInfo = await getNftInfoById(
+            item.tokenId,
+            item.collectionAddress
+          );
+          finalResullt = [
+            ...finalResullt,
+            {
+              ...item._doc,
+              item: itemInfo,
+            },
+          ];
+        })
+      );
+      const formattedResult = await formatHistory(finalResullt);
+      res.status(200).send(formattedResult);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getWalletOffers(req, res) {
+    try {
+      const { address } = req.query;
+
+      const myOffers = await getOffersFromWallet(address);
+
+      let finalMyOffers = [];
+      await Promise.all(
+        myOffers.map(async (offer) => {
+          const itemInfo = await getNftInfoById(
+            offer.tokenId,
+            offer.collectionAddress
+          );
+          finalMyOffers = [
+            ...finalMyOffers,
+            {
+              ...offer._doc,
+              item: itemInfo,
+            },
+          ];
+        })
+      );
+
+      const formattedMyOffers = await formatOffers(finalMyOffers);
+
+      const myItems = await getNftsByAddress(address);
+      let finalOffers = [];
+
+      await Promise.all(
+        myItems.map(async (item) => {
+          let offers = await getItemOffers(
+            item.collectionAddress,
+            item.tokenId
+          );
+          if (offers.length > 0) {
+            let formattedOffers = offers.map((offer) => {
+              return {
+                ...offer._doc,
+                item: item,
+              };
+            });
+            finalOffers = [...finalOffers, ...formattedOffers];
+          }
+        })
+      );
+
+      const formattedAllOffer = await formatOffers(finalOffers);
+
+      res.status(200).send({
+        myOffers: formattedMyOffers,
+        offers: formattedAllOffer,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
   //POST
 
   static async newProfile(req, res) {

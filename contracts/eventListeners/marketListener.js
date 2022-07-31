@@ -43,6 +43,7 @@ export const listenToMarketEvents = () => {
             price: formatEther(price),
             owner: owner,
             forSaleAt: new Date().toISOString(),
+            payToken: payToken,
           };
 
           const createdDoc = await createNftForSale(doc);
@@ -51,7 +52,8 @@ export const listenToMarketEvents = () => {
             collection,
             tokenId,
             owner,
-            formatEther(price)
+            formatEther(price),
+            payToken
           );
           console.log("ListedItem");
         }
@@ -86,7 +88,8 @@ export const listenToMarketEvents = () => {
           tokenId,
           seller,
           buyer,
-          formatEther(price)
+          formatEther(price),
+          payToken
         );
 
         console.log("ItemSold");
@@ -126,7 +129,8 @@ export const listenToMarketEvents = () => {
         collection,
         tokenId.toNumber(),
         owner,
-        formatEther(newPrice)
+        formatEther(newPrice),
+        payToken
       );
 
       console.log("Updated Item");
