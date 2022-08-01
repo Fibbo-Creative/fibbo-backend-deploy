@@ -23,10 +23,10 @@ export const getNftInfo = async (owner, nftId, collectionAddress) => {
   if (_nft) return _nft._doc;
 };
 
-export const getAllNfts = async () => {
+export const getAllNfts = async (count) => {
   const allNfts = await Nft.find();
 
-  return allNfts;
+  return count ? allNfts.slice(0, count) : allNfts;
 };
 
 export const getNftInfoById = async (nftId, collectionAddress) => {

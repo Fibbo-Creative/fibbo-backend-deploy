@@ -53,7 +53,8 @@ export default class NftController {
   //GET
   static async getAllNfts(req, res) {
     try {
-      const allNfts = await getAllNfts();
+      const { count } = req.query;
+      const allNfts = await getAllNfts(count);
 
       let formatted = await getAllNftsInfo(allNfts);
       res.status(200).send(formatted);
