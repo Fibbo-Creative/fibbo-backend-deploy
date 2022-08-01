@@ -7,7 +7,6 @@ GeneralRouter.use((req, res, next) => {
   next();
 });
 
-//GET
 GeneralRouter.get("/search", GeneralController.searchItems);
 
 GeneralRouter.get("/payTokens", GeneralController.getAllPayTokens);
