@@ -1,8 +1,8 @@
-const marketAddress = "0xc7Da9E7F750cf290cC715838A1B448c7EC7C1178";
-const nftColectionAddress = "0x67B8A399F7CcC7041B8c7bD421aF5F8Ad6eFFb0B";
-const suggestionsAddress = "0x2F3a3eDa4FE4654F513b81841Ec6Eb03d6917062";
-const verificationAddress = "0xF558A69b5aA3c12052e35691BA43a91ae3b97C39";
-const auctionAddress = "0xABd953956BeCB21c9cd2EA1eE1Ac09f966cB0c1e";
+const marketAddress = "0x18F80d313c5fF5152520F16d18b205A655a1DA68";
+const nftColectionAddress = "0xf162A26aEdA893f2131Eb634dE9A2Aed7E395544";
+const suggestionsAddress = "0xE80E90Ce84574830b1aD7e68C09aE82000C5014f";
+const verificationAddress = "0x360Eb0e59Ec91253a4B3704160Cd1FBa9ae5F996";
+const auctionAddress = "0x9f3f392C50A0db297230C360153258F05405a359";
 const wftmAddress = "0xf1277d1ed8ad466beddf92ef448a132661956621";
 export {
   marketAddress,
