@@ -67,9 +67,6 @@ export const listenToAuctionEvents = () => {
         collection,
         tokenId
       );
-
-      console.log(formatEther(reservePrice));
-
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await updateReservePrice(
           collection,
