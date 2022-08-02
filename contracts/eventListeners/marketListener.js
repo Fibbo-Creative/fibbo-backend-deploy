@@ -57,7 +57,6 @@ export const listenToMarketEvents = () => {
             formatEther(price),
             payToken
           );
-          console.log("ListedItem");
         }
       }
     }
