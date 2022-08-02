@@ -12,10 +12,12 @@ import {
   registerAuctionCompleted,
   registerAuctionCreated,
   registerBidCreated,
+  registerOfferCancelled,
   registerTransferEvent,
 } from "../../utils/events.js";
 import { changeNftOwner } from "../../utils/nfts.js";
-import { ADDRESS_ZERO, AUCTION_CONTRACT } from "../index.js";
+import { getItemOffers } from "../../utils/offers.js";
+import { ADDRESS_ZERO, AUCTION_CONTRACT, MARKET_CONTRACT } from "../index.js";
 
 export const listenToAuctionEvents = () => {
   AUCTION_CONTRACT.on(
@@ -47,6 +49,22 @@ export const listenToAuctionEvents = () => {
           formatEther(auctionInfo._reservePrice),
           payToken
         );
+
+        const itemOffers = await getItemOffers(collection, tokenId);
+
+        if (itemOffers.length > 0) {
+          await Promise.all(
+            itemOffers.map(async (offer) => {
+              let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
+                collection,
+                tokenId,
+                offer.creator
+              );
+              await cleanOfferTx.wait();
+              await registerOfferCancelled(collection, tokenId, offer.creator);
+            })
+          );
+        }
       }
     }
   );
