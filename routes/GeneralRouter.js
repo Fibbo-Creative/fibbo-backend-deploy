@@ -20,4 +20,6 @@ GeneralRouter.post(
   GeneralController.uploadImg
 );
 
+GeneralRouter.post("/updateEvents", GeneralController.updateEventsInfo);
+
 export default GeneralRouter;

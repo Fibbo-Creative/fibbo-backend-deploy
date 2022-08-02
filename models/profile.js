@@ -9,6 +9,7 @@ const profileSchema = mongoose.Schema({
   following: Array,
   ftmSended: Boolean,
   verified: Boolean,
+  importedWFTM: Boolean,
 });
 
 export default mongoose.model("profiles", profileSchema);

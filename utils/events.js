@@ -4,16 +4,16 @@ import { getProfileInfo } from "./profiles.js";
 
 const orderHistory = (a, b) => {
   if (a.timestamp > b.timestamp) {
-    return 1;
-  } else {
     return -1;
+  } else {
+    return 1;
   }
 };
 export const getEventsFromNft = async (collectionAddress, tokenId) => {
   const eventsResult = await Events.find({
     collectionAddress: collectionAddress,
     tokenId: tokenId,
-  });
+  }).sort({ timestamp: -1 });
   return eventsResult;
 };
 
@@ -106,6 +106,7 @@ const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
     eventType: "MINT",
+    eventDesc: "Item minteado",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: ADDRESS_ZERO,
@@ -131,6 +132,7 @@ export const registerListingEvent = async (
   const doc = {
     tokenId: tokenId,
     eventType: "LISTING",
+    eventDesc: "Item Listado",
     collectionAddress: collectionAddress,
     from: from,
     to: ADDRESS_ZERO,
@@ -153,6 +155,7 @@ export const registerTransferEvent = async (
 ) => {
   const doc = {
     eventType: "TRANSFER",
+    eventDesc: "Transfer",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -175,6 +178,7 @@ export const registerChangePriceEvent = async (
 ) => {
   const doc = {
     eventType: "CHANGE PRICE",
+    eventDesc: "Precio Actualizado",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -191,6 +195,7 @@ export const registerChangePriceEvent = async (
 export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
   const doc = {
     eventType: "UNLISTED",
+    eventDesc: "Quitado en venta",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -202,3 +207,181 @@ export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
   const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent._doc;
 };
+
+export const registerOfferCreated = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "OFFER",
+    eventDesc: "Oferta creada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerOfferCancelled = async (
+  collectionAddress,
+  tokenId,
+  from
+) => {
+  const doc = {
+    eventType: "OFFER",
+    eventDesc: "Oferta cancelada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: 0,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerOfferAccepted = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "OFFER",
+    eventDesc: "Oferta acceptada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerAuctionCreated = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Subasta creada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerBidCreated = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Puja realizada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerAuctionCanceled = async (
+  collectionAddress,
+  tokenId,
+  from
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Subasta cancelada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: 0,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerAuctionCompleted = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Subasta Finalizada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const updateEvents = async () => {
+  await Events.updateMany(
+    { eventType: "MINT" },
+    { eventDesc: "Item minteado" }
+  );
+  await Events.updateMany({ eventType: "TRANSFER" }, { eventDesc: "Transfer" });
+  await Events.updateMany(
+    { eventType: "LISTING" },
+    { eventDesc: "Item Listado" }
+  );
+
+  await Events.updateMany(
+    { eventType: "CHANGE PRICE" },
+    { eventDesc: "Precio Actualizado" }
+  );
+  await Events.updateMany(
+    { eventType: "UNLISTED" },
+    { eventDesc: "Quitado en venta" }
+  );
+};
+
+updateEvents;

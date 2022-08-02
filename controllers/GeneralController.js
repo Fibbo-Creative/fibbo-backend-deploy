@@ -5,6 +5,7 @@ import { filterProfilesByUsername } from "../utils/profiles.js";
 import { filterItemsByTitle } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
+import { updateEvents } from "../utils/events.js";
 
 export default class GeneralController {
   constructor() {}
@@ -69,6 +70,16 @@ export default class GeneralController {
 
         res.send(uploadedImgSanity.url);
       }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateEventsInfo(req, res) {
+    try {
+      await updateEvents();
+      res.send("OK");
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

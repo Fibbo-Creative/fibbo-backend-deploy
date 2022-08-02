@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const eventSchema = mongoose.Schema({
   eventType: String,
+  eventDesc: String,
   tokenId: Number,
   collectionAddress: String,
   from: String,

@@ -7,7 +7,13 @@ import {
   updateReservePrice,
   updateStartTime,
 } from "../../utils/auctions.js";
-import { registerTransferEvent } from "../../utils/events.js";
+import {
+  registerAuctionCanceled,
+  registerAuctionCompleted,
+  registerAuctionCreated,
+  registerBidCreated,
+  registerTransferEvent,
+} from "../../utils/events.js";
 import { changeNftOwner } from "../../utils/nfts.js";
 import { ADDRESS_ZERO, AUCTION_CONTRACT } from "../index.js";
 
@@ -17,7 +23,7 @@ export const listenToAuctionEvents = () => {
     async (collection, tokenId, payToken) => {
       const auctionInDb = await getAuction(collection, tokenId);
 
-      if (auctionInDb) {
+      if (!auctionInDb) {
         const auctionInfo = await AUCTION_CONTRACT.getAuction(
           collection,
           tokenId
@@ -34,16 +40,26 @@ export const listenToAuctionEvents = () => {
         };
 
         await addNewAuction(doc);
+        await registerAuctionCreated(
+          collection,
+          tokenId,
+          auctionInfo._owner,
+          formatEther(auctionInfo._reservePrice),
+          payToken
+        );
       }
     }
   );
+
   AUCTION_CONTRACT.on("AuctionCancelled", async (collection, tokenId) => {
     const auctionInfo = await AUCTION_CONTRACT.getAuction(collection, tokenId);
 
     if (auctionInfo.owner !== ADDRESS_ZERO) {
       await deleteAuction(collection, tokenId);
+      await registerAuctionCanceled(collection, tokenId, auctionInfo._owner);
     }
   });
+
   AUCTION_CONTRACT.on(
     "UpdateAuctionReservePrice",
     async (collection, tokenId, payToken, reservePrice) => {
@@ -95,6 +111,14 @@ export const listenToAuctionEvents = () => {
     }
   );
 
+  AUCTION_CONTRACT.on("BidPlaced", async (collection, tokenId) => {
+    const auctionInfo = await AUCTION_CONTRACT.getAuction(collection, tokenId);
+
+    if (auctionInfo.owner !== ADDRESS_ZERO) {
+      await registerBidCreated(collection, tokenId);
+    }
+  });
+
   AUCTION_CONTRACT.on(
     "AuctionResulted",
     async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
@@ -102,15 +126,17 @@ export const listenToAuctionEvents = () => {
 
       //Actualizar token Info
 
-      const updatedOwner = await changeNftOwner(
-        collection,
-        tokenId.toNumber(),
-        prevOwner,
-        winner
-      );
+      await changeNftOwner(collection, tokenId.toNumber(), prevOwner, winner);
 
       //Añadir eventos
-      const eventCreated = await registerTransferEvent(
+      await registerAuctionCompleted(
+        collection,
+        tokenId,
+        winner,
+        formatEther(winingBid),
+        payToken
+      );
+      await registerTransferEvent(
         collection,
         tokenId.toNumber(),
         prevOwner,

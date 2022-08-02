@@ -7,6 +7,7 @@ import {
   getProfileInfo,
   getVerifiedArtists,
   updateFTMSended,
+  updateImportWFTM,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -160,7 +161,7 @@ export default class ProfileController {
 
   static async newProfile(req, res) {
     try {
-      const { wallet } = req.body;
+      const { wallet, hasWFTM } = req.body;
 
       const profileInfo = await getProfileInfo(wallet);
       if (profileInfo) {
@@ -176,6 +177,7 @@ export default class ProfileController {
           followers: [],
           ftmSended: true,
           verified: false,
+          importedWFTM: hasWFTM,
         };
 
         const tx = {
@@ -259,6 +261,22 @@ export default class ProfileController {
       const userProfile = await getProfileInfo(wallet);
       if (userProfile) {
         await updateUsername(wallet, username);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateImportWFTM(req, res) {
+    try {
+      const { wallet } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateImportWFTM(wallet);
         res.status(200).send("Profile Updated");
       } else {
         res.status(205).send("Profile not found!");

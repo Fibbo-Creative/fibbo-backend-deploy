@@ -3,6 +3,8 @@ import NftController from "../../controllers/NftsController.js";
 import {
   registerChangePriceEvent,
   registerListingEvent,
+  registerOfferCancelled,
+  registerOfferCreated,
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
@@ -172,7 +174,15 @@ export const listenToMarketEvents = () => {
         };
 
         await addNewOffer(doc);
-        console.log("CreatedOffer");
+
+        await registerOfferCreated(
+          collection,
+          tokenId,
+          creator,
+          formatEther(price),
+          payToken
+        );
+        console.log("OFFER CREATED");
       }
     }
   );
@@ -181,7 +191,7 @@ export const listenToMarketEvents = () => {
 
     if (offerInfo) {
       await deleteOffer(collection, tokenId.toNumber(), creator);
-      console.log("OfferCanceled");
+      await registerOfferCancelled(collection, tokenId, creator);
     }
   });
 };

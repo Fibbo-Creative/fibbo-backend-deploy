@@ -29,6 +29,14 @@ export const verifyArtistInDb = async (address) => {
   if (verified) return verified;
 };
 
+export const updateImportWFTM = async (wallet) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    { importedWFTM: true }
+  );
+  return updatedProfile;
+};
+
 export const updateUsername = async (wallet, username) => {
   const updatedProfile = await Profile.updateOne(
     { wallet: wallet },

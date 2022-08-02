@@ -15,11 +15,7 @@ import {
   getAllTransfers,
   getEventsFromNft,
   getEventsFromWallet,
-  registerChangePriceEvent,
-  registerListingEvent,
   registerMintEvent,
-  registerTransferEvent,
-  registerUnlistItem,
 } from "../utils/events.js";
 import {
   changeNftOwner,

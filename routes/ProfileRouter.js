@@ -28,5 +28,6 @@ ProfileRouter.post(
   ProfileController.uploadBannerImg
 );
 ProfileRouter.post("/setUsername", ProfileController.updateUsername);
+ProfileRouter.post("/setImportWFTM", ProfileController.updateImportWFTM);
 
 export default ProfileRouter;
