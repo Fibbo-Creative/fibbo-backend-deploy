@@ -156,7 +156,8 @@ export const listenToAuctionEvents = () => {
         tokenId.toNumber(),
         prevOwner,
         winner,
-        formatEther(winingBid)
+        formatEther(winingBid),
+        payToken
       );
     }
   );

@@ -82,9 +82,9 @@ export const listenToMarketEvents = () => {
       }
 
       if (updatedOwner) {
-        const deletedNftForSale = await deleteNftForSale(collection, tokenId);
+        await deleteNftForSale(collection, tokenId);
 
-        const eventCreated = await registerTransferEvent(
+        await registerTransferEvent(
           collection,
           tokenId,
           seller,
