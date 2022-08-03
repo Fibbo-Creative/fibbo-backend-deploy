@@ -1,6 +1,7 @@
 import { formatEther } from "ethers/lib/utils.js";
 import { ADDRESS_ZERO, AUCTION_CONTRACT } from "../contracts/index.js";
 import Nft from "../models/nft.js";
+import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
 import { getNftForSaleById } from "./nftsForSale.js";
 import { getItemOffers, sortHigherOffer } from "./offers.js";
@@ -89,6 +90,11 @@ export const getAllNftsInfo = async (nfts) => {
           item.tokenId
         );
         if (auction.owner !== ADDRESS_ZERO) {
+          let auctionInDb = await getAuction(
+            item.collectionAddress,
+            item.tokenId
+          );
+          const createdAt = auctionInDb._id.getTimestamp();
           let payTokenInfo = await getPayTokenInfo(auction.payToken);
           let highestBid = await AUCTION_CONTRACT.highestBids(
             item.collectionAddress,
@@ -102,6 +108,7 @@ export const getAllNftsInfo = async (nfts) => {
                 startTime: auction.startTime.toNumber() * 1000,
                 endTime: auction.endTime.toNumber(),
                 payToken: payTokenInfo._doc,
+                createdAt: createdAt,
               },
             };
           } else {
@@ -112,6 +119,7 @@ export const getAllNftsInfo = async (nfts) => {
                 startTime: auction.startTime.toNumber(),
                 endTime: auction.endTime.toNumber(),
                 payToken: payTokenInfo._doc,
+                createdAt: createdAt,
               },
             };
           }
