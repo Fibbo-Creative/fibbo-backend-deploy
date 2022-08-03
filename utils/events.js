@@ -105,7 +105,7 @@ const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
 export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
-    eventType: "MINT",
+    eventType: "TRANSFER",
     eventDesc: "Item minteado",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
@@ -177,7 +177,7 @@ export const registerChangePriceEvent = async (
   payToken
 ) => {
   const doc = {
-    eventType: "CHANGE PRICE",
+    eventType: "LISTING",
     eventDesc: "Precio Actualizado",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
@@ -194,7 +194,7 @@ export const registerChangePriceEvent = async (
 
 export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
   const doc = {
-    eventType: "UNLISTED",
+    eventType: "LISTING",
     eventDesc: "Quitado en venta",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
@@ -365,22 +365,8 @@ export const registerAuctionCompleted = async (
 
 export const updateEvents = async () => {
   await Events.updateMany(
-    { eventType: "MINT" },
-    { eventDesc: "Item minteado" }
-  );
-  await Events.updateMany({ eventType: "TRANSFER" }, { eventDesc: "Transfer" });
-  await Events.updateMany(
-    { eventType: "LISTING" },
-    { eventDesc: "Item Listado" }
-  );
-
-  await Events.updateMany(
     { eventType: "CHANGE PRICE" },
-    { eventDesc: "Precio Actualizado" }
-  );
-  await Events.updateMany(
-    { eventType: "UNLISTED" },
-    { eventDesc: "Quitado en venta" }
+    { eventType: "LISTING" }
   );
 };
 

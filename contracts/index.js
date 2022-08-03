@@ -24,6 +24,18 @@ const web3provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
 
+const getHigherGWEI = async () => {
+  const price = (await web3provider.getGasPrice()) * 2;
+
+  return price;
+};
+
+const calculateGasMargin = (value) => {
+  return value
+    .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
+    .div(ethers.BigNumber.from(10000));
+};
+
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
 const managerWallet = new ethers.Wallet(
@@ -70,6 +82,7 @@ const WFTM_CONTRACT = new ethers.Contract(wftmAddress, WFTM_ABI, managerWallet);
 
 export {
   web3provider,
+  getHigherGWEI,
   managerWallet,
   faucetWallet,
   ADDRESS_ZERO,

@@ -43,7 +43,6 @@ export default class SuggestionController {
     try {
       const { title, proposer, value } = req.body;
       const suggInfo = await getSuggestionInfo(title, proposer);
-
       if (suggInfo) {
         const txCreateSugg = await SUGGESTION_CONTRACT.createSuggestion(
           suggInfo.title,
