@@ -98,7 +98,7 @@ export const getAllNftsInfo = async (nfts) => {
             result = {
               ...result,
               auction: {
-                topBid: formatEther(highestBid.bid),
+                topBid: parseFloat(formatEther(highestBid.bid)),
                 startTime: auction.startTime.toNumber() * 1000,
                 endTime: auction.endTime.toNumber(),
                 payToken: payTokenInfo._doc,
@@ -108,7 +108,7 @@ export const getAllNftsInfo = async (nfts) => {
             result = {
               ...result,
               auction: {
-                bid: formatEther(auction.minBid),
+                bid: parseFloat(formatEther(auction.minBid)),
                 startTime: auction.startTime.toNumber(),
                 endTime: auction.endTime.toNumber(),
                 payToken: payTokenInfo._doc,
