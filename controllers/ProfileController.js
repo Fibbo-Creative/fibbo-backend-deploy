@@ -20,6 +20,7 @@ import {
   formatOffers,
   getItemOffers,
   getOffersFromWallet,
+  hasExpired,
 } from "../utils/offers.js";
 import NftController from "./NftsController.js";
 import { getNftInfo, getNftInfoById, getNftsByAddress } from "../utils/nfts.js";
@@ -113,16 +114,18 @@ export default class ProfileController {
             offer.tokenId,
             offer.collectionAddress
           );
-          finalMyOffers = [
-            ...finalMyOffers,
-            {
-              ...offer._doc,
-              item: itemInfo,
-            },
-          ];
+          if (!hasExpired(offer)) {
+            finalMyOffers = [
+              ...finalMyOffers,
+              {
+                ...offer._doc,
+                item: itemInfo,
+              },
+            ];
+          }
         })
       );
-
+      finalMyOffers = finalMyOffers.filter((item) => item !== undefined);
       const formattedMyOffers = await formatOffers(finalMyOffers);
 
       const myItems = await getNftsByAddress(address);
@@ -136,11 +139,17 @@ export default class ProfileController {
           );
           if (offers.length > 0) {
             let formattedOffers = offers.map((offer) => {
-              return {
-                ...offer._doc,
-                item: item,
-              };
+              if (!hasExpired(offer)) {
+                return {
+                  ...offer._doc,
+                  item: item,
+                };
+              }
             });
+            formattedOffers = formattedOffers.filter(
+              (item) => item !== undefined
+            );
+
             finalOffers = [...finalOffers, ...formattedOffers];
           }
         })
