@@ -162,7 +162,6 @@ export default class ProfileController {
         offers: formattedAllOffer,
       });
     } catch (e) {
-      console.log(e);
       res.status(500).send(e);
     }
   }
