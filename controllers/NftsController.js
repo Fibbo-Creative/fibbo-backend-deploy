@@ -18,6 +18,7 @@ import {
   registerMintEvent,
 } from "../utils/events.js";
 import {
+  changeNftInfo,
   changeNftOwner,
   createNft,
   filterItemsByTitle,
@@ -267,6 +268,62 @@ export default class NftController {
         }
       } else {
         res.send("No collection Found");
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateNft(req, res) {
+    try {
+      const {
+        collection,
+        name,
+        description,
+        creator,
+        tokenId,
+        royalty,
+        sanityImgUrl,
+        additionalContent,
+      } = req.body;
+
+      const collectionInfo = await getCollectionInfo(collection);
+
+      const nftData = await getNftInfoById(tokenId, collection);
+      if (nftData) {
+        if (collectionInfo) {
+          if (additionalContent) {
+            doc = {
+              ...doc,
+              additionalContent: additionalContent,
+            };
+          }
+
+          if (nftData.royalty !== royalty) {
+            const tx = await MARKET_CONTRACT.registerRoyalty(
+              creator,
+              nftColectionAddress,
+              parseInt(tokenId),
+              parseFloat(royalty) * 100
+            );
+            tx.wait(1);
+          }
+
+          await changeNftInfo(
+            collection,
+            tokenId,
+            name,
+            description,
+            royalty,
+            sanityImgUrl
+          );
+          res.status(200).send("Edited");
+        } else {
+          res.stauts(204).send("No collection Found");
+        }
+      } else {
+        res.stauts(204).send("No Item Found");
       }
     } catch (e) {
       console.log(e);

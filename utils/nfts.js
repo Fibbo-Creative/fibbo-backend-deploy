@@ -62,6 +62,22 @@ export const changeNftOwner = async (
   return updatedNft;
 };
 
+export const changeNftInfo = async (
+  collectionAddress,
+  nftId,
+  name,
+  desc,
+  royalties,
+  image
+) => {
+  const updatedNft = await Nft.updateOne(
+    { tokenId: nftId, collectionAddress: collectionAddress },
+    { name: name, description: desc, royalties: royalties, image: image }
+  );
+
+  return updatedNft;
+};
+
 export const filterItemsByTitle = async (filterQuery) => {
   const titleFilteredItems = await Nft.find({
     name: { $regex: ".*" + filterQuery + ".*", $options: "i" },
