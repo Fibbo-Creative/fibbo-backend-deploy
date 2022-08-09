@@ -1010,8 +1010,18 @@ export const COLLECTION_ABI = [
   {
     inputs: [
       {
+        internalType: "string",
+        name: "_name",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_symbol",
+        type: "string",
+      },
+      {
         internalType: "address",
-        name: "marketplaceAddress",
+        name: "_marketplace",
         type: "address",
       },
     ],
@@ -1113,19 +1123,6 @@ export const COLLECTION_ABI = [
     type: "event",
   },
   {
-    inputs: [],
-    name: "_tokenIds",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "_value",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -1165,20 +1162,39 @@ export const COLLECTION_ABI = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "tokenURI",
-        type: "string",
-      },
-    ],
-    name: "createToken",
-    outputs: [
-      {
         internalType: "uint256",
         name: "",
         type: "uint256",
       },
     ],
-    stateMutability: "nonpayable",
+    name: "creators",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256",
+      },
+    ],
+    name: "exists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1214,19 +1230,51 @@ export const COLLECTION_ABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getCurrentTokenID",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
-        name: "owner",
+        name: "_owner",
         type: "address",
       },
       {
         internalType: "address",
-        name: "operator",
+        name: "_operator",
         type: "address",
       },
     ],
     name: "isApprovedForAll",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "isOperator",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "isFreezedMetadata",
     outputs: [
       {
         internalType: "bool",
@@ -1235,6 +1283,24 @@ export const COLLECTION_ABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_to",
+        type: "address",
+      },
+      {
+        internalType: "string",
+        name: "_uri",
+        type: "string",
+      },
+    ],
+    name: "mint",
+    outputs: [],
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -1361,6 +1427,42 @@ export const COLLECTION_ABI = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_uri",
+        type: "string",
+      },
+    ],
+    name: "setFreezedMetadata",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_tokenId",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_uri",
+        type: "string",
+      },
+    ],
+    name: "setTokenUri",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes4",
         name: "interfaceId",
         type: "bytes4",
@@ -1456,6 +1558,25 @@ export const COLLECTION_ABI = [
     name: "updateFibboVerification",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_id",
+        type: "uint256",
+      },
+    ],
+    name: "uri",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
 ];
