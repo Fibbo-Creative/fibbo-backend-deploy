@@ -113,7 +113,6 @@ export const getAllNftsInfo = async (nfts) => {
             item.collectionAddress,
             item.tokenId
           );
-          console.log(item.collectionAddress, typeof item.tokenId, auctionInDb);
           //const createdAt = auctionInDb._id.getTimestamp();
           const createdAt = 0;
 

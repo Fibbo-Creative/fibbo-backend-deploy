@@ -2,7 +2,7 @@ import Events from "../models/events.js";
 import { getPayTokenInfo } from "./payTokens.js";
 import { getProfileInfo } from "./profiles.js";
 
-const orderHistory = (a, b) => {
+export const orderHistory = (a, b) => {
   if (a.timestamp > b.timestamp) {
     return -1;
   } else {
@@ -24,9 +24,18 @@ export const getEventsFromWallet = async (wallet) => {
   const toEventsResult = await Events.find({
     to: wallet,
   });
-  const eventResult = fromEventsResult
-    .concat(toEventsResult)
-    .sort(orderHistory);
+  let eventResult = fromEventsResult.concat(toEventsResult).sort(orderHistory);
+
+  let _ids = [];
+  eventResult = eventResult.map((ev) => {
+    if (!_ids.includes(ev._id.toString())) {
+      _ids.push(ev._id.toString());
+      return ev;
+    }
+  });
+
+  eventResult = eventResult.filter((ev) => ev !== undefined);
+
   return eventResult;
 };
 

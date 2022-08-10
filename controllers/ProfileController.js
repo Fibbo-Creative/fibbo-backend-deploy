@@ -15,7 +15,11 @@ import {
 import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
-import { formatHistory, getEventsFromWallet } from "../utils/events.js";
+import {
+  formatHistory,
+  getEventsFromWallet,
+  orderHistory,
+} from "../utils/events.js";
 import {
   formatOffers,
   getItemOffers,
@@ -76,6 +80,7 @@ export default class ProfileController {
       const { address } = req.query;
 
       const result = await getEventsFromWallet(address);
+      console.log(result.length);
       let finalResullt = [];
       await Promise.all(
         result.map(async (item) => {
@@ -83,6 +88,8 @@ export default class ProfileController {
             item.tokenId,
             item.collectionAddress
           );
+          console.log(item.collectionAddress, item.tokenId);
+          console.log(itemInfo);
           finalResullt = [
             ...finalResullt,
             {
@@ -93,7 +100,7 @@ export default class ProfileController {
         })
       );
       const formattedResult = await formatHistory(finalResullt);
-      res.status(200).send(formattedResult);
+      res.status(200).send(formattedResult.sort(orderHistory));
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
