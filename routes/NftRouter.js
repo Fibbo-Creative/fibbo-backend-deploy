@@ -13,6 +13,7 @@ NftRouter.get("/nftsForSale", NftController.getNftsForSale);
 NftRouter.get("/nftInfo", NftController.getNftInfoById);
 NftRouter.get("/nftsByAddress", NftController.getNftsByAddress);
 NftRouter.get("/nftsByCreator", NftController.getNftsByCreator);
+NftRouter.get("/itemHistory", NftController.getItemHistory);
 
 NftRouter.get("/allTransfers", NftController.getAllTransfers);
 

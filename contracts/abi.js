@@ -59,6 +59,19 @@ export const ADDRESS_REGISTRY_ABI = [
   },
   {
     inputs: [],
+    name: "factory",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "fibboCollection",
     outputs: [
       {
@@ -158,6 +171,19 @@ export const ADDRESS_REGISTRY_ABI = [
       },
     ],
     name: "updateCommunity",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_factory",
+        type: "address",
+      },
+    ],
+    name: "updateFactory",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -1024,6 +1050,11 @@ export const COLLECTION_ABI = [
         name: "_marketplace",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_verification",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -1299,8 +1330,14 @@ export const COLLECTION_ABI = [
       },
     ],
     name: "mint",
-    outputs: [],
-    stateMutability: "payable",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

@@ -9,7 +9,12 @@ import {
 import Nft from "../models/nft.js";
 import NftForSale from "../models/nftForSale.js";
 import offers from "../models/offers.js";
-import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
+import ethers from "ethers";
+import {
+  getCollectionInfo,
+  getItemsFromCollection,
+  updateTotalNfts,
+} from "../utils/collections.js";
 import {
   formatHistory,
   getAllTransfers,
@@ -101,6 +106,12 @@ export default class NftController {
           nftData: nft,
         };
 
+        const listingInfo = await MARKET_CONTRACT.listings(
+          collection,
+          ethers.BigNumber.from(nftId),
+          nft.owner
+        );
+
         if (nftForSale) {
           const payTokenInfo = await getPayTokenInfo(nftForSale.payToken);
           nftResult = {
@@ -132,6 +143,13 @@ export default class NftController {
         nftResult = {
           ...nftResult,
           history: history,
+        };
+
+        //Get more from collection
+        let items = await getItemsFromCollection(collection);
+        nftResult = {
+          ...nftResult,
+          nfts: items.filter((item) => item.tokenId !== parseFloat(nftId)),
         };
 
         res.status(200).send(nftResult);

@@ -8,7 +8,11 @@ import {
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
-import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
+import {
+  changeNftOwner,
+  getNftInfo,
+  getNftInfoById,
+} from "../../utils/nfts.js";
 import {
   changePrice,
   createNftForSale,
@@ -33,9 +37,12 @@ export const listenToMarketEvents = () => {
         collection,
         tokenId.toNumber()
       );
+
       if (nftForSaleInfo) {
       } else {
-        const nftInfo = await getNftInfo(owner, tokenId.toNumber(), collection);
+        console.log("LISTING ", collection, tokenId.toNumber(), owner);
+        const nftInfo = await getNftInfoById(tokenId, collection);
+        console.log(nftInfo);
         if (nftInfo) {
           const doc = {
             name: nftInfo.name,

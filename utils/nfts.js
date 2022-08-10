@@ -16,11 +16,10 @@ export const createNft = async (doc) => {
 
 export const getNftInfo = async (owner, nftId, collectionAddress) => {
   const _nft = await Nft.findOne({
+    collectionAddress: collectionAddress,
     owner: owner,
     tokenId: nftId,
-    collectionAddress: collectionAddress,
   });
-
   if (_nft) return _nft._doc;
 };
 
