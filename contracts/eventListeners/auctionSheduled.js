@@ -24,7 +24,6 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
               auction.collectionAddress,
               auction.tokenId
             );
-            console.log(highestBider._bidder);
             if (highestBider._bidder !== ADDRESS_ZERO) {
               const reservePrice = auction.reservePrice;
               const bid = highestBider._bid;

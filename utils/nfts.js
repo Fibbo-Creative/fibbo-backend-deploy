@@ -1,5 +1,9 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { ADDRESS_ZERO, AUCTION_CONTRACT } from "../contracts/index.js";
+import {
+  ADDRESS_ZERO,
+  AUCTION_CONTRACT,
+  MARKET_CONTRACT,
+} from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
@@ -109,7 +113,10 @@ export const getAllNftsInfo = async (nfts) => {
             item.collectionAddress,
             item.tokenId
           );
-          const createdAt = auctionInDb._id.getTimestamp();
+          console.log(item.collectionAddress, typeof item.tokenId, auctionInDb);
+          //const createdAt = auctionInDb._id.getTimestamp();
+          const createdAt = 0;
+
           let payTokenInfo = await getPayTokenInfo(auction.payToken);
           let highestBid = await AUCTION_CONTRACT.highestBids(
             item.collectionAddress,
@@ -140,16 +147,26 @@ export const getAllNftsInfo = async (nfts) => {
           }
         } else {
           //Check if its for sale
-          let listing = await getNftForSaleById(
+          let listingInfo = await MARKET_CONTRACT.listings(
             item.collectionAddress,
-            item.tokenId
+            item.tokenId,
+            item.owner
           );
-          if (listing) {
-            let payTokenInfo = await getPayTokenInfo(listing.payToken);
+
+          listingInfo = {
+            payToken: listingInfo.payToken,
+            price: parseFloat(formatEther(listingInfo.price)),
+            startingTime: new Date(
+              listingInfo.startingTime * 1000
+            ).toLocaleString(),
+          };
+
+          if (listingInfo.price !== 0) {
+            let payTokenInfo = await getPayTokenInfo(listingInfo.payToken);
             result = {
               ...result,
-              forSaleAt: listing.forSaleAt,
-              price: listing.price,
+              forSaleAt: listingInfo.startingTime,
+              price: listingInfo.price,
               payToken: payTokenInfo._doc,
             };
           } else {

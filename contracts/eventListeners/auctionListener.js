@@ -23,16 +23,16 @@ export const listenToAuctionEvents = () => {
   AUCTION_CONTRACT.on(
     "AuctionCreated",
     async (collection, tokenId, payToken) => {
-      const auctionInDb = await getAuction(collection, tokenId);
+      const auctionInDb = await getAuction(collection.toLowerCase(), tokenId);
 
       if (!auctionInDb) {
         const auctionInfo = await AUCTION_CONTRACT.getAuction(
-          collection,
+          collection.toLowerCase(),
           tokenId
         );
 
         const doc = {
-          collectionAddress: collection,
+          collectionAddress: collection.toLowerCase(),
           tokenId: tokenId,
           payToken: payToken,
           reservePrice: formatEther(auctionInfo._reservePrice),
@@ -43,25 +43,32 @@ export const listenToAuctionEvents = () => {
 
         await addNewAuction(doc);
         await registerAuctionCreated(
-          collection,
+          collection.toLowerCase(),
           tokenId,
           auctionInfo._owner,
           formatEther(auctionInfo._reservePrice),
           payToken
         );
 
-        const itemOffers = await getItemOffers(collection, tokenId);
+        const itemOffers = await getItemOffers(
+          collection.toLowerCase(),
+          tokenId
+        );
 
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
-                collection,
+                collection.toLowerCase(),
                 tokenId,
                 offer.creator
               );
               await cleanOfferTx.wait();
-              await registerOfferCancelled(collection, tokenId, offer.creator);
+              await registerOfferCancelled(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
             })
           );
         }
@@ -70,11 +77,18 @@ export const listenToAuctionEvents = () => {
   );
 
   AUCTION_CONTRACT.on("AuctionCancelled", async (collection, tokenId) => {
-    const auctionInfo = await AUCTION_CONTRACT.getAuction(collection, tokenId);
+    const auctionInfo = await AUCTION_CONTRACT.getAuction(
+      collection.toLowerCase(),
+      tokenId
+    );
 
     if (auctionInfo.owner !== ADDRESS_ZERO) {
-      await deleteAuction(collection, tokenId);
-      await registerAuctionCanceled(collection, tokenId, auctionInfo._owner);
+      await deleteAuction(collection.toLowerCase(), tokenId);
+      await registerAuctionCanceled(
+        collection.toLowerCase(),
+        tokenId,
+        auctionInfo._owner
+      );
     }
   });
 
@@ -82,12 +96,12 @@ export const listenToAuctionEvents = () => {
     "UpdateAuctionReservePrice",
     async (collection, tokenId, payToken, reservePrice) => {
       const auctionInfo = await AUCTION_CONTRACT.getAuction(
-        collection,
+        collection.toLowerCase(),
         tokenId
       );
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await updateReservePrice(
-          collection,
+          collection.toLowerCase(),
           tokenId.toNumber(),
           formatEther(reservePrice)
         );
@@ -98,13 +112,13 @@ export const listenToAuctionEvents = () => {
     "UpdateAuctionStartTime",
     async (collection, tokenId, _startTime) => {
       const auctionInfo = await AUCTION_CONTRACT.getAuction(
-        collection,
+        collection.toLowerCase(),
         tokenId
       );
 
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await updateStartTime(
-          collection,
+          collection.toLowerCase(),
           tokenId.toNumber(),
           formatEther(_startTime)
         );
@@ -116,43 +130,55 @@ export const listenToAuctionEvents = () => {
     "UpdateAuctionEndTime",
     async (collection, tokenId, endTime) => {
       const auctionInfo = await AUCTION_CONTRACT.getAuction(
-        collection,
+        collection.toLowerCase(),
         tokenId
       );
 
       if (auctionInfo.owner !== ADDRESS_ZERO) {
-        await updateEndTime(collection, tokenId.toNumber(), endTime);
+        await updateEndTime(
+          collection.toLowerCase(),
+          tokenId.toNumber(),
+          endTime
+        );
       }
     }
   );
 
   AUCTION_CONTRACT.on("BidPlaced", async (collection, tokenId) => {
-    const auctionInfo = await AUCTION_CONTRACT.getAuction(collection, tokenId);
+    const auctionInfo = await AUCTION_CONTRACT.getAuction(
+      collection.toLowerCase(),
+      tokenId
+    );
 
     if (auctionInfo.owner !== ADDRESS_ZERO) {
-      await registerBidCreated(collection, tokenId);
+      await registerBidCreated(collection.toLowerCase(), tokenId);
     }
   });
 
   AUCTION_CONTRACT.on(
     "AuctionResulted",
     async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
-      await deleteAuction(collection, tokenId);
+      await deleteAuction(collection.toLowerCase(), tokenId);
 
       //Actualizar token Info
 
-      await changeNftOwner(collection, tokenId.toNumber(), prevOwner, winner);
+      await changeNftOwner(
+        collection.toLowerCase(),
+        tokenId.toNumber(),
+        prevOwner,
+        winner
+      );
 
       //Añadir eventos
       await registerAuctionCompleted(
-        collection,
+        collection.toLowerCase(),
         tokenId,
         winner,
         formatEther(winingBid),
         payToken
       );
       await registerTransferEvent(
-        collection,
+        collection.toLowerCase(),
         tokenId.toNumber(),
         prevOwner,
         winner,

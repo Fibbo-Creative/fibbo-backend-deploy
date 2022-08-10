@@ -20,6 +20,8 @@ GeneralRouter.post(
   GeneralController.uploadImg
 );
 
+GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);
+
 GeneralRouter.post("/updateEvents", GeneralController.updateEventsInfo);
 
 export default GeneralRouter;

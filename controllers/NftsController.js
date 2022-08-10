@@ -101,25 +101,30 @@ export default class NftController {
 
       const nft = await getNftInfoById(nftId, collection);
       if (nft) {
-        const nftForSale = await getNftForSaleById(collection, nftId);
         let nftResult = {
           nftData: nft,
         };
 
-        const listingInfo = await MARKET_CONTRACT.listings(
+        let listingInfo = await MARKET_CONTRACT.listings(
           collection,
           ethers.BigNumber.from(nftId),
           nft.owner
         );
 
-        if (nftForSale) {
-          const payTokenInfo = await getPayTokenInfo(nftForSale.payToken);
+        listingInfo = {
+          payToken: listingInfo.payToken,
+          price: parseFloat(formatEther(listingInfo.price)),
+          startingTime: new Date(listingInfo.startingTime * 1000),
+        };
+
+        if (listingInfo.price !== 0) {
+          const payTokenInfo = await getPayTokenInfo(listingInfo.payToken);
           nftResult = {
             ...nftResult,
             listing: {
               forSale: true,
-              price: nftForSale.price,
-              forSaleAt: nftForSale.forSaleAt,
+              price: listingInfo.price,
+              forSaleAt: listingInfo.forSaleAt,
               payToken: payTokenInfo,
             },
           };

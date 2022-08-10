@@ -33,39 +33,14 @@ export const listenToMarketEvents = () => {
     "ItemListed",
     async (owner, collection, tokenId, payToken, price, startingTime) => {
       //Save ItemListed
-      const nftForSaleInfo = await getNftForSaleById(
-        collection,
-        tokenId.toNumber()
+      console.log("LISTING");
+      await registerListingEvent(
+        collection.toLowerCase(),
+        tokenId,
+        owner,
+        formatEther(price),
+        payToken
       );
-
-      if (nftForSaleInfo) {
-      } else {
-        console.log("LISTING ", collection, tokenId.toNumber(), owner);
-        const nftInfo = await getNftInfoById(tokenId, collection);
-        console.log(nftInfo);
-        if (nftInfo) {
-          const doc = {
-            name: nftInfo.name,
-            image: nftInfo.image,
-            tokenId: tokenId,
-            collectionAddress: collection,
-            price: formatEther(price),
-            owner: owner,
-            forSaleAt: new Date().toISOString(),
-            payToken: payToken,
-          };
-
-          const createdDoc = await createNftForSale(doc);
-
-          await registerListingEvent(
-            collection,
-            tokenId,
-            owner,
-            formatEther(price),
-            payToken
-          );
-        }
-      }
     }
   );
   MARKET_CONTRACT.on(
@@ -74,7 +49,7 @@ export const listenToMarketEvents = () => {
       //Save ItemSold
 
       const updatedOwner = await changeNftOwner(
-        collection,
+        collection.toLowerCase(),
         tokenId.toNumber(),
         seller,
         buyer
@@ -89,10 +64,8 @@ export const listenToMarketEvents = () => {
       }
 
       if (updatedOwner) {
-        await deleteNftForSale(collection, tokenId);
-
         await registerTransferEvent(
-          collection,
+          collection.toLowerCase(),
           tokenId,
           seller,
           buyer,
@@ -105,13 +78,13 @@ export const listenToMarketEvents = () => {
 
       //Clean offers
 
-      const itemOffers = await getItemOffers(collection, tokenId);
+      const itemOffers = await getItemOffers(collection.toLowerCase(), tokenId);
 
       if (itemOffers.length > 0) {
         await Promise.all(
           itemOffers.map(async (offer) => {
             let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
-              collection,
+              collection.toLowerCase(),
               tokenId,
               offer.creator
             );
@@ -126,15 +99,8 @@ export const listenToMarketEvents = () => {
   MARKET_CONTRACT.on(
     "ItemUpdated",
     async (owner, collection, tokenId, payToken, newPrice) => {
-      const updatedListing = await changePrice(
-        collection,
-        tokenId.toNumber(),
-        owner,
-        formatEther(newPrice)
-      );
-
       const eventRegistered = await registerChangePriceEvent(
-        collection,
+        collection.toLowerCase(),
         tokenId.toNumber(),
         owner,
         formatEther(newPrice),
@@ -147,32 +113,22 @@ export const listenToMarketEvents = () => {
   MARKET_CONTRACT.on("ItemCanceled", async (owner, collection, tokenId) => {
     //Save ItemUpdated
 
-    const nftForSaleInfo = await getNftForSaleById(
-      collection,
-      tokenId.toNumber()
+    const registeredEvent = await registerUnlistItem(
+      collection.toLowerCase(),
+      tokenId,
+      owner
     );
-    if (nftForSaleInfo) {
-      const deletedItem = await deleteNftForSale(collection, tokenId);
-
-      const registeredEvent = await registerUnlistItem(
-        collection,
-        tokenId,
-        owner
-      );
-
-      console.log("ITEM UNLISTED");
-    }
   });
   //OFFERS
   MARKET_CONTRACT.on(
     "OfferCreated",
     async (creator, collection, tokenId, payToken, price, deadline) => {
-      const offer = await getOffer(collection, tokenId, creator);
+      const offer = await getOffer(collection.toLowerCase(), tokenId, creator);
 
       if (!offer) {
         const doc = {
           creator: creator,
-          collectionAddress: collection,
+          collectionAddress: collection.toLowerCase(),
           tokenId: tokenId,
           payToken: payToken,
           price: formatEther(price),
@@ -182,7 +138,7 @@ export const listenToMarketEvents = () => {
         await addNewOffer(doc);
 
         await registerOfferCreated(
-          collection,
+          collection.toLowerCase(),
           tokenId,
           creator,
           formatEther(price),
@@ -196,8 +152,8 @@ export const listenToMarketEvents = () => {
     const offerInfo = await getOffer(collection, tokenId.toNumber(), creator);
 
     if (offerInfo) {
-      await deleteOffer(collection, tokenId.toNumber(), creator);
-      await registerOfferCancelled(collection, tokenId, creator);
+      await deleteOffer(collection.toLowerCase(), tokenId.toNumber(), creator);
+      await registerOfferCancelled(collection.toLowerCase(), tokenId, creator);
     }
   });
 };
