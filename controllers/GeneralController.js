@@ -6,7 +6,7 @@ import { filterItemsByTitle } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
-import { addImgToIpfs } from "../utils/ipfs.js";
+import { addImgToIpfs, addJsonToIpfs } from "../utils/ipfs.js";
 
 export default class GeneralController {
   constructor() {}
@@ -72,6 +72,23 @@ export default class GeneralController {
 
         res.send({ sanity: uploadedImgSanity.url, ipfs: ipfsImage.IpfsHash });
       }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async uploadJSONMetadata(req, res) {
+    try {
+      const { name, description, image } = req.body;
+      const data = {
+        name: name,
+        description: description,
+        image: image,
+      };
+      const ipfsCID = await addJsonToIpfs(data);
+
+      res.send(ipfsCID.IpfsHash);
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

@@ -21,5 +21,6 @@ GeneralRouter.post(
 );
 
 GeneralRouter.post("/updateEvents", GeneralController.updateEventsInfo);
+GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);
 
 export default GeneralRouter;
