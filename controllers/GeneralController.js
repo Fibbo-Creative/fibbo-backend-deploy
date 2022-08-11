@@ -6,6 +6,7 @@ import { filterItemsByTitle } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
+import { addImgToIpfs } from "../utils/ipfs.js";
 
 export default class GeneralController {
   constructor() {}
@@ -60,6 +61,7 @@ export default class GeneralController {
         imgsDir
       );
 
+      let ipfsImage = await addImgToIpfs(image);
       const { id, output } = await checkNFSW(uploadedImgSanity.url);
       const { detections, nsfw_score } = output;
 
@@ -68,7 +70,7 @@ export default class GeneralController {
       } else {
         await removeFiles(imgsDir);
 
-        res.send(uploadedImgSanity.url);
+        res.send({ sanity: uploadedImgSanity.url, ipfs: ipfsImage.IpfsHash });
       }
     } catch (e) {
       console.log(e);
