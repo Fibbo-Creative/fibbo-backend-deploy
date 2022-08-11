@@ -2,9 +2,16 @@ import Collection from "../models/collection.js";
 import Nft from "../models/nft.js";
 
 export const getCollectionInfo = async (collectionAddress) => {
-  const _collection = await Collection.findOne({
-    contractAddress: collectionAddress,
-  });
+  let _collection;
+  if (!collectionAddress.includes("0x")) {
+    _collection = await Collection.findOne({
+      customURL: collectionAddress,
+    });
+  } else {
+    _collection = await Collection.findOne({
+      contractAddress: collectionAddress,
+    });
+  }
 
   if (_collection) return _collection;
 };
@@ -27,9 +34,21 @@ export const getItemsFromCollection = async (collectionAddress) => {
   return items;
 };
 
-export const getCollectionsFromOwner = async (owner) => {
+export const getCollectionsAvailableOwner = async (owner) => {
   const collections = await Collection.find({
     creator: { $in: ["public", owner] },
   });
   return collections;
+};
+
+export const getCollectionsFromOwner = async (owner) => {
+  const collections = await Collection.find({
+    creator: owner,
+  });
+  return collections;
+};
+
+export const createCollection = async (doc) => {
+  const created = await Collection.create(doc);
+  return created;
 };

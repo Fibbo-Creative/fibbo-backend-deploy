@@ -11,7 +11,6 @@ const collectionSchema = mongoose.Schema({
   customURL: String,
   websiteURL: String,
   discordURL: String,
-  twitterURL: String,
   instagramURL: String,
   telegramURL: String,
   numberOfItems: Number,

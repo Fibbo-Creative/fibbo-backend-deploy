@@ -99,14 +99,20 @@ export default class NftController {
         res.status(204).send("No identifier supplied");
       }
 
-      const nft = await getNftInfoById(nftId, collection);
+      let collectionAddress = collection;
+      if (!collection.includes("0x")) {
+        const collectionInfo = await getCollectionInfo(collection);
+        collectionAddress = collectionInfo.contractAddress;
+      }
+
+      const nft = await getNftInfoById(nftId, collectionAddress);
       if (nft) {
         let nftResult = {
           nftData: nft,
         };
 
         let listingInfo = await MARKET_CONTRACT.listings(
-          collection,
+          collectionAddress,
           ethers.BigNumber.from(nftId),
           nft.owner
         );
@@ -135,7 +141,7 @@ export default class NftController {
         }
 
         //Get offers
-        let offers = await getItemOffers(collection, nftId);
+        let offers = await getItemOffers(collectionAddress, nftId);
         offers = await formatOffers(offers);
         nftResult = {
           ...nftResult,
@@ -143,7 +149,7 @@ export default class NftController {
         };
 
         //Get history
-        let history = await getEventsFromNft(collection, nftId);
+        let history = await getEventsFromNft(collectionAddress, nftId);
         history = await formatHistory(history);
         nftResult = {
           ...nftResult,
@@ -151,7 +157,7 @@ export default class NftController {
         };
 
         //Get more from collection
-        let items = await getItemsFromCollection(collection);
+        let items = await getItemsFromCollection(collectionAddress);
         nftResult = {
           ...nftResult,
           nfts: items.filter((item) => item.tokenId !== parseFloat(nftId)),

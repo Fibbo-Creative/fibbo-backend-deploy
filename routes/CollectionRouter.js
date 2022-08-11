@@ -10,8 +10,9 @@ CollectionRouter.use((req, res, next) => {
 //GET
 CollectionRouter.get("/collectionData", CollectionController.getCollectionData);
 CollectionRouter.get("/available", CollectionController.getCollections);
+CollectionRouter.get("/myCollection", CollectionController.getCollections);
 
 //POST
-CollectionRouter.get("/new", CollectionController.saveCollectionDetails);
+CollectionRouter.post("/new", CollectionController.saveCollectionDetails);
 
 export default CollectionRouter;

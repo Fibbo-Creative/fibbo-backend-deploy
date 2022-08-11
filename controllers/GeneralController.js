@@ -60,8 +60,13 @@ export default class GeneralController {
         image ? image : null,
         imgsDir
       );
+      const { uploadToIpfs } = req.body;
 
-      const ipfsImage = await addImgToIpfs(image);
+      let ipfsImage = "None";
+      if (uploadToIpfs === "true") {
+        ipfsImage = await addImgToIpfs(image);
+      }
+
       const { id, output } = await checkNFSW(uploadedImgSanity.url);
       const { detections, nsfw_score } = output;
 
@@ -72,7 +77,7 @@ export default class GeneralController {
 
         res.send({
           sanity: uploadedImgSanity.url,
-          ipfs: ipfsImage.IpfsHash,
+          ipfs: ipfsImage.IpfsHash ? ipfsImage.IpfsHash : ipfsImage,
         });
       }
     } catch (e) {
