@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const pinata = pinataSDK(process.env.PINATA_KEY, process.env.PINATA_SECRET);
-
 export const addImgToIpfs = async (file) => {
   const readableStreamForFile = fs.createReadStream(
     path.join(imgsDir, file.originalname),
