@@ -3,6 +3,7 @@ import {
   getCollectionInfo,
   getCollectionsAvailable,
   getCollectionsFromOwner,
+  getItemsFromCollection,
 } from "../utils/collections.js";
 import { uploadToCDN } from "../utils/sanity.js";
 
@@ -15,6 +16,29 @@ export default class CollectionController {
       const collectionInfo = await getCollectionInfo(collection);
       if (collectionInfo) {
         res.status(200).send(collectionInfo);
+      } else {
+        res.status(204).send("Collection not found");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCollectionDetails(req, res) {
+    try {
+      const { collection } = req.query;
+      const collectionInfo = await getCollectionInfo(collection);
+
+      const nftsFromCol = await getItemsFromCollection(
+        collectionInfo.contractAddress
+      );
+      console.log(nftsFromCol);
+      const result = {
+        ...collectionInfo._doc,
+        nfts: nftsFromCol,
+      };
+      if (collectionInfo) {
+        res.status(200).send(result);
       } else {
         res.status(204).send("Collection not found");
       }

@@ -9,8 +9,16 @@ CollectionRouter.use((req, res, next) => {
 
 //GET
 CollectionRouter.get("/collectionData", CollectionController.getCollectionData);
+CollectionRouter.get(
+  "/collectionDetail",
+  CollectionController.getCollectionDetails
+);
+
 CollectionRouter.get("/available", CollectionController.getCollections);
-CollectionRouter.get("/myCollection", CollectionController.getCollections);
+CollectionRouter.get(
+  "/myCollections",
+  CollectionController.getCollectionsFromOwner
+);
 
 //POST
 CollectionRouter.post("/new", CollectionController.saveCollectionDetails);
