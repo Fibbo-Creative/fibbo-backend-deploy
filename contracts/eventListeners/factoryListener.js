@@ -1,4 +1,4 @@
-import { FACTORY_CONTRACT } from "..";
+import { FACTORY_CONTRACT } from "../index.js";
 
 export const listenToFactoryEvents = () => {
   //ITEMS

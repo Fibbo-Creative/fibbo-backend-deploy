@@ -80,7 +80,6 @@ export default class ProfileController {
       const { address } = req.query;
 
       const result = await getEventsFromWallet(address);
-      console.log(result.length);
       let finalResullt = [];
       await Promise.all(
         result.map(async (item) => {
@@ -88,8 +87,6 @@ export default class ProfileController {
             item.tokenId,
             item.collectionAddress
           );
-          console.log(item.collectionAddress, item.tokenId);
-          console.log(itemInfo);
           finalResullt = [
             ...finalResullt,
             {

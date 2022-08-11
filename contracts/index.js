@@ -20,6 +20,7 @@ import {
 } from "./abi.js";
 import { listenToMarketEvents } from "./eventListeners/marketListener.js";
 import { listenToAuctionEvents } from "./eventListeners/auctionListener.js";
+import { listenToFactoryEvents } from "./eventListeners/factoryListener.js";
 dotenv.config();
 
 const web3provider = new ethers.providers.JsonRpcProvider(
@@ -109,5 +110,8 @@ export const listenToEvents = () => {
   }
   if (AUCTION_CONTRACT !== undefined) {
     listenToAuctionEvents();
+  }
+  if (FACTORY_CONTRACT !== undefined) {
+    listenToFactoryEvents();
   }
 };

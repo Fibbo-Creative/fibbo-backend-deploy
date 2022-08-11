@@ -310,6 +310,7 @@ export const registerBidCreated = async (
   collectionAddress,
   tokenId,
   from,
+  to,
   price,
   payToken
 ) => {
@@ -319,7 +320,7 @@ export const registerBidCreated = async (
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
-    to: from,
+    to: to,
     timestamp: new Date().toISOString(),
     price: price,
     payToken: payToken,

@@ -16,7 +16,7 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
       const now = new Date().getTime();
       const startTime = auction.startTime * 1000;
       const endTime = auction.endTime * 1000;
-
+      console.log("DOING");
       if (now > startTime) {
         if (now > endTime) {
           try {

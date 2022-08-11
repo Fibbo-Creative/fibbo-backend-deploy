@@ -3,6 +3,7 @@ import {
   addNewAuction,
   deleteAuction,
   getAuction,
+  getAuctions,
   updateEndTime,
   updateReservePrice,
   updateStartTime,
@@ -37,6 +38,7 @@ export const listenToAuctionEvents = () => {
           payToken: payToken,
           reservePrice: formatEther(auctionInfo._reservePrice),
           buyNowPrice: formatEther(auctionInfo._buyNowPrice),
+          owner: auctionInfo._owner,
           startTime: auctionInfo._startTime,
           endTime: auctionInfo._endTime,
         };
@@ -77,19 +79,13 @@ export const listenToAuctionEvents = () => {
   );
 
   AUCTION_CONTRACT.on("AuctionCancelled", async (collection, tokenId) => {
-    const auctionInfo = await AUCTION_CONTRACT.getAuction(
+    const auctionInfoinDb = await getAuction(collection.toLowerCase(), tokenId);
+    await deleteAuction(collection.toLowerCase(), tokenId);
+    await registerAuctionCanceled(
       collection.toLowerCase(),
-      tokenId
+      tokenId,
+      auctionInfoinDb.owner
     );
-
-    if (auctionInfo.owner !== ADDRESS_ZERO) {
-      await deleteAuction(collection.toLowerCase(), tokenId);
-      await registerAuctionCanceled(
-        collection.toLowerCase(),
-        tokenId,
-        auctionInfo._owner
-      );
-    }
   });
 
   AUCTION_CONTRACT.on(
@@ -99,6 +95,7 @@ export const listenToAuctionEvents = () => {
         collection.toLowerCase(),
         tokenId
       );
+
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await updateReservePrice(
           collection.toLowerCase(),
@@ -144,16 +141,26 @@ export const listenToAuctionEvents = () => {
     }
   );
 
-  AUCTION_CONTRACT.on("BidPlaced", async (collection, tokenId) => {
-    const auctionInfo = await AUCTION_CONTRACT.getAuction(
-      collection.toLowerCase(),
-      tokenId
-    );
+  AUCTION_CONTRACT.on(
+    "BidPlaced",
+    async (collection, tokenId, bidder, bidAmount) => {
+      const auctionInfo = await AUCTION_CONTRACT.getAuction(
+        collection.toLowerCase(),
+        tokenId
+      );
 
-    if (auctionInfo.owner !== ADDRESS_ZERO) {
-      await registerBidCreated(collection.toLowerCase(), tokenId);
+      if (auctionInfo.owner !== ADDRESS_ZERO) {
+        await registerBidCreated(
+          collection.toLowerCase(),
+          tokenId,
+          bidder,
+          auctionInfo._owner,
+          formatEther(bidAmount),
+          auctionInfo._payToken
+        );
+      }
     }
-  });
+  );
 
   AUCTION_CONTRACT.on(
     "AuctionResulted",
