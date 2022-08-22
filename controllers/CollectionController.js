@@ -5,6 +5,7 @@ import {
   getCollectionsFromOwner,
   getItemsFromCollection,
 } from "../utils/collections.js";
+import { getAllNftsInfo } from "../utils/nfts.js";
 import { uploadToCDN } from "../utils/sanity.js";
 
 export default class CollectionController {
@@ -32,10 +33,11 @@ export default class CollectionController {
       const nftsFromCol = await getItemsFromCollection(
         collectionInfo.contractAddress
       );
-      console.log(nftsFromCol);
+
+      const formatted = await getAllNftsInfo(nftsFromCol);
       const result = {
         ...collectionInfo._doc,
-        nfts: nftsFromCol,
+        nfts: formatted,
       };
       if (collectionInfo) {
         res.status(200).send(result);

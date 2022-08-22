@@ -8,6 +8,7 @@ import {
   getVerifiedArtists,
   updateFTMSended,
   updateImportWFTM,
+  updateNotShowRedirect,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -182,6 +183,7 @@ export default class ProfileController {
           ftmSended: true,
           verified: false,
           importedWFTM: hasWFTM,
+          notShowRedirect: false,
         };
 
         const tx = {
@@ -286,6 +288,23 @@ export default class ProfileController {
         res.status(205).send("Profile not found!");
       }
     } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateShowRedirect(req, res) {
+    try {
+      const { wallet } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateNotShowRedirect(wallet);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

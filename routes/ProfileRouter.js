@@ -29,5 +29,6 @@ ProfileRouter.post(
 );
 ProfileRouter.post("/setUsername", ProfileController.updateUsername);
 ProfileRouter.post("/setImportWFTM", ProfileController.updateImportWFTM);
+ProfileRouter.post("/setNotShowRedirect", ProfileController.updateShowRedirect);
 
 export default ProfileRouter;

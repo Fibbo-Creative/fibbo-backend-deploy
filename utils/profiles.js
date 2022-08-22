@@ -37,6 +37,14 @@ export const updateImportWFTM = async (wallet) => {
   return updatedProfile;
 };
 
+export const updateNotShowRedirect = async (wallet) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    { notShowRedirect: true }
+  );
+  return updatedProfile;
+};
+
 export const updateUsername = async (wallet, username) => {
   const updatedProfile = await Profile.updateOne(
     { wallet: wallet },

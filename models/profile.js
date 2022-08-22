@@ -10,6 +10,7 @@ const profileSchema = mongoose.Schema({
   ftmSended: Boolean,
   verified: Boolean,
   importedWFTM: Boolean,
+  notShowRedirect: Boolean,
 });
 
 export default mongoose.model("profiles", profileSchema);
