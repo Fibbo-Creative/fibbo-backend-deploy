@@ -20,7 +20,12 @@ CollectionRouter.get(
   CollectionController.getCollectionsFromOwner
 );
 
+CollectionRouter.get("/checkName", CollectionController.checkName);
+
+CollectionRouter.get("/checkURL", CollectionController.checkUrl);
+
 //POST
 CollectionRouter.post("/new", CollectionController.saveCollectionDetails);
+CollectionRouter.post("/edit", CollectionController.editCollection);
 
 export default CollectionRouter;

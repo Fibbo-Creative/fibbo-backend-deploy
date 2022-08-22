@@ -34,6 +34,20 @@ export const updateTotalNfts = async (collectionAddress, numberOfItems) => {
   return updatedCollection;
 };
 
+export const getCollectionByUrl = async (customURL) => {
+  const collection = await Collection.findOne({
+    customURL: customURL,
+  });
+  return collection;
+};
+
+export const getCollectionByName = async (name) => {
+  const collection = await Collection.findOne({
+    name: name,
+  });
+  return collection;
+};
+
 export const getItemsFromCollection = async (collectionAddress) => {
   const items = await Nft.find({
     collectionAddress: collectionAddress,
@@ -58,5 +72,40 @@ export const getCollectionsFromOwner = async (owner) => {
 
 export const createCollection = async (doc) => {
   const created = await Collection.create(doc);
+  return created;
+};
+
+export const editCollection = async (
+  contractAddress,
+  creator,
+  name,
+  description,
+  logoImage,
+  featuredImage,
+  bannerImage,
+  customURL,
+  websiteURL,
+  discordURL,
+  telegramURL,
+  instagramURL
+) => {
+  const created = await Collection.updateOner(
+    {
+      contractAddress: contractAddress,
+      creator: creator,
+    },
+    {
+      name: name,
+      description: description,
+      logoImage: logoImage,
+      featuredImage: featuredImage,
+      bannerImage: bannerImage,
+      customURL: customURL,
+      websiteURL: websiteURL,
+      discordURL: discordURL,
+      telegramURL: telegramURL,
+      instagramURL: instagramURL,
+    }
+  );
   return created;
 };

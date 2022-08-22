@@ -1,5 +1,7 @@
 import {
   createCollection,
+  getCollectionByName,
+  getCollectionByUrl,
   getCollectionInfo,
   getCollectionsAvailable,
   getCollectionsFromOwner,
@@ -69,6 +71,36 @@ export default class CollectionController {
     }
   }
 
+  static async checkUrl(req, res) {
+    try {
+      const { customURL } = req.query;
+      const collection = await getCollectionByUrl(customURL);
+
+      if (collection) {
+        res.status(205).send("URL in use");
+      } else {
+        res.status(200).send(collection);
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async checkName(req, res) {
+    try {
+      const { name } = req.query;
+      const collection = await getCollectionByName(name);
+
+      if (collection) {
+        res.status(205).send("Name in use");
+      } else {
+        res.status(200).send(collection);
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
   //POST
 
   static async saveCollectionDetails(req, res) {
@@ -104,6 +136,43 @@ export default class CollectionController {
         numberOfItems: 0,
       };
       const createdCollection = await createCollection(doc);
+      res.status(200).send(createdCollection);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async editCollection(req, res) {
+    try {
+      const {
+        contractAddress,
+        creator,
+        name,
+        description,
+        logoImage,
+        featuredImage,
+        bannerImage,
+        customURL,
+        websiteURL,
+        discordURL,
+        telegramURL,
+        instagramURL,
+      } = req.body;
+
+      const createdCollection = await editCollectionData(
+        contractAddress,
+        creator,
+        name,
+        description,
+        logoImage,
+        featuredImage,
+        bannerImage,
+        customURL,
+        websiteURL,
+        discordURL,
+        telegramURL,
+        instagramURL
+      );
       res.status(200).send(createdCollection);
     } catch (e) {
       res.status(500).send(e);
