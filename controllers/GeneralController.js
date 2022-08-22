@@ -2,6 +2,8 @@ import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
 import { filterProfilesByUsername } from "../utils/profiles.js";
+import { filterCollectionsByName } from "../utils/collections.js";
+
 import { filterItemsByTitle } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
@@ -19,9 +21,11 @@ export default class GeneralController {
 
       const filteredItems = await filterItemsByTitle(query);
       const filteredProfiles = await filterProfilesByUsername(query);
+      const filteredCollections = await filterCollectionsByName(query);
       res.send({
         items: filteredItems,
         profiles: filteredProfiles,
+        collections: filteredCollections,
       });
     } catch (e) {
       res.status(500).send(e);

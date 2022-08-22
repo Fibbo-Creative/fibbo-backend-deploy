@@ -16,6 +16,14 @@ export const getCollectionInfo = async (collectionAddress) => {
   if (_collection) return _collection;
 };
 
+export const filterCollectionsByName = async (filterQuery) => {
+  const nameFilteredCols = await Collection.find({
+    name: { $regex: ".*" + filterQuery + ".*", $options: "i" },
+  });
+
+  return nameFilteredCols;
+};
+
 export const updateTotalNfts = async (collectionAddress, numberOfItems) => {
   const updatedCollection = await Collection.updateOne(
     {
