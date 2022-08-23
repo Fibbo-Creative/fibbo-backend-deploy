@@ -71,11 +71,31 @@ export const changeNftInfo = async (
   name,
   desc,
   royalties,
-  image
+  image,
+  ipfsImage,
+  ipfsMetadata
 ) => {
   const updatedNft = await Nft.updateOne(
     { tokenId: nftId, collectionAddress: collectionAddress },
-    { name: name, description: desc, royalties: royalties, image: image }
+    {
+      name: name,
+      description: desc,
+      royalties: royalties,
+      image: image,
+      ipfsImage: ipfsImage,
+      ipfsMetadata: ipfsMetadata,
+    }
+  );
+
+  return updatedNft;
+};
+
+export const setFreezedMetadata = async (creator, collectionAddress, nftId) => {
+  const updatedNft = await Nft.updateOne(
+    { tokenId: nftId, collectionAddress: collectionAddress, creator: creator },
+    {
+      hasFreezedMetadata: true,
+    }
   );
 
   return updatedNft;

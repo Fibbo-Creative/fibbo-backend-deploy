@@ -8,9 +8,12 @@ const nftSchema = mongoose.Schema({
   creator: String,
   tokenId: Number,
   image: String,
+  ipfsImage: String,
+  ipfsMetadata: String,
   royalty: Number,
   createdAt: Date,
   additionalContent: String,
+  hasFreezedMetadata: Boolean,
 });
 
 export default mongoose.model("nfts", nftSchema);
