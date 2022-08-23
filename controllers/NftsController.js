@@ -261,7 +261,6 @@ export default class NftController {
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
-
       if (collectionInfo) {
         let doc = {
           name: name,

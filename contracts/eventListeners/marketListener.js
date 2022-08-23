@@ -83,8 +83,9 @@ export const listenToMarketEvents = () => {
       if (itemOffers.length > 0) {
         await Promise.all(
           itemOffers.map(async (offer) => {
+            console.log(offer.creator);
             let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
-              collection.toLowerCase(),
+              collection,
               tokenId,
               offer.creator
             );
@@ -149,7 +150,15 @@ export const listenToMarketEvents = () => {
     }
   );
   MARKET_CONTRACT.on("OfferCanceled", async (creator, collection, tokenId) => {
-    const offerInfo = await getOffer(collection, tokenId.toNumber(), creator);
+    const offerInfo = await getOffer(
+      collection.toLowerCase(),
+      tokenId.toNumber(),
+      creator
+    );
+    console.log("CANCEL OFFER");
+    console.log(collection, tokenId.toNumber(), creator);
+
+    console.log(offerInfo);
 
     if (offerInfo) {
       await deleteOffer(collection.toLowerCase(), tokenId.toNumber(), creator);
