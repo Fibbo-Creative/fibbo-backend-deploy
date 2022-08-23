@@ -89,7 +89,7 @@ export const editCollection = async (
   telegramURL,
   instagramURL
 ) => {
-  const created = await Collection.updateOner(
+  const created = await Collection.updateOne(
     {
       contractAddress: contractAddress,
       creator: creator,

@@ -1,5 +1,6 @@
 import {
   createCollection,
+  editCollection,
   getCollectionByName,
   getCollectionByUrl,
   getCollectionInfo,
@@ -159,7 +160,7 @@ export default class CollectionController {
         instagramURL,
       } = req.body;
 
-      const createdCollection = await editCollectionData(
+      const createdCollection = await editCollection(
         contractAddress,
         creator,
         name,
@@ -175,6 +176,7 @@ export default class CollectionController {
       );
       res.status(200).send(createdCollection);
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }
