@@ -1055,6 +1055,11 @@ export const COLLECTION_ABI = [
         name: "_verification",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "_contractsManager",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",

@@ -89,6 +89,9 @@ const COLLECTION_CONTRACT = new ethers.Contract(
 
 const WFTM_CONTRACT = new ethers.Contract(wftmAddress, WFTM_ABI, managerWallet);
 
+const getERC721Contract = (collectionAddress) => {
+  return new ethers.Contract(collectionAddress, COLLECTION_ABI, managerWallet);
+};
 export {
   web3provider,
   getHigherGWEI,
@@ -102,6 +105,7 @@ export {
   WFTM_CONTRACT,
   COLLECTION_CONTRACT,
   FACTORY_CONTRACT,
+  getERC721Contract,
 };
 
 export const listenToEvents = () => {

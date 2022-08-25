@@ -25,7 +25,11 @@ import {
   getItemOffers,
   getOffer,
 } from "../../utils/offers.js";
-import { MARKET_CONTRACT, VERIFICATION_CONTRACT } from "../index.js";
+import {
+  getERC721Contract,
+  MARKET_CONTRACT,
+  VERIFICATION_CONTRACT,
+} from "../index.js";
 
 export const listenToMarketEvents = () => {
   //ITEMS
@@ -55,6 +59,15 @@ export const listenToMarketEvents = () => {
         buyer
       );
 
+      const ERC721_CONTRACT = getERC721Contract(collection);
+      const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
+        tokenId
+      );
+      if (!hasFreezedMetadata) {
+        const uri = await ERC721_CONTRACT.uri(tokenId);
+        const tx = await ERC721_CONTRACT.setFreezedMetadata(tokenId, uri);
+        await tx.wait();
+      }
       const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(
         buyer
       );

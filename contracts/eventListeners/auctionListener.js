@@ -18,7 +18,12 @@ import {
 } from "../../utils/events.js";
 import { changeNftOwner } from "../../utils/nfts.js";
 import { getItemOffers } from "../../utils/offers.js";
-import { ADDRESS_ZERO, AUCTION_CONTRACT, MARKET_CONTRACT } from "../index.js";
+import {
+  ADDRESS_ZERO,
+  AUCTION_CONTRACT,
+  getERC721Contract,
+  MARKET_CONTRACT,
+} from "../index.js";
 
 export const listenToAuctionEvents = () => {
   AUCTION_CONTRACT.on(
@@ -175,6 +180,16 @@ export const listenToAuctionEvents = () => {
         prevOwner,
         winner
       );
+
+      const ERC721_CONTRACT = getERC721Contract(collection);
+      const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
+        tokenId
+      );
+      if (!hasFreezedMetadata) {
+        const uri = await ERC721_CONTRACT.uri(tokenId);
+        const tx = await ERC721_CONTRACT.setFreezedMetadata(tokenId, uri);
+        await tx.wait();
+      }
 
       //Añadir eventos
       await registerAuctionCompleted(
