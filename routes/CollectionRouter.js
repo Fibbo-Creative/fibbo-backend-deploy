@@ -21,11 +21,20 @@ CollectionRouter.get(
 );
 
 CollectionRouter.get("/checkName", CollectionController.checkName);
-
 CollectionRouter.get("/checkURL", CollectionController.checkUrl);
+
+CollectionRouter.get(
+  "/collectionUserOptions",
+  CollectionController.getCollectionUserOptions
+);
 
 //POST
 CollectionRouter.post("/new", CollectionController.saveCollectionDetails);
 CollectionRouter.post("/edit", CollectionController.editCollection);
+CollectionRouter.post(
+  "/newOptions",
+  CollectionController.newUserCollectionOptions
+);
+CollectionRouter.post("/setShowRedirect", CollectionController.setShowRedirect);
 
 export default CollectionRouter;

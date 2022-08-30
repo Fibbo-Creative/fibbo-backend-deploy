@@ -11,6 +11,11 @@ import {
 } from "../utils/collections.js";
 import { getAllNftsInfo } from "../utils/nfts.js";
 import { uploadToCDN } from "../utils/sanity.js";
+import {
+  createUserCollectionOptions,
+  getUserCollectionsOptions,
+  setNotShowRedirect,
+} from "../utils/usersCollectionsOptions.js";
 
 export default class CollectionController {
   constructor() {}
@@ -103,6 +108,20 @@ export default class CollectionController {
     }
   }
 
+  static async getCollectionUserOptions(req, res) {
+    try {
+      const { contractAddress, user } = req.query;
+      const collectionOptions = await getUserCollectionsOptions(
+        contractAddress,
+        user
+      );
+
+      res.status(200).send(collectionOptions);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
   //POST
 
   static async saveCollectionDetails(req, res) {
@@ -182,6 +201,45 @@ export default class CollectionController {
       res.status(200).send(createdCollection);
     } catch (e) {
       console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async newUserCollectionOptions(req, res) {
+    try {
+      const { contractAddress, user } = req.body;
+
+      if (user !== "") {
+        const collectionOptions = await getUserCollectionsOptions(
+          contractAddress,
+          user
+        );
+        if (collectionOptions) {
+          res.status(205).send("Already created");
+        } else {
+          const doc = {
+            contractAddress,
+            user,
+            notShowRedirect: false,
+          };
+          const createdCollection = await createUserCollectionOptions(doc);
+          res.status(200).send(createdCollection);
+        }
+      } else {
+        res.status(205).send("Pass valid user");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async setShowRedirect(req, res) {
+    try {
+      const { contractAddress, user } = req.body;
+      console.log(contractAddress, user);
+      const createdCollection = await setNotShowRedirect(contractAddress, user);
+      res.status(200).send(createdCollection);
+    } catch (e) {
       res.status(500).send(e);
     }
   }
