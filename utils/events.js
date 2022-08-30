@@ -240,6 +240,29 @@ export const registerOfferCreated = async (
   if (createdEvent) return createdEvent._doc;
 };
 
+export const registerOfferModified = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "OFFER",
+    eventDesc: "Oferta creada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
 export const registerOfferCancelled = async (
   collectionAddress,
   tokenId,

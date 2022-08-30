@@ -5,6 +5,7 @@ import {
   registerListingEvent,
   registerOfferCancelled,
   registerOfferCreated,
+  registerOfferModified,
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
@@ -25,6 +26,7 @@ import {
   deleteOffer,
   getItemOffers,
   getOffer,
+  updateOffer,
 } from "../../utils/offers.js";
 import {
   getERC721Contract,
@@ -179,6 +181,32 @@ export const listenToMarketEvents = () => {
           payToken
         );
         console.log("OFFER CREATED");
+      }
+    }
+  );
+  MARKET_CONTRACT.on(
+    "OfferModified",
+    async (creator, collection, tokenId, payToken, price, deadline) => {
+      const offer = await getOffer(collection.toLowerCase(), tokenId, creator);
+
+      if (offer) {
+        await updateOffer(
+          creator,
+          collection.toLowerCase(),
+          tokenId.toNumber(),
+          payToken,
+          formatEther(price),
+          deadline
+        );
+
+        await registerOfferModified(
+          collection.toLowerCase(),
+          tokenId,
+          creator,
+          formatEther(price),
+          payToken
+        );
+        console.log("OFFER MODIFIED");
       }
     }
   );

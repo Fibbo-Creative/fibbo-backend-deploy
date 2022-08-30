@@ -65,6 +65,25 @@ export const addNewOffer = async (doc) => {
   return offerCreated;
 };
 
+export const updateOffer = async (
+  creator,
+  collectionAddress,
+  tokenId,
+  payToken,
+  price,
+  deadline
+) => {
+  const offerCreated = await Offers.updateOne(
+    {
+      creator: creator,
+      collectionAddress: collectionAddress,
+      tokenId: tokenId,
+    },
+    { payToken: payToken, price: price, deadline: deadline }
+  );
+  return offerCreated;
+};
+
 export const deleteOffer = async (collection, tokenId, creator) => {
   const offerDeleted = await Offers.deleteOne({
     collectionAddress: collection,
