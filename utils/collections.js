@@ -87,7 +87,8 @@ export const editCollection = async (
   websiteURL,
   discordURL,
   telegramURL,
-  instagramURL
+  instagramURL,
+  explicitContent
 ) => {
   const created = await Collection.updateOne(
     {
@@ -105,6 +106,7 @@ export const editCollection = async (
       discordURL: discordURL,
       telegramURL: telegramURL,
       instagramURL: instagramURL,
+      explicitContent: explicitContent,
     }
   );
   return created;

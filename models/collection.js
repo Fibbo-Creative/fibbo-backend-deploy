@@ -14,6 +14,7 @@ const collectionSchema = mongoose.Schema({
   instagramURL: String,
   telegramURL: String,
   numberOfItems: Number,
+  explicitContent: Boolean,
 });
 
 export default mongoose.model("collections", collectionSchema);

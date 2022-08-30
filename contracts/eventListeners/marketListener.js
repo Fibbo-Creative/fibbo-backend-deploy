@@ -8,6 +8,7 @@ import {
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
+import { addJsonToIpfs } from "../../utils/ipfs.js";
 import {
   changeNftOwner,
   getNftInfo,
@@ -64,8 +65,27 @@ export const listenToMarketEvents = () => {
         tokenId
       );
       if (!hasFreezedMetadata) {
-        const uri = await ERC721_CONTRACT.uri(tokenId);
-        const tx = await ERC721_CONTRACT.setFreezedMetadata(tokenId, uri);
+        const nftInfo = await getNftInfo(
+          buyer,
+          tokenId.toNumber(),
+          collection.toLowerCase()
+        );
+
+        const data = {
+          name: nftInfo.name,
+          description: nftInfo.description,
+          image: nftInfo.image,
+          external_link: nftInfo.externalLink,
+        };
+
+        const ipfsCID = await addJsonToIpfs(data);
+
+        const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
+
+        const tx = await ERC721_CONTRACT.setFreezedMetadata(
+          tokenId,
+          ipfsFileURL
+        );
         await tx.wait();
       }
       const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(

@@ -120,6 +120,7 @@ export default class CollectionController {
         discordURL,
         telegramURL,
         instagramURL,
+        explicitContent,
       } = req.body;
 
       const doc = {
@@ -136,6 +137,7 @@ export default class CollectionController {
         telegramURL,
         instagramURL,
         numberOfItems: 0,
+        explicitContent,
       };
       const createdCollection = await createCollection(doc);
       res.status(200).send(createdCollection);
@@ -159,6 +161,7 @@ export default class CollectionController {
         discordURL,
         telegramURL,
         instagramURL,
+        explicitContent,
       } = req.body;
 
       const createdCollection = await editCollection(
@@ -173,7 +176,8 @@ export default class CollectionController {
         websiteURL,
         discordURL,
         telegramURL,
-        instagramURL
+        instagramURL,
+        explicitContent
       );
       res.status(200).send(createdCollection);
     } catch (e) {

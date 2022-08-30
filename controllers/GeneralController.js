@@ -64,21 +64,29 @@ export default class GeneralController {
         image ? image : null,
         imgsDir
       );
-      const { uploadToIpfs } = req.body;
+      const { uploadToIpfs, isExplicit } = req.body;
 
       let ipfsImage = "None";
       if (uploadToIpfs === "true") {
         ipfsImage = await addImgToIpfs(image);
       }
 
-      const { id, output } = await checkNFSW(uploadedImgSanity.url);
-      const { detections, nsfw_score } = output;
+      if (isExplicit === "false") {
+        const { id, output } = await checkNFSW(uploadedImgSanity.url);
+        const { detections, nsfw_score } = output;
+        console.log(nsfw_score);
+        if (nsfw_score > 0.4) {
+          res.status(207).send("INVALID IMG");
+        } else {
+          await removeFiles(imgsDir);
 
-      if (nsfw_score > 0.4) {
-        res.status(207).send("INVALID IMG");
+          res.send({
+            sanity: uploadedImgSanity.url,
+            ipfs: ipfsImage.IpfsHash ? ipfsImage.IpfsHash : ipfsImage,
+          });
+        }
       } else {
         await removeFiles(imgsDir);
-
         res.send({
           sanity: uploadedImgSanity.url,
           ipfs: ipfsImage.IpfsHash ? ipfsImage.IpfsHash : ipfsImage,
@@ -92,11 +100,12 @@ export default class GeneralController {
 
   static async uploadJSONMetadata(req, res) {
     try {
-      const { name, description, image } = req.body;
+      const { name, description, externalLink, image } = req.body;
       const data = {
         name: name,
         description: description,
         image: image,
+        external_link: externalLink,
       };
       const ipfsCID = await addJsonToIpfs(data);
 

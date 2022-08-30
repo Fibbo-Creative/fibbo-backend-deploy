@@ -254,6 +254,7 @@ export default class NftController {
         creator,
         tokenId,
         royalty,
+        externalLink,
         sanityImgUrl,
         ipfsImgUrl,
         ipfsMetadataUrl,
@@ -274,6 +275,7 @@ export default class NftController {
           ipfsMetadata: ipfsMetadataUrl,
           collectionAddress: collection,
           hasFreezedMetadata: false,
+          externalLink: externalLink,
           createdAt: new Date().toISOString(),
         };
         if (additionalContent) {
@@ -321,6 +323,7 @@ export default class NftController {
         sanityImgUrl,
         ipfsImageUrl,
         ipfsMetadataUrl,
+        externalLink,
         additionalContent,
       } = req.body;
 
@@ -344,7 +347,8 @@ export default class NftController {
             royalty,
             sanityImgUrl,
             ipfsImageUrl,
-            ipfsMetadataUrl
+            ipfsMetadataUrl,
+            externalLink
           );
           res.status(200).send("Edited");
         } else {
