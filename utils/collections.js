@@ -36,7 +36,6 @@ export const getVolumenFromCollection = async (collection) => {
     eventType: "TRANSFER",
   });
 
-  console.log(transferEvents);
   transferEvents.forEach((event) => {
     volumen = volumen + event.price;
   });
