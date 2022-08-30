@@ -89,6 +89,14 @@ export const listenToMarketEvents = () => {
           ipfsFileURL
         );
         await tx.wait();
+
+        const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
+          nftInfo.creator,
+          collectionInfo.contractAddress,
+          tokenId.toNumber(),
+          parseFloat(nftInfo.royalty) * 100
+        );
+        await royaltiesTx.wait();
       }
       const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(
         buyer
