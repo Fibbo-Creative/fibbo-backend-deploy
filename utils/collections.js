@@ -1,4 +1,6 @@
 import Collection from "../models/collection.js";
+import events from "../models/events.js";
+import Events from "../models/events.js";
 import Nft from "../models/nft.js";
 
 export const getCollectionInfo = async (collectionAddress) => {
@@ -14,6 +16,32 @@ export const getCollectionInfo = async (collectionAddress) => {
   }
 
   if (_collection) return _collection;
+};
+
+export const getOwnersFromCollection = async (nftsFromCol) => {
+  let owners = [];
+  nftsFromCol.forEach((item) => {
+    let _owner = item.owner;
+    if (!owners.includes(_owner)) {
+      owners.push(_owner);
+    }
+  });
+  return owners;
+};
+
+export const getVolumenFromCollection = async (collection) => {
+  let volumen = 0;
+  let transferEvents = await Events.find({
+    collectionAddress: collection,
+    eventType: "TRANSFER",
+  });
+
+  console.log(transferEvents);
+  transferEvents.forEach((event) => {
+    volumen = volumen + event.price;
+  });
+
+  return volumen;
 };
 
 export const filterCollectionsByName = async (filterQuery) => {

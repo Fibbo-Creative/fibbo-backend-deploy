@@ -8,6 +8,8 @@ import {
   getCollectionsAvailable,
   getCollectionsFromOwner,
   getItemsFromCollection,
+  getOwnersFromCollection,
+  getVolumenFromCollection,
 } from "../utils/collections.js";
 import { getAllNftsInfo } from "../utils/nfts.js";
 import { uploadToCDN } from "../utils/sanity.js";
@@ -43,10 +45,17 @@ export default class CollectionController {
         collectionInfo.contractAddress
       );
 
+      const owners = await getOwnersFromCollection(nftsFromCol);
+      const volumen = await getVolumenFromCollection(
+        collectionInfo.contractAddress
+      );
+
       const formatted = await getAllNftsInfo(nftsFromCol);
       const result = {
         ...collectionInfo._doc,
         nfts: formatted,
+        owners: owners,
+        volumen: volumen,
       };
       if (collectionInfo) {
         res.status(200).send(result);
@@ -54,6 +63,7 @@ export default class CollectionController {
         res.status(204).send("Collection not found");
       }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }
@@ -236,7 +246,6 @@ export default class CollectionController {
   static async setShowRedirect(req, res) {
     try {
       const { contractAddress, user } = req.body;
-      console.log(contractAddress, user);
       const createdCollection = await setNotShowRedirect(contractAddress, user);
       res.status(200).send(createdCollection);
     } catch (e) {
