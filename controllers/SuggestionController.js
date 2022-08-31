@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { SUGGESTION_CONTRACT } from "../contracts/index.js";
+import { getCommunityContract } from "../contracts/index.js";
 import Suggestions from "../models/suggestions.js";
 import {
   deleteSuggestion,
@@ -44,7 +44,9 @@ export default class SuggestionController {
       const { title, proposer, value } = req.body;
       const suggInfo = await getSuggestionInfo(title, proposer);
       if (suggInfo) {
-        const txCreateSugg = await SUGGESTION_CONTRACT.createSuggestion(
+        const COMMUNITY_CONTRACT = await getCommunityContract();
+
+        const txCreateSugg = await COMMUNITY_CONTRACT.createSuggestion(
           suggInfo.title,
           suggInfo.description,
           ethers.utils.parseEther(value),

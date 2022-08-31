@@ -1,8 +1,8 @@
 import { formatEther } from "ethers/lib/utils.js";
 import {
   ADDRESS_ZERO,
-  AUCTION_CONTRACT,
-  MARKET_CONTRACT,
+  getAuctionContract,
+  getMarketContract,
 } from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
@@ -114,7 +114,8 @@ export const filterItemsByTitle = async (filterQuery) => {
 export const getAllNftsInfo = async (nfts) => {
   try {
     let finalResult = [];
-
+    const AUCTION_CONTRACT = await getAuctionContract();
+    const MARKET_CONTRACT = await getMarketContract();
     await Promise.all(
       nfts.map(async (item) => {
         //Get collection info

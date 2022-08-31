@@ -1,4 +1,3 @@
-import { FACTORY_CONTRACT } from "../contracts/index.js";
 import {
   createCollection,
   editCollection,

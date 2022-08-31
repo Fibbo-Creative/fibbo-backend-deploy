@@ -1,14 +1,6 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { nftColectionAddress } from "../contracts/address.js";
-import {
-  ADDRESS_ZERO,
-  AUCTION_CONTRACT,
-  MARKET_CONTRACT,
-  VERIFICATION_CONTRACT,
-} from "../contracts/index.js";
+import { getMarketContract } from "../contracts/index.js";
 import Nft from "../models/nft.js";
-import NftForSale from "../models/nftForSale.js";
-import offers from "../models/offers.js";
 import ethers from "ethers";
 import {
   getCollectionInfo,
@@ -24,30 +16,16 @@ import {
 } from "../utils/events.js";
 import {
   changeNftInfo,
-  changeNftOwner,
   createNft,
-  filterItemsByTitle,
   getAllNfts,
   getAllNftsInfo,
-  getNftInfo,
   getNftInfoById,
   getNftsByAddress,
   getNftsByCreator,
   setFreezedMetadata,
 } from "../utils/nfts.js";
-import {
-  changePrice,
-  createNftForSale,
-  deleteNftForSale,
-  getAllNftsForSale,
-  getNftForSaleById,
-} from "../utils/nftsForSale.js";
-import {
-  formatOffers,
-  getItemOffers,
-  getOffersFromWallet,
-  sortHigherOffer,
-} from "../utils/offers.js";
+import { getAllNftsForSale } from "../utils/nftsForSale.js";
+import { formatOffers, getItemOffers } from "../utils/offers.js";
 import { getPayTokenInfo } from "../utils/payTokens.js";
 
 export default class NftController {
@@ -94,6 +72,7 @@ export default class NftController {
 
   static async getNftInfoById(req, res) {
     try {
+      const MARKET_CONTRACT = await getMarketContract();
       const { collection, nftId } = req.query;
 
       if (!nftId) {
@@ -286,9 +265,11 @@ export default class NftController {
         }
         const newNft = await createNft(doc);
 
+        const MARKET_CONTRACT = await getMarketContract();
+
         const tx = await MARKET_CONTRACT.registerRoyalty(
           creator,
-          nftColectionAddress,
+          collection,
           parseInt(tokenId),
           parseFloat(royalty) * 100
         );

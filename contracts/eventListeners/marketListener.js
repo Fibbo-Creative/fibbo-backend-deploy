@@ -30,12 +30,14 @@ import {
 } from "../../utils/offers.js";
 import {
   getERC721Contract,
-  MARKET_CONTRACT,
-  VERIFICATION_CONTRACT,
+  getMarketContract,
+  getVerificationContract,
 } from "../index.js";
 
-export const listenToMarketEvents = () => {
+export const listenToMarketEvents = async () => {
   //ITEMS
+  const MARKET_CONTRACT = await getMarketContract();
+  const VERIFICATION_CONTRACT = await getVerificationContract();
   MARKET_CONTRACT.on(
     "ItemListed",
     async (owner, collection, tokenId, payToken, price, startingTime) => {

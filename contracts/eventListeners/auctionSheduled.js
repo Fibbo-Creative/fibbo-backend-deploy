@@ -3,13 +3,14 @@ import CronJob from "node-cron";
 import { getAuctions } from "../../utils/auctions.js";
 import {
   ADDRESS_ZERO,
-  AUCTION_CONTRACT,
+  getAuctionContract,
   getERC721Contract,
   managerWallet,
   WFTM_CONTRACT,
 } from "../index.js";
 
 const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
+  const AUCTION_CONTRACT = await getAuctionContract();
   const auctions = await getAuctions();
   await Promise.all(
     auctions.map(async (auction) => {

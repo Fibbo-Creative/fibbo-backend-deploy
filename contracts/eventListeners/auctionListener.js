@@ -21,12 +21,14 @@ import { changeNftOwner } from "../../utils/nfts.js";
 import { getItemOffers } from "../../utils/offers.js";
 import {
   ADDRESS_ZERO,
-  AUCTION_CONTRACT,
+  getAuctionContract,
   getERC721Contract,
-  MARKET_CONTRACT,
+  getMarketContract,
 } from "../index.js";
 
-export const listenToAuctionEvents = () => {
+export const listenToAuctionEvents = async () => {
+  const AUCTION_CONTRACT = await getAuctionContract();
+  const MARKET_CONTRACT = await getMarketContract();
   AUCTION_CONTRACT.on(
     "AuctionCreated",
     async (collection, tokenId, payToken) => {
