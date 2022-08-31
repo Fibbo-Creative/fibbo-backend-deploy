@@ -313,13 +313,6 @@ export default class NftController {
       const nftData = await getNftInfoById(tokenId, collection);
       if (nftData) {
         if (collectionInfo) {
-          if (additionalContent) {
-            doc = {
-              ...doc,
-              additionalContent: additionalContent,
-            };
-          }
-
           await changeNftInfo(
             collection,
             tokenId,
@@ -329,7 +322,8 @@ export default class NftController {
             sanityImgUrl,
             ipfsImageUrl,
             ipfsMetadataUrl,
-            externalLink
+            externalLink,
+            additionalContent
           );
           res.status(200).send("Edited");
         } else {
