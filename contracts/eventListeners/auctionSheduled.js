@@ -11,7 +11,6 @@ import {
 
 const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
   const auctions = await getAuctions();
-  console.log(auctions.length);
   await Promise.all(
     auctions.map(async (auction) => {
       const now = new Date().getTime();
@@ -41,7 +40,7 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                   managerWallet.address,
                   AUCTION_CONTRACT.address
                 );
-                console.log(isApprovedForAll);
+
                 if (!isApprovedForAll) {
                   const approveTx = await ERC721_CONTRACT.setApprovalForAll(
                     AUCTION_CONTRACT.address,

@@ -74,7 +74,7 @@ export default class GeneralController {
       if (isExplicit === "false") {
         const { id, output } = await checkNFSW(uploadedImgSanity.url);
         const { detections, nsfw_score } = output;
-        console.log(nsfw_score);
+
         if (nsfw_score > 0.4) {
           res.status(207).send("INVALID IMG");
         } else {

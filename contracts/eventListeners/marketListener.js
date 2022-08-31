@@ -126,7 +126,6 @@ export const listenToMarketEvents = () => {
       if (itemOffers.length > 0) {
         await Promise.all(
           itemOffers.map(async (offer) => {
-            console.log(offer.creator);
             let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
               collection,
               tokenId,
@@ -225,9 +224,6 @@ export const listenToMarketEvents = () => {
       creator
     );
     console.log("CANCEL OFFER");
-    console.log(collection, tokenId.toNumber(), creator);
-
-    console.log(offerInfo);
 
     if (offerInfo) {
       await deleteOffer(collection.toLowerCase(), tokenId.toNumber(), creator);
