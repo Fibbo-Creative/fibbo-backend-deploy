@@ -31,7 +31,7 @@ export const listenToAuctionEvents = () => {
     "AuctionCreated",
     async (collection, tokenId, payToken) => {
       const auctionInDb = await getAuction(collection.toLowerCase(), tokenId);
-
+      console.log(auctionInDb);
       if (!auctionInDb) {
         const auctionInfo = await AUCTION_CONTRACT.getAuction(
           collection.toLowerCase(),
@@ -155,6 +155,7 @@ export const listenToAuctionEvents = () => {
         tokenId
       );
 
+      console.log(auctionInfo, bidAmount);
       if (auctionInfo.owner !== ADDRESS_ZERO) {
         await registerBidCreated(
           collection.toLowerCase(),

@@ -4,13 +4,14 @@ import { getAuctions } from "../../utils/auctions.js";
 import {
   ADDRESS_ZERO,
   AUCTION_CONTRACT,
-  COLLECTION_CONTRACT,
+  getERC721Contract,
   managerWallet,
   WFTM_CONTRACT,
 } from "../index.js";
 
 const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
   const auctions = await getAuctions();
+  console.log(auctions.length);
   await Promise.all(
     auctions.map(async (auction) => {
       const now = new Date().getTime();
@@ -33,14 +34,16 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                 );
                 await clearAuctionTx.wait();
               } else {
-                const isApprovedForAll =
-                  await COLLECTION_CONTRACT.isApprovedForAll(
-                    managerWallet.address,
-                    AUCTION_CONTRACT.address
-                  );
-
+                const ERC721_CONTRACT = getERC721Contract(
+                  auction.collectionAddress
+                );
+                const isApprovedForAll = await ERC721_CONTRACT.isApprovedForAll(
+                  managerWallet.address,
+                  AUCTION_CONTRACT.address
+                );
+                console.log(isApprovedForAll);
                 if (!isApprovedForAll) {
-                  const approveTx = await COLLECTION_CONTRACT.setApprovalForAll(
+                  const approveTx = await ERC721_CONTRACT.setApprovalForAll(
                     AUCTION_CONTRACT.address,
                     true
                   );

@@ -81,12 +81,6 @@ const VERIFICATION_CONTRACT = new ethers.Contract(
   managerWallet
 );
 
-const COLLECTION_CONTRACT = new ethers.Contract(
-  nftColectionAddress,
-  COLLECTION_ABI,
-  managerWallet
-);
-
 const WFTM_CONTRACT = new ethers.Contract(wftmAddress, WFTM_ABI, managerWallet);
 
 const getERC721Contract = (collectionAddress) => {
@@ -103,7 +97,6 @@ export {
   VERIFICATION_CONTRACT,
   AUCTION_CONTRACT,
   WFTM_CONTRACT,
-  COLLECTION_CONTRACT,
   FACTORY_CONTRACT,
   getERC721Contract,
 };
