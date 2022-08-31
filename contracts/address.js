@@ -1,3 +1,3 @@
 const wftmAddress = "0xf1277d1ed8ad466beddf92ef448a132661956621";
-const addressRegistry = "0x9c4D8E1412a7e7f79Be81B79b863411eA33FFbf7";
+const addressRegistry = "0x35E0c50A92f213755601D37aF935Ff8b58E7E112";
 export { wftmAddress, addressRegistry };
