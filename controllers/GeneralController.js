@@ -9,6 +9,7 @@ import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
 import { addImgToIpfs, addJsonToIpfs } from "../utils/ipfs.js";
+import { getAllNotifications } from "../utils/notifications.js";
 
 export default class GeneralController {
   constructor() {}
@@ -51,6 +52,19 @@ export default class GeneralController {
 
       const payTokenInfo = await getPayTokenInfo(address);
       res.send(payTokenInfo);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getAllNotifications(req, res) {
+    try {
+      const { address } = req.query;
+
+      //Buscaremos primero en los títulos de los items
+
+      const notifications = await getAllNotifications(address);
+      res.send(notifications);
     } catch (e) {
       res.status(500).send(e);
     }

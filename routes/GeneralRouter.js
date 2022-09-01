@@ -13,6 +13,8 @@ GeneralRouter.get("/search", GeneralController.searchItems);
 GeneralRouter.get("/payTokens", GeneralController.getAllPayTokens);
 GeneralRouter.get("/payToken", GeneralController.getPayTokenInfo);
 
+GeneralRouter.get("/notifications", GeneralController.getAllNotifications);
+
 //POST
 GeneralRouter.post(
   "/uploadImg",
@@ -21,7 +23,8 @@ GeneralRouter.post(
 );
 
 GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);
-
 GeneralRouter.post("/updateEvents", GeneralController.updateEventsInfo);
+
+GeneralRouter.get("/deleteNotification", GeneralController.deleteNotification);
 
 export default GeneralRouter;
