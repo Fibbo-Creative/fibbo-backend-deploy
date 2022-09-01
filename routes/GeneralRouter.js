@@ -4,6 +4,7 @@ import upload from "../lib/multer.js";
 const GeneralRouter = express.Router();
 
 GeneralRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 
