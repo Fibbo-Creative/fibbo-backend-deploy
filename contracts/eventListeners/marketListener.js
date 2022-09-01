@@ -215,7 +215,6 @@ export const listenToMarketEvents = async () => {
           formatEther(price),
           payToken
         );
-        console.log("OFFER MODIFIED");
       }
     }
   );
