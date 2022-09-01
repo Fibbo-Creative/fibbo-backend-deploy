@@ -228,7 +228,7 @@ export const listenToAuctionEvents = async () => {
 
         const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
           nftInfo.creator,
-          collectionInfo.contractAddress,
+          collection,
           tokenId.toNumber(),
           parseFloat(nftInfo.royalty) * 100
         );
