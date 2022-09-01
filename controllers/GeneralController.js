@@ -9,7 +9,10 @@ import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
 import { addImgToIpfs, addJsonToIpfs } from "../utils/ipfs.js";
-import { getAllNotifications } from "../utils/notifications.js";
+import {
+  deleteNotification,
+  getAllNotifications,
+} from "../utils/notifications.js";
 
 export default class GeneralController {
   constructor() {}
@@ -143,6 +146,8 @@ export default class GeneralController {
   static async deleteNotification(req, res) {
     try {
       const { notificationId } = req.body;
+      await deleteNotification(notificationId);
+      res.status(200).send("OK");
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
