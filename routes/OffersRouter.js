@@ -3,6 +3,7 @@ import OffersController from "../controllers/OffersController.js";
 const OffersRouter = express.Router();
 
 OffersRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 
