@@ -16,6 +16,12 @@ import {
   registerOfferCancelled,
   registerTransferEvent,
 } from "../../utils/events.js";
+import {
+  createHighestBidder,
+  deleteHighestBidder,
+  getHighestBidder,
+  updateHighestBidder,
+} from "../../utils/highestBidders.js";
 import { addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
@@ -156,7 +162,7 @@ export const listenToAuctionEvents = async () => {
         tokenId
       );
 
-      if (auctionInfo.owner !== ADDRESS_ZERO) {
+      if (auctionInfo._owner !== ADDRESS_ZERO) {
         await registerBidCreated(
           collection.toLowerCase(),
           tokenId,
@@ -166,15 +172,47 @@ export const listenToAuctionEvents = async () => {
           auctionInfo._payToken
         );
 
+        const prevBidder = await getHighestBidder(
+          collection.toLowerCase(),
+          tokenId
+        );
+        if (prevBidder) {
+          const notDoc = {
+            type: "AUCTION",
+            collectionAddress: collection.toLowerCase(),
+            tokenId: tokenId.toNumber(),
+            to: prevBidder.bidder,
+            timestamp: new Date().toISOString(),
+            params: {
+              type: "BID INCREASED",
+              price: parseFloat(formatEther(bidAmount)),
+            },
+            visible: true,
+          };
+          await createNotification(notDoc);
+          await updateHighestBidder(
+            collection.toLowerCase(),
+            tokenId.toNumber(),
+            bidder
+          );
+        } else {
+          const highestBidderDoc = {
+            collectionAddress: collection.toLowerCase(),
+            tokenId: tokenId,
+            bidder: bidder,
+          };
+          await createHighestBidder(highestBidderDoc);
+        }
+
         const notificationDoc = {
           type: "AUCTION",
           collectionAddress: collection.toLowerCase(),
           tokenId: tokenId.toNumber(),
-          to: auctionInfo.owner,
+          to: auctionInfo._owner,
           timestamp: new Date().toISOString(),
           params: {
             type: "BIDDED",
-            price: parseFloat(formatEther(price)),
+            price: parseFloat(formatEther(bidAmount)),
           },
           visible: true,
         };
@@ -188,8 +226,7 @@ export const listenToAuctionEvents = async () => {
     "AuctionResulted",
     async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
       await deleteAuction(collection.toLowerCase(), tokenId);
-
-      //Actualizar token Info
+      await deleteHighestBidder(collection.toLowerCase(), tokenId);
 
       await changeNftOwner(
         collection.toLowerCase(),
@@ -260,7 +297,7 @@ export const listenToAuctionEvents = async () => {
         timestamp: new Date().toISOString(),
         params: {
           type: "WINNED",
-          price: parseFloat(formatEther(price)),
+          price: parseFloat(formatEther(winingBid)),
         },
         visible: true,
       };
@@ -275,10 +312,12 @@ export const listenToAuctionEvents = async () => {
         timestamp: new Date().toISOString(),
         params: {
           type: "FINISHED",
-          price: parseFloat(formatEther(price)),
+          price: parseFloat(formatEther(winingBid)),
         },
         visible: true,
       };
+
+      await createNotification(notificationDoc);
     }
   );
 };

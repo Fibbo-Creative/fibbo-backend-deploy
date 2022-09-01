@@ -27,6 +27,7 @@ import {
   deleteOffer,
   getItemOffers,
   getOffer,
+  getOfferAccepted,
   updateOffer,
 } from "../../utils/offers.js";
 import { getProfileInfo } from "../../utils/profiles.js";
@@ -139,6 +140,27 @@ export const listenToMarketEvents = async () => {
 
           await createNotification(notificationDoc);
 
+          const offerAccepted = await getOfferAccepted(
+            collectionAddress,
+            tokenId
+          );
+
+          if (offerAccepted) {
+            const offerNotificationDoc = {
+              type: "OFFER",
+              collectionAddress: collection.toLowerCase(),
+              tokenId: tokenId.toNumber(),
+              to: offerAccepted.creator,
+              timestamp: new Date().toISOString(),
+              params: {
+                type: "ACCEPTED",
+                price: parseFloat(formatEther(price)),
+              },
+              visible: true,
+            };
+
+            await createNotification(offerNotificationDoc);
+          }
           console.log("ItemSold");
         }
 

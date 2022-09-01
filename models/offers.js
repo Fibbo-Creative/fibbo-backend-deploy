@@ -7,6 +7,7 @@ const offerSchema = mongoose.Schema({
   payToken: String,
   price: Number,
   deadline: Number,
+  accepted: Boolean,
 });
 
 export default mongoose.model("offers", offerSchema);

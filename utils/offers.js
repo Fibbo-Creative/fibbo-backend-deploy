@@ -92,3 +92,24 @@ export const deleteOffer = async (collection, tokenId, creator) => {
   });
   return offerDeleted;
 };
+
+export const setOfferAccepted = async (collectionAddress, tokenId, creator) => {
+  const offerAccepted = await Offers.updateOne(
+    {
+      creator: creator,
+      collectionAddress: collectionAddress,
+      tokenId: tokenId,
+    },
+    { accepted: true }
+  );
+  return offerAccepted;
+};
+
+export const getOfferAccepted = async (collectionAddress, tokenId) => {
+  const offerAccepted = await Offers.findOne({
+    collectionAddress: collectionAddress,
+    tokenId: tokenId,
+    accepted: true,
+  });
+  return offerAccepted;
+};

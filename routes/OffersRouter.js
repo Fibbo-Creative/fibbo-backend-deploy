@@ -9,4 +9,7 @@ OffersRouter.use((req, res, next) => {
 //GET
 OffersRouter.get("/get", OffersController.getOffers);
 
+//POST
+OffersRouter.post("/accept", OffersController.offerAccepted);
+
 export default OffersRouter;
