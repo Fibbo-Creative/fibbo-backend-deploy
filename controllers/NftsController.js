@@ -340,6 +340,7 @@ export default class NftController {
 
   static async registerRoyalties(req, res) {
     try {
+      const MARKET_CONTRACT = await getMarketContract();
       const { collection, tokenId, royalty } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);

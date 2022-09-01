@@ -94,7 +94,7 @@ export const listenToMarketEvents = async () => {
 
         const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
           nftInfo.creator,
-          collectionInfo.contractAddress,
+          collectionInfo,
           tokenId.toNumber(),
           parseFloat(nftInfo.royalty) * 100
         );
