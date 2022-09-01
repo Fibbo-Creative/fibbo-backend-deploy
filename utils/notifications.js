@@ -8,7 +8,12 @@ export const createNotification = async (doc) => {
 export const getAllNotifications = async (wallet) => {
   const notifications = await Notifications.find({
     to: wallet,
-  }).sort({});
+  }).sort({ timestamp: -1 });
+  return notifications;
+};
+
+export const getNotification = async (filter) => {
+  const notifications = await Notifications.findOne(filter);
   return notifications;
 };
 

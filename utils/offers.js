@@ -1,4 +1,6 @@
 import Offers from "../models/offers.js";
+import AcceptedOffers from "../models/acceptedOffers.js";
+
 import { getPayTokenInfo } from "./payTokens.js";
 import { getProfileInfo } from "./profiles.js";
 
@@ -33,6 +35,11 @@ export const getOffer = async (collectionAddress, tokenId, creator) => {
     tokenId: tokenId,
     creator: creator,
   });
+  return offers;
+};
+
+export const getOffers = async () => {
+  const offers = await Offers.find();
   return offers;
 };
 
@@ -79,7 +86,11 @@ export const updateOffer = async (
       collectionAddress: collectionAddress,
       tokenId: tokenId,
     },
-    { payToken: payToken, price: price, deadline: deadline }
+    {
+      payToken: payToken,
+      price: price,
+      deadline: deadline,
+    }
   );
   return offerCreated;
 };
@@ -93,23 +104,15 @@ export const deleteOffer = async (collection, tokenId, creator) => {
   return offerDeleted;
 };
 
-export const setOfferAccepted = async (collectionAddress, tokenId, creator) => {
-  const offerAccepted = await Offers.updateOne(
-    {
-      creator: creator,
-      collectionAddress: collectionAddress,
-      tokenId: tokenId,
-    },
-    { accepted: true }
-  );
+export const addAcceptedOffer = async (doc) => {
+  const offerAccepted = await AcceptedOffers.create(doc);
   return offerAccepted;
 };
 
 export const getOfferAccepted = async (collectionAddress, tokenId) => {
-  const offerAccepted = await Offers.findOne({
+  const offerAccepted = await AcceptedOffers.findOne({
     collectionAddress: collectionAddress,
     tokenId: tokenId,
-    accepted: true,
   });
   return offerAccepted;
 };

@@ -11,7 +11,7 @@ import CollectionRouter from "./routes/CollectionRouter.js";
 import VerifyRouter from "./routes/VerifyRouter.js";
 import { listenToEvents } from "./contracts/index.js";
 import OffersRouter from "./routes/OffersRouter.js";
-import initScheduledJobs from "./contracts/eventListeners/auctionSheduled.js";
+import initScheduledJobs from "./contracts/shedulers/sheduler.js";
 
 dotenv.config();
 

@@ -141,7 +141,7 @@ export const listenToMarketEvents = async () => {
           await createNotification(notificationDoc);
 
           const offerAccepted = await getOfferAccepted(
-            collectionAddress,
+            collection.toLowerCase(),
             tokenId
           );
 
@@ -283,6 +283,25 @@ export const listenToMarketEvents = async () => {
           formatEther(price),
           payToken
         );
+
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+        const receptor = await getProfileInfo(nftInfo.owner);
+
+        const notificationDoc = {
+          type: "OFFER",
+          collectionAddress: collection.toLowerCase(),
+          tokenId: tokenId.toNumber(),
+          to: receptor.wallet,
+          timestamp: new Date().toISOString(),
+          params: {
+            type: "MODIFIED",
+            price: parseFloat(formatEther(price)),
+          },
+          visible: true,
+        };
+
+        await createNotification(notificationDoc);
+
         console.log("OFFER MODIFIED");
       }
     }
