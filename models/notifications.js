@@ -6,7 +6,7 @@ const notificationSchema = mongoose.Schema({
   tokenId: Number,
   to: String,
   timestamp: Date,
-  message: String,
+  params: {},
   visible: Boolean,
 });
 

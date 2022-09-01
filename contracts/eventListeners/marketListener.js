@@ -21,6 +21,7 @@ import {
   deleteNftForSale,
   getNftForSaleById,
 } from "../../utils/nftsForSale.js";
+import { createNotification } from "../../utils/notifications.js";
 import {
   addNewOffer,
   deleteOffer,
@@ -28,6 +29,7 @@ import {
   getOffer,
   updateOffer,
 } from "../../utils/offers.js";
+import { getProfileInfo } from "../../utils/profiles.js";
 import {
   getERC721Contract,
   getMarketContract,
@@ -56,89 +58,114 @@ export const listenToMarketEvents = async () => {
     "ItemSold",
     async (seller, buyer, collection, tokenId, payToken, price) => {
       //Save ItemSold
-
-      const updatedOwner = await changeNftOwner(
-        collection.toLowerCase(),
-        tokenId.toNumber(),
-        seller,
-        buyer
-      );
-
-      const ERC721_CONTRACT = getERC721Contract(collection);
-      const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
-        tokenId
-      );
-      if (!hasFreezedMetadata) {
-        const nftInfo = await getNftInfo(
-          buyer,
-          tokenId.toNumber(),
-          collection.toLowerCase()
-        );
-
-        const data = {
-          name: nftInfo.name,
-          description: nftInfo.description,
-          image: nftInfo.image,
-          external_link: nftInfo.externalLink,
-        };
-
-        const ipfsCID = await addJsonToIpfs(data);
-
-        const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
-
-        const tx = await ERC721_CONTRACT.setFreezedMetadata(
-          tokenId,
-          ipfsFileURL
-        );
-        await tx.wait();
-
-        const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
-          nftInfo.creator,
-          collectionInfo.contractAddress,
-          tokenId.toNumber(),
-          parseFloat(nftInfo.royalty) * 100
-        );
-        await royaltiesTx.wait();
-      }
-      const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(
-        buyer
-      );
-      if (!verificated) {
-        const verifyTx = await VERIFICATION_CONTRACT.verificateInversor(buyer);
-        await verifyTx.wait();
-      }
-
-      if (updatedOwner) {
-        await registerTransferEvent(
+      try {
+        const updatedOwner = await changeNftOwner(
           collection.toLowerCase(),
-          tokenId,
+          tokenId.toNumber(),
           seller,
-          buyer,
-          formatEther(price),
-          payToken
+          buyer
         );
 
-        console.log("ItemSold");
-      }
-
-      //Clean offers
-
-      const itemOffers = await getItemOffers(collection.toLowerCase(), tokenId);
-
-      if (itemOffers.length > 0) {
-        await Promise.all(
-          itemOffers.map(async (offer) => {
-            let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
-              collection,
-              tokenId,
-              offer.creator
-            );
-            await cleanOfferTx.wait();
-          })
+        const ERC721_CONTRACT = getERC721Contract(collection);
+        const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
+          tokenId
         );
-      }
+        if (!hasFreezedMetadata) {
+          const nftInfo = await getNftInfo(
+            buyer,
+            tokenId.toNumber(),
+            collection.toLowerCase()
+          );
 
-      //Aprove Item
+          const data = {
+            name: nftInfo.name,
+            description: nftInfo.description,
+            image: nftInfo.image,
+            external_link: nftInfo.externalLink,
+          };
+
+          const ipfsCID = await addJsonToIpfs(data);
+
+          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
+
+          console.log(ipfsFileURL);
+
+          const tx = await ERC721_CONTRACT.setFreezedMetadata(
+            tokenId,
+            ipfsFileURL
+          );
+          await tx.wait();
+
+          const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
+            nftInfo.creator,
+            collectionInfo.contractAddress,
+            tokenId.toNumber(),
+            parseFloat(nftInfo.royalty) * 100
+          );
+          await royaltiesTx.wait();
+        }
+        const verificated = await VERIFICATION_CONTRACT.checkIfVerifiedInversor(
+          buyer
+        );
+        if (!verificated) {
+          const verifyTx = await VERIFICATION_CONTRACT.verificateInversor(
+            buyer
+          );
+          await verifyTx.wait();
+        }
+
+        if (updatedOwner) {
+          await registerTransferEvent(
+            collection.toLowerCase(),
+            tokenId,
+            seller,
+            buyer,
+            formatEther(price),
+            payToken
+          );
+
+          const notificationDoc = {
+            type: "TRANSFER",
+            collectionAddress: collection.toLowerCase(),
+            tokenId: tokenId.toNumber(),
+            to: seller,
+            timestamp: new Date().toISOString(),
+            params: {
+              type: "SOLD",
+              price: parseFloat(formatEther(price)),
+            },
+            visible: true,
+          };
+
+          await createNotification(notificationDoc);
+
+          console.log("ItemSold");
+        }
+
+        //Clean offers
+
+        const itemOffers = await getItemOffers(
+          collection.toLowerCase(),
+          tokenId
+        );
+
+        if (itemOffers.length > 0) {
+          await Promise.all(
+            itemOffers.map(async (offer) => {
+              let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
+                collection,
+                tokenId,
+                offer.creator
+              );
+              await cleanOfferTx.wait();
+            })
+          );
+        }
+
+        //Aprove Item
+      } catch (e) {
+        console.log(e);
+      }
     }
   );
   MARKET_CONTRACT.on(
@@ -189,6 +216,25 @@ export const listenToMarketEvents = async () => {
           formatEther(price),
           payToken
         );
+
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+        const receptor = await getProfileInfo(nftInfo.owner);
+
+        const notificationDoc = {
+          type: "OFFER",
+          collectionAddress: collection.toLowerCase(),
+          tokenId: tokenId.toNumber(),
+          to: receptor.wallet,
+          timestamp: new Date().toISOString(),
+          params: {
+            type: "RECIEVED",
+            price: parseFloat(formatEther(price)),
+          },
+          visible: true,
+        };
+
+        await createNotification(notificationDoc);
+
         console.log("OFFER CREATED");
       }
     }

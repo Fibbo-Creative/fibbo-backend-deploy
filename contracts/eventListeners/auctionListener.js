@@ -18,6 +18,7 @@ import {
 } from "../../utils/events.js";
 import { addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner } from "../../utils/nfts.js";
+import { createNotification } from "../../utils/notifications.js";
 import { getItemOffers } from "../../utils/offers.js";
 import {
   ADDRESS_ZERO,
@@ -129,7 +130,6 @@ export const listenToAuctionEvents = async () => {
       }
     }
   );
-
   AUCTION_CONTRACT.on(
     "UpdateAuctionEndTime",
     async (collection, tokenId, endTime) => {
@@ -165,6 +165,21 @@ export const listenToAuctionEvents = async () => {
           formatEther(bidAmount),
           auctionInfo._payToken
         );
+
+        const notificationDoc = {
+          type: "AUCTION",
+          collectionAddress: collection.toLowerCase(),
+          tokenId: tokenId.toNumber(),
+          to: auctionInfo.owner,
+          timestamp: new Date().toISOString(),
+          params: {
+            type: "BIDDED",
+            price: parseFloat(formatEther(price)),
+          },
+          visible: true,
+        };
+
+        await createNotification(notificationDoc);
       }
     }
   );
@@ -236,6 +251,34 @@ export const listenToAuctionEvents = async () => {
         formatEther(winingBid),
         payToken
       );
+
+      let notificationDoc = {
+        type: "AUCTION",
+        collectionAddress: collection.toLowerCase(),
+        tokenId: tokenId.toNumber(),
+        to: winner,
+        timestamp: new Date().toISOString(),
+        params: {
+          type: "WINNED",
+          price: parseFloat(formatEther(price)),
+        },
+        visible: true,
+      };
+
+      await createNotification(notificationDoc);
+
+      notificationDoc = {
+        type: "AUCTION",
+        collectionAddress: collection.toLowerCase(),
+        tokenId: tokenId.toNumber(),
+        to: prevOwner,
+        timestamp: new Date().toISOString(),
+        params: {
+          type: "FINISHED",
+          price: parseFloat(formatEther(price)),
+        },
+        visible: true,
+      };
     }
   );
 };

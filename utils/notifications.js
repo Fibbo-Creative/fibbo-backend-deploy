@@ -11,3 +11,22 @@ export const getAllNotifications = async (wallet) => {
   }).sort({});
   return notifications;
 };
+
+export const deleteNotification = async (notificationId) => {
+  const notifications = await Notifications.deleteOne({
+    _id: notificationId,
+  });
+  return notifications;
+};
+
+export const setNotificationNoVisible = async (notificationId) => {
+  const updated = await Notifications.updateOne(
+    {
+      _id: notificationId,
+    },
+    {
+      visible: false,
+    }
+  );
+  return updated;
+};

@@ -139,4 +139,13 @@ export default class GeneralController {
       res.status(500).send(e);
     }
   }
+
+  static async deleteNotification(req, res) {
+    try {
+      const { notificationId } = req.body;
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
 }
