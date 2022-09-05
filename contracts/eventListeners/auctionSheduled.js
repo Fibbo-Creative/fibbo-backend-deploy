@@ -71,10 +71,26 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                 await resolveTx.wait();
               }
             } else {
-              const clearAuctionTx = AUCTION_CONTRACT.clearAuction(
+              const ERC721_CONTRACT = getERC721Contract(
+                auction.collectionAddress
+              );
+              const isApprovedForAll = await ERC721_CONTRACT.isApprovedForAll(
+                managerWallet.address,
+                AUCTION_CONTRACT.address
+              );
+              if (!isApprovedForAll) {
+                const approveTx = await ERC721_CONTRACT.setApprovalForAll(
+                  AUCTION_CONTRACT.address,
+                  true
+                );
+                await approveTx.wait();
+              }
+
+              const clearAuctionTx = await AUCTION_CONTRACT.clearAuction(
                 auction.collectionAddress,
                 auction.tokenId
               );
+
               await clearAuctionTx.wait();
             }
           } catch (e) {

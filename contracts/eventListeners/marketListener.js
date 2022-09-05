@@ -16,12 +16,6 @@ import {
   getNftInfoById,
 } from "../../utils/nfts.js";
 import {
-  changePrice,
-  createNftForSale,
-  deleteNftForSale,
-  getNftForSaleById,
-} from "../../utils/nftsForSale.js";
-import {
   addNewOffer,
   deleteOffer,
   getItemOffers,
@@ -180,12 +174,15 @@ export const listenToMarketEvents = async () => {
           deadline: deadline,
         };
 
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+
         await addNewOffer(doc);
 
         await registerOfferCreated(
           collection.toLowerCase(),
           tokenId,
           creator,
+          nftInfo.owner,
           formatEther(price),
           payToken
         );
@@ -208,10 +205,13 @@ export const listenToMarketEvents = async () => {
           deadline
         );
 
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+
         await registerOfferModified(
           collection.toLowerCase(),
           tokenId,
           creator,
+          nftInfo.owner,
           formatEther(price),
           payToken
         );
@@ -224,11 +224,16 @@ export const listenToMarketEvents = async () => {
       tokenId.toNumber(),
       creator
     );
-    console.log("CANCEL OFFER");
+    const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
 
     if (offerInfo) {
       await deleteOffer(collection.toLowerCase(), tokenId.toNumber(), creator);
-      await registerOfferCancelled(collection.toLowerCase(), tokenId, creator);
+      await registerOfferCancelled(
+        collection.toLowerCase(),
+        tokenId,
+        creator,
+        nftInfo.owner
+      );
     }
   });
 };

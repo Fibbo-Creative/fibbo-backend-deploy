@@ -109,6 +109,13 @@ export const listenToAuctionEvents = async () => {
           tokenId.toNumber(),
           formatEther(reservePrice)
         );
+        await registerAuctionPriceChanged(
+          collection.toLowerCase(),
+          tokenId,
+          auctionInfo._owner,
+          formatEther(reservePrice),
+          payToken
+        );
       }
     }
   );
