@@ -12,6 +12,7 @@ import {
   registerAuctionCanceled,
   registerAuctionCompleted,
   registerAuctionCreated,
+  registerAuctionPriceChanged,
   registerBidCreated,
   registerOfferCancelled,
   registerTransferEvent,
@@ -106,15 +107,23 @@ export const listenToAuctionEvents = async () => {
     "UpdateAuctionReservePrice",
     async (collection, tokenId, payToken, reservePrice) => {
       const auctionInfo = await AUCTION_CONTRACT.getAuction(
-        collection.toLowerCase(),
+        collection,
         tokenId
       );
-
-      if (auctionInfo.owner !== ADDRESS_ZERO) {
+      console.log(reservePrice);
+      console.log(formatEther(reservePrice));
+      if (auctionInfo._owner !== ADDRESS_ZERO) {
         await updateReservePrice(
           collection.toLowerCase(),
           tokenId.toNumber(),
           formatEther(reservePrice)
+        );
+        await registerAuctionPriceChanged(
+          collection.toLowerCase(),
+          tokenId,
+          auctionInfo._owner,
+          formatEther(reservePrice),
+          payToken
         );
       }
     }

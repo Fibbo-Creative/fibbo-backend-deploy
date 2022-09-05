@@ -1,10 +1,13 @@
 import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
-import { filterProfilesByUsername } from "../utils/profiles.js";
-import { filterCollectionsByName } from "../utils/collections.js";
+import { filterProfilesByUsername, getProfileInfo } from "../utils/profiles.js";
+import {
+  filterCollectionsByName,
+  getCollectionInfo,
+} from "../utils/collections.js";
 
-import { filterItemsByTitle } from "../utils/nfts.js";
+import { filterItemsByTitle, getNftInfoById } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
@@ -67,7 +70,26 @@ export default class GeneralController {
       //Buscaremos primero en los títulos de los items
 
       const notifications = await getAllNotifications(address);
-      res.send(notifications);
+      let finalResult = [];
+      await Promise.all(
+        notifications.map(async (item) => {
+          const nft = await getNftInfoById(
+            item.tokenId,
+            item.collectionAddress
+          );
+          const profile = await getProfileInfo(address);
+          const collection = await getCollectionInfo(item.collectionAddress);
+
+          const result = {
+            ...item._doc,
+            nftData: nft,
+            reciever: profile,
+            collection: collection,
+          };
+          finalResult = [...finalResult, result];
+        })
+      );
+      res.send(finalResult);
     } catch (e) {
       res.status(500).send(e);
     }

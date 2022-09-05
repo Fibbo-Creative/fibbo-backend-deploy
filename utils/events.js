@@ -221,6 +221,7 @@ export const registerOfferCreated = async (
   collectionAddress,
   tokenId,
   from,
+  to,
   price,
   payToken
 ) => {
@@ -230,7 +231,7 @@ export const registerOfferCreated = async (
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
-    to: from,
+    to: to,
     timestamp: new Date().toISOString(),
     price: price,
     payToken: payToken,
@@ -244,6 +245,7 @@ export const registerOfferModified = async (
   collectionAddress,
   tokenId,
   from,
+  to,
   price,
   payToken
 ) => {
@@ -253,7 +255,7 @@ export const registerOfferModified = async (
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
-    to: from,
+    to: to,
     timestamp: new Date().toISOString(),
     price: price,
     payToken: payToken,
@@ -266,7 +268,8 @@ export const registerOfferModified = async (
 export const registerOfferCancelled = async (
   collectionAddress,
   tokenId,
-  from
+  from,
+  to
 ) => {
   const doc = {
     eventType: "OFFER",
@@ -274,7 +277,7 @@ export const registerOfferCancelled = async (
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
-    to: from,
+    to: to,
     timestamp: new Date().toISOString(),
     price: 0,
   };
@@ -287,6 +290,7 @@ export const registerOfferAccepted = async (
   collectionAddress,
   tokenId,
   from,
+  to,
   price,
   payToken
 ) => {
@@ -296,7 +300,7 @@ export const registerOfferAccepted = async (
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
-    to: from,
+    to: to,
     timestamp: new Date().toISOString(),
     price: price,
     payToken: payToken,
@@ -344,6 +348,29 @@ export const registerBidCreated = async (
     collectionAddress: collectionAddress,
     from: from,
     to: to,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
+
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
+
+export const registerAuctionPriceChanged = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Subasta Actualizada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
     timestamp: new Date().toISOString(),
     price: price,
     payToken: payToken,

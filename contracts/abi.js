@@ -257,6 +257,17 @@ export const ADDRESS_REGISTRY_ABI = [
 
 export const MARKETPLACE_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -743,6 +754,19 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "forwarder",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address payable",
@@ -758,6 +782,25 @@ export const MARKETPLACE_ABI = [
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -2447,6 +2490,17 @@ export const VERIFICATION_ABI = [
 
 export const AUCTION_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -3162,6 +3216,25 @@ export const AUCTION_ABI = [
   {
     inputs: [],
     name: "isPaused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
     outputs: [
       {
         internalType: "bool",

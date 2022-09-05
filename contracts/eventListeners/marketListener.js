@@ -3,6 +3,7 @@ import NftController from "../../controllers/NftsController.js";
 import {
   registerChangePriceEvent,
   registerListingEvent,
+  registerOfferAccepted,
   registerOfferCancelled,
   registerOfferCreated,
   registerOfferModified,
@@ -89,8 +90,6 @@ export const listenToMarketEvents = async () => {
 
           const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
 
-          console.log(ipfsFileURL);
-
           const tx = await ERC721_CONTRACT.setFreezedMetadata(
             tokenId,
             ipfsFileURL
@@ -116,15 +115,6 @@ export const listenToMarketEvents = async () => {
         }
 
         if (updatedOwner) {
-          await registerTransferEvent(
-            collection.toLowerCase(),
-            tokenId,
-            seller,
-            buyer,
-            formatEther(price),
-            payToken
-          );
-
           const notificationDoc = {
             type: "TRANSFER",
             collectionAddress: collection.toLowerCase(),
@@ -160,7 +150,24 @@ export const listenToMarketEvents = async () => {
             };
 
             await createNotification(offerNotificationDoc);
+            await registerOfferAccepted(
+              collection.toLowerCase(),
+              tokenId,
+              seller,
+              buyer,
+              formatEther(price),
+              payToken
+            );
           }
+
+          await registerTransferEvent(
+            collection.toLowerCase(),
+            tokenId,
+            seller,
+            buyer,
+            formatEther(price),
+            payToken
+          );
           console.log("ItemSold");
         }
 
@@ -231,16 +238,17 @@ export const listenToMarketEvents = async () => {
 
         await addNewOffer(doc);
 
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+        const receptor = await getProfileInfo(nftInfo.owner);
+
         await registerOfferCreated(
           collection.toLowerCase(),
           tokenId,
           creator,
+          nftInfo.owner,
           formatEther(price),
           payToken
         );
-
-        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
-        const receptor = await getProfileInfo(nftInfo.owner);
 
         const notificationDoc = {
           type: "OFFER",
@@ -276,16 +284,17 @@ export const listenToMarketEvents = async () => {
           deadline
         );
 
+        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
+        const receptor = await getProfileInfo(nftInfo.owner);
+
         await registerOfferModified(
           collection.toLowerCase(),
           tokenId,
           creator,
+          nftInfo.owner,
           formatEther(price),
           payToken
         );
-
-        const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
-        const receptor = await getProfileInfo(nftInfo.owner);
 
         const notificationDoc = {
           type: "OFFER",
@@ -312,11 +321,17 @@ export const listenToMarketEvents = async () => {
       tokenId.toNumber(),
       creator
     );
-    console.log("CANCEL OFFER");
+
+    const nftInfo = await getNftInfoById(tokenId, collection.toLowerCase());
 
     if (offerInfo) {
       await deleteOffer(collection.toLowerCase(), tokenId.toNumber(), creator);
-      await registerOfferCancelled(collection.toLowerCase(), tokenId, creator);
+      await registerOfferCancelled(
+        collection.toLowerCase(),
+        tokenId,
+        creator,
+        nftInfo.owner
+      );
     }
   });
 };
