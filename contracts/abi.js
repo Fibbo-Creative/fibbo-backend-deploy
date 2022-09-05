@@ -1179,6 +1179,11 @@ export const COLLECTION_ABI = [
         name: "_contractsManager",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -1444,6 +1449,25 @@ export const COLLECTION_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_to",
         type: "address",
       },
@@ -1478,19 +1502,6 @@ export const COLLECTION_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
@@ -1507,13 +1518,6 @@ export const COLLECTION_ABI = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -3562,6 +3566,17 @@ export const WFTM_ABI = [
 
 export const FACTORY_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -3659,6 +3674,19 @@ export const FACTORY_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "tokenContractAddress",
+        type: "address",
+      },
+    ],
+    name: "disableTokenContract",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "",
         type: "address",
       },
@@ -3685,6 +3713,25 @@ export const FACTORY_ABI = [
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

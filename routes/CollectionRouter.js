@@ -13,7 +13,7 @@ CollectionRouter.get(
   "/collectionDetail",
   CollectionController.getCollectionDetails
 );
-
+CollectionRouter.get("/items", CollectionController.getCollectionItems);
 CollectionRouter.get("/available", CollectionController.getCollections);
 CollectionRouter.get(
   "/myCollections",

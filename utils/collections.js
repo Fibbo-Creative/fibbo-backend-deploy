@@ -83,11 +83,9 @@ export const getItemsFromCollection = async (collectionAddress) => {
   return items;
 };
 
-export const getCollectionsAvailable = async (owner) => {
-  const collections = await Collection.find({
-    creator: { $in: ["public", owner] },
-  });
-  return collections;
+export const getCollectionsAvailable = async () => {
+  const collections = await Collection.find({});
+  return collections.filter((item) => item.creator !== "public");
 };
 
 export const getCollectionsFromOwner = async (owner) => {

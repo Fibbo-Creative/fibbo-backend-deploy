@@ -17,6 +17,7 @@ import {
 import {
   changeNftInfo,
   createNft,
+  deleteNftItem,
   getAllNfts,
   getAllNftsInfo,
   getNftInfoById,
@@ -90,10 +91,9 @@ export default class NftController {
         let nftResult = {
           nftData: nft,
         };
-
         let listingInfo = await MARKET_CONTRACT.listings(
           collectionAddress,
-          ethers.BigNumber.from(nftId),
+          nftId,
           nft.owner
         );
 
@@ -362,6 +362,17 @@ export default class NftController {
       } else {
         res.send("No collection Found");
       }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async deleteItem(req, res) {
+    try {
+      const { collection, tokenId } = req.body;
+      const deleted = await deleteNftItem(collection, tokenId);
+      res.status(200).send("DELETED");
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

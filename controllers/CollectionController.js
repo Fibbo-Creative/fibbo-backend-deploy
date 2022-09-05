@@ -69,10 +69,21 @@ export default class CollectionController {
 
   static async getCollections(req, res) {
     try {
-      const { owner } = req.query;
-      const collections = await getCollectionsAvailable(owner);
+      const collections = await getCollectionsAvailable();
       res.status(200).send(collections);
     } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCollectionItems(req, res) {
+    try {
+      const { address } = req.query;
+      const items = await getItemsFromCollection(address);
+      res.status(200).send(items);
+    } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

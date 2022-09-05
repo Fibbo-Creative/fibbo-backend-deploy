@@ -18,6 +18,15 @@ export const createNft = async (doc) => {
   }
 };
 
+export const deleteNftItem = async (collection, tokenId) => {
+  const _nftDeleted = await Nft.deleteOne({
+    collectionAddress: collection,
+    tokenId: tokenId,
+  });
+
+  return _nftDeleted;
+};
+
 export const getNftInfo = async (owner, nftId, collectionAddress) => {
   const _nft = await Nft.findOne({
     collectionAddress: collectionAddress,
