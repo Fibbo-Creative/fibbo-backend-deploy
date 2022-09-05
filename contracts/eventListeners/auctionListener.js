@@ -12,6 +12,7 @@ import {
   registerAuctionCanceled,
   registerAuctionCompleted,
   registerAuctionCreated,
+  registerAuctionPriceChanged,
   registerBidCreated,
   registerOfferCancelled,
   registerTransferEvent,

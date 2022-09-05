@@ -177,8 +177,28 @@ export const registerTransferEvent = async (
   const createdEvent = await createEvent(doc);
   if (createdEvent) return createdEvent._doc;
 };
+export const registerAuctionPriceChanged = async (
+  collectionAddress,
+  tokenId,
+  from,
+  price,
+  payToken
+) => {
+  const doc = {
+    eventType: "AUCTION",
+    eventDesc: "Subasta Actualizada",
+    tokenId: tokenId,
+    collectionAddress: collectionAddress,
+    from: from,
+    to: from,
+    timestamp: new Date().toISOString(),
+    price: price,
+    payToken: payToken,
+  };
 
-export const registerAuctionPriceChanged = () => {};
+  const createdEvent = await createEvent(doc);
+  if (createdEvent) return createdEvent._doc;
+};
 
 export const registerChangePriceEvent = async (
   collectionAddress,
