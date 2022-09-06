@@ -21,6 +21,7 @@ NftRouter.get("/allTransfers", NftController.getAllTransfers);
 NftRouter.post("/newItem", NftController.newItem);
 NftRouter.post("/editItem", NftController.updateNft);
 NftRouter.post("/delete", NftController.deleteItem);
+NftRouter.post("/sentItem", NftController.sentItem);
 
 NftRouter.post("/registerRoyalties", NftController.updateNft);
 

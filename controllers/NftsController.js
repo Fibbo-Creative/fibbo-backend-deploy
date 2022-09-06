@@ -1,5 +1,5 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { getMarketContract } from "../contracts/index.js";
+import { getERC721Contract, getMarketContract } from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import ethers from "ethers";
 import {
@@ -13,9 +13,11 @@ import {
   getEventsFromNft,
   getEventsFromWallet,
   registerMintEvent,
+  registerTransferEvent,
 } from "../utils/events.js";
 import {
   changeNftInfo,
+  changeNftOwner,
   createNft,
   deleteNftItem,
   getAllNfts,
@@ -28,6 +30,7 @@ import {
 import { getAllNftsForSale } from "../utils/nftsForSale.js";
 import { formatOffers, getItemOffers } from "../utils/offers.js";
 import { getPayTokenInfo } from "../utils/payTokens.js";
+import { addJsonToIpfs } from "../utils/ipfs.js";
 
 export default class NftController {
   constructor() {}
@@ -373,6 +376,65 @@ export default class NftController {
       const { collection, tokenId } = req.body;
       const deleted = await deleteNftItem(collection, tokenId);
       res.status(200).send("DELETED");
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async sentItem(req, res) {
+    try {
+      const { collection, tokenId, from, to } = req.body;
+
+      const nftInfo = await getNftInfoById(tokenId, collection);
+      console.log(nftInfo);
+      if (nftInfo) {
+        await changeNftOwner(collection.toLowerCase(), tokenId, from, to);
+        await registerTransferEvent(collection, tokenId, from, to, 0, "");
+
+        const ERC721_CONTRACT = getERC721Contract(collection);
+        let isFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
+          tokenId
+        );
+
+        console.log(isFreezedMetadata);
+        if (!isFreezedMetadata) {
+          const MARKET_CONTRACT = await getMarketContract();
+          const data = {
+            name: nftInfo.name,
+            description: nftInfo.description,
+            image: nftInfo.image,
+            external_link: nftInfo.externalLink,
+          };
+
+          const ipfsCID = await addJsonToIpfs(data);
+
+          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
+
+          const tx = await ERC721_CONTRACT.setFreezedMetadata(
+            tokenId,
+            ipfsFileURL
+          );
+          await tx.wait();
+
+          const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
+            nftInfo.creator,
+            collection,
+            tokenId,
+            parseFloat(nftInfo.royalty) * 100
+          );
+          await royaltiesTx.wait();
+        }
+        //set freezed metadata!
+
+        res.status(200).send("Sent");
+      } else {
+        res.status(200).send("Item dont exist");
+      }
+
+      //Update owner
+
+      //Register transfer event
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

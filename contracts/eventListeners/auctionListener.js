@@ -24,7 +24,7 @@ import {
   updateHighestBidder,
 } from "../../utils/highestBidders.js";
 import { addJsonToIpfs } from "../../utils/ipfs.js";
-import { changeNftOwner } from "../../utils/nfts.js";
+import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
 import { getItemOffers } from "../../utils/offers.js";
 import {
