@@ -53,6 +53,37 @@ export const updateUsername = async (wallet, username) => {
   return updatedProfile;
 };
 
+export const updateProfile = async (
+  username,
+  wallet,
+  email,
+  bio,
+  profileImg,
+  profileBanner
+) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    {
+      username: username,
+      profileImg: profileImg,
+      profileBanner: profileBanner,
+      email: email,
+      bio: bio,
+    }
+  );
+  return updatedProfile;
+};
+
+export const updateEmail = async (wallet, email) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    {
+      email: email,
+    }
+  );
+  return updatedProfile;
+};
+
 export const updateProfileImg = async (wallet, image) => {
   const updatedProfile = await Profile.updateOne(
     { wallet: wallet },

@@ -9,6 +9,7 @@ import {
   updateFTMSended,
   updateImportWFTM,
   updateNotShowRedirect,
+  updateProfile,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -305,6 +306,46 @@ export default class ProfileController {
       }
     } catch (e) {
       console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const { username, wallet, email, bio, profileImg, profileBanner } =
+        req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateProfile(
+          username,
+          wallet,
+          email,
+          bio,
+          profileImg,
+          profileBanner
+        );
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateEmail(req, res) {
+    try {
+      const { wallet, email } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateEmail(wallet, email);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
       res.status(500).send(e);
     }
   }
