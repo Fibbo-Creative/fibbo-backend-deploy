@@ -3591,6 +3591,12 @@ export const FACTORY_ABI = [
         name: "nft",
         type: "address",
       },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
+      },
     ],
     name: "ContractCreated",
     type: "event",
@@ -3657,6 +3663,16 @@ export const FACTORY_ABI = [
         internalType: "string",
         name: "_symbol",
         type: "string",
+      },
+      {
+        internalType: "address",
+        name: "_forwarder",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_creator",
+        type: "address",
       },
     ],
     name: "createNFTContract",
@@ -3737,6 +3753,19 @@ export const FACTORY_ABI = [
   {
     inputs: [],
     name: "marketplace",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "metaTxforwarder",
     outputs: [
       {
         internalType: "address",

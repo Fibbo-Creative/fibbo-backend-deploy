@@ -209,6 +209,8 @@ export const listenToAuctionEvents = async () => {
             collectionAddress: collection.toLowerCase(),
             tokenId: tokenId,
             bidder: bidder,
+            bid: formatEther(bidAmount),
+            payToken: auctionInfo._payToken,
           };
           await createHighestBidder(highestBidderDoc);
         }

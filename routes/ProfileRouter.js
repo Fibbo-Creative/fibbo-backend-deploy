@@ -14,6 +14,7 @@ ProfileRouter.get("/all", ProfileController.getAllProfiles);
 ProfileRouter.get("/verified", ProfileController.getVerifiedArtists);
 ProfileRouter.get("/history", ProfileController.getWalletHistory);
 ProfileRouter.get("/offers", ProfileController.getWalletOffers);
+ProfileRouter.get("/bids", ProfileController.getWalletBids);
 
 //POST
 ProfileRouter.post("/newProfile", ProfileController.newProfile);

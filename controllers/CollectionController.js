@@ -1,6 +1,9 @@
+import { ethers } from "ethers";
+import { forwarder, getFactoryContract } from "../contracts/index.js";
 import {
   createCollection,
   editCollection,
+  getAllCollections,
   getCollectionByName,
   getCollectionByUrl,
   getCollectionInfo,
@@ -77,10 +80,31 @@ export default class CollectionController {
     }
   }
 
+  static async getAllCollections(req, res) {
+    try {
+      const collections = await getAllCollections();
+      res.status(200).send(collections);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
   static async getCollectionItems(req, res) {
     try {
       const { address } = req.query;
       const items = await getItemsFromCollection(address);
+      res.status(200).send(items);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCollectionAddress(req, res) {
+    try {
+      const { creator, name } = req.query;
+      const items = await getCollectionAddress(creator, name);
       res.status(200).send(items);
     } catch (e) {
       console.log(e);
@@ -147,7 +171,6 @@ export default class CollectionController {
   static async saveCollectionDetails(req, res) {
     try {
       const {
-        contractAddress,
         creator,
         name,
         description,
@@ -162,25 +185,48 @@ export default class CollectionController {
         explicitContent,
       } = req.body;
 
-      const doc = {
-        contractAddress,
-        creator,
+      const FACTORY_CONTRACT = await getFactoryContract();
+      const tx = await FACTORY_CONTRACT.createNFTContract(
         name,
-        description,
-        logoImage,
-        featuredImage,
-        bannerImage,
-        customURL,
-        websiteURL,
-        discordURL,
-        telegramURL,
-        instagramURL,
-        numberOfItems: 0,
-        explicitContent,
-      };
-      const createdCollection = await createCollection(doc);
-      res.status(200).send(createdCollection);
+        "FBBOART",
+        forwarder,
+        creator
+      );
+      const response = await tx.wait();
+
+      let address = "";
+      response.events.map(async (evt) => {
+        if (
+          evt.topics[0] ===
+          "0xd127e714d98e23e914e6659df0aa28a12758da7c47219dbcc981d617de644b13"
+        ) {
+          address = evt.args[1];
+        }
+      });
+      if (address !== "") {
+        const doc = {
+          contractAddress: address,
+          creator,
+          name,
+          description,
+          logoImage,
+          featuredImage,
+          bannerImage,
+          customURL,
+          websiteURL,
+          discordURL,
+          telegramURL,
+          instagramURL,
+          numberOfItems: 0,
+          explicitContent,
+        };
+        const createdCollection = await createCollection(doc);
+        res.status(200).send(createdCollection);
+      } else {
+        res.status(500).send("ERROR");
+      }
     } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }
