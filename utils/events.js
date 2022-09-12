@@ -115,7 +115,7 @@ const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 export const registerMintEvent = async (collectionAddress, tokenId, to) => {
   const doc = {
     eventType: "TRANSFER",
-    eventDesc: "Item minteado",
+    eventDesc: "MINTED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: ADDRESS_ZERO,
@@ -141,7 +141,7 @@ export const registerListingEvent = async (
   const doc = {
     tokenId: tokenId,
     eventType: "LISTING",
-    eventDesc: "Item Listado",
+    eventDesc: "LISTED",
     collectionAddress: collectionAddress,
     from: from,
     to: ADDRESS_ZERO,
@@ -164,7 +164,7 @@ export const registerTransferEvent = async (
 ) => {
   const doc = {
     eventType: "TRANSFER",
-    eventDesc: "Transfer",
+    eventDesc: "TRANSFER",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -187,7 +187,7 @@ export const registerChangePriceEvent = async (
 ) => {
   const doc = {
     eventType: "LISTING",
-    eventDesc: "Precio Actualizado",
+    eventDesc: "NEW PRICE",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -204,7 +204,7 @@ export const registerChangePriceEvent = async (
 export const registerUnlistItem = async (collectionAddress, tokenId, from) => {
   const doc = {
     eventType: "LISTING",
-    eventDesc: "Quitado en venta",
+    eventDesc: "UNLISTED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -227,7 +227,7 @@ export const registerOfferCreated = async (
 ) => {
   const doc = {
     eventType: "OFFER",
-    eventDesc: "Oferta creada",
+    eventDesc: "NEW",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -251,7 +251,7 @@ export const registerOfferModified = async (
 ) => {
   const doc = {
     eventType: "OFFER",
-    eventDesc: "Oferta creada",
+    eventDesc: "MODIFIED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -273,7 +273,7 @@ export const registerOfferCancelled = async (
 ) => {
   const doc = {
     eventType: "OFFER",
-    eventDesc: "Oferta cancelada",
+    eventDesc: "CANCEL",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -296,7 +296,7 @@ export const registerOfferAccepted = async (
 ) => {
   const doc = {
     eventType: "OFFER",
-    eventDesc: "Oferta acceptada",
+    eventDesc: "ACCEPTED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -319,7 +319,7 @@ export const registerAuctionCreated = async (
 ) => {
   const doc = {
     eventType: "AUCTION",
-    eventDesc: "Subasta creada",
+    eventDesc: "NEW",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -343,7 +343,7 @@ export const registerBidCreated = async (
 ) => {
   const doc = {
     eventType: "AUCTION",
-    eventDesc: "Puja realizada",
+    eventDesc: "BID",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -366,7 +366,7 @@ export const registerAuctionPriceChanged = async (
 ) => {
   const doc = {
     eventType: "AUCTION",
-    eventDesc: "Subasta Actualizada",
+    eventDesc: "UPDATE",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -387,7 +387,7 @@ export const registerAuctionCanceled = async (
 ) => {
   const doc = {
     eventType: "AUCTION",
-    eventDesc: "Subasta cancelada",
+    eventDesc: "CANCELED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -409,7 +409,7 @@ export const registerAuctionCompleted = async (
 ) => {
   const doc = {
     eventType: "AUCTION",
-    eventDesc: "Subasta Finalizada",
+    eventDesc: "FINISHED",
     tokenId: tokenId,
     collectionAddress: collectionAddress,
     from: from,
@@ -425,8 +425,54 @@ export const registerAuctionCompleted = async (
 
 export const updateEvents = async () => {
   await Events.updateMany(
-    { eventType: "CHANGE PRICE" },
-    { eventType: "LISTING" }
+    { eventDesc: "Item minteado" },
+    { eventDesc: "MINTED" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Item Listado" },
+    { eventDesc: "LISTED" }
+  );
+  await Events.updateMany({ eventDesc: "Transfer" }, { eventDesc: "TRANSFER" });
+  await Events.updateMany(
+    { eventDesc: "Precio Actualizado" },
+    { eventDesc: "NEW PRICE" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Quitado en venta" },
+    { eventDesc: "UNLISTED" }
+  );
+  await Events.updateMany({ eventDesc: "Oferta creada" }, { eventDesc: "NEW" });
+  await Events.updateMany(
+    { eventDesc: "Oferta Modificada" },
+    { eventDesc: "MODIFIED" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Oferta cancelada" },
+    { eventDesc: "CANCELED" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Oferta acceptada" },
+    { eventDesc: "ACCEPTED" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Subasta creada" },
+    { eventDesc: "NEW" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Puja realizada" },
+    { eventDesc: "BID" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Subasta Actualizada" },
+    { eventDesc: "UPDATE" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Subasta cancelada" },
+    { eventDesc: "CANCELED" }
+  );
+  await Events.updateMany(
+    { eventDesc: "Subasta Finalizada" },
+    { eventDesc: "FINISHED" }
   );
 };
 
