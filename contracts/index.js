@@ -16,8 +16,6 @@ import { listenToAuctionEvents } from "./eventListeners/auctionListener.js";
 import { listenToFactoryEvents } from "./eventListeners/factoryListener.js";
 dotenv.config();
 
-export const forwarder = "0x7687D1fcF56779b19beCBFae93cabAD1EA77878b";
-
 const web3provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );

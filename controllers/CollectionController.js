@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
-import { forwarder, getFactoryContract } from "../contracts/index.js";
+import { getFactoryContract } from "../contracts/index.js";
+import { forwarder } from "../contracts/address.js";
 import {
   createCollection,
   editCollection,
