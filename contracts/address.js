@@ -1,3 +1,4 @@
-const wftmAddress = "0xf1277d1ed8ad466beddf92ef448a132661956621";
-const addressRegistry = "0x35E0c50A92f213755601D37aF935Ff8b58E7E112";
-export { wftmAddress, addressRegistry };
+const wftmAddress = "0x4EEf747dC4f5d110d9bCfA5C6F24b3359bD4B2d4";
+const addressRegistry = "0x3AB3e6D66a2f4688c5746F836539a1dDa6D191eB";
+const forwarder = "0x7687D1fcF56779b19beCBFae93cabAD1EA77878b";
+export { wftmAddress, addressRegistry, forwarder };

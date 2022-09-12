@@ -257,6 +257,17 @@ export const ADDRESS_REGISTRY_ABI = [
 
 export const MARKETPLACE_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -743,6 +754,19 @@ export const MARKETPLACE_ABI = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "forwarder",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address payable",
@@ -758,6 +782,25 @@ export const MARKETPLACE_ABI = [
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1136,6 +1179,11 @@ export const COLLECTION_ABI = [
         name: "_contractsManager",
         type: "address",
       },
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
     ],
     stateMutability: "nonpayable",
     type: "constructor",
@@ -1401,6 +1449,25 @@ export const COLLECTION_ABI = [
     inputs: [
       {
         internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "_to",
         type: "address",
       },
@@ -1435,19 +1502,6 @@ export const COLLECTION_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "owner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "uint256",
@@ -1464,13 +1518,6 @@ export const COLLECTION_ABI = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -2447,6 +2494,17 @@ export const VERIFICATION_ABI = [
 
 export const AUCTION_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -3173,6 +3231,25 @@ export const AUCTION_ABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "minBidIncrement",
     outputs: [
@@ -3489,6 +3566,17 @@ export const WFTM_ABI = [
 
 export const FACTORY_ABI = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -3502,6 +3590,12 @@ export const FACTORY_ABI = [
         internalType: "address",
         name: "nft",
         type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "name",
+        type: "string",
       },
     ],
     name: "ContractCreated",
@@ -3570,6 +3664,16 @@ export const FACTORY_ABI = [
         name: "_symbol",
         type: "string",
       },
+      {
+        internalType: "address",
+        name: "_forwarder",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_creator",
+        type: "address",
+      },
     ],
     name: "createNFTContract",
     outputs: [
@@ -3580,6 +3684,19 @@ export const FACTORY_ABI = [
       },
     ],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenContractAddress",
+        type: "address",
+      },
+    ],
+    name: "disableTokenContract",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -3615,8 +3732,40 @@ export const FACTORY_ABI = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "marketplace",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "metaTxforwarder",
     outputs: [
       {
         internalType: "address",

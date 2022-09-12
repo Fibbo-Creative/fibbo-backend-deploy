@@ -6,9 +6,11 @@ import {
   getAllProfiles,
   getProfileInfo,
   getVerifiedArtists,
+  updateEmail,
   updateFTMSended,
   updateImportWFTM,
   updateNotShowRedirect,
+  updateProfile,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -28,6 +30,8 @@ import {
 } from "../utils/offers.js";
 import NftController from "./NftsController.js";
 import { getNftInfo, getNftInfoById, getNftsByAddress } from "../utils/nfts.js";
+import { formatBids, getBidsFromWallet } from "../utils/highestBidders.js";
+import { getAuction } from "../utils/auctions.js";
 
 export default class ProfileController {
   constructor() {}
@@ -157,6 +161,42 @@ export default class ProfileController {
         myOffers: formattedMyOffers,
         offers: formattedAllOffer,
       });
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getWalletBids(req, res) {
+    try {
+      const { address } = req.query;
+
+      const myBids = await getBidsFromWallet(address);
+
+      let finalMyBids = [];
+      await Promise.all(
+        myBids.map(async (bid) => {
+          const itemInfo = await getNftInfoById(
+            bid.tokenId,
+            bid.collectionAddress
+          );
+          const auctionInfo = await getAuction(
+            bid.collectionAddress,
+            bid.tokenId
+          );
+          finalMyBids = [
+            ...finalMyBids,
+            {
+              ...bid._doc,
+              item: itemInfo,
+              auction: auctionInfo,
+            },
+          ];
+        })
+      );
+
+      const formattedMyBids = await formatBids(finalMyBids);
+      res.status(200).send(formattedMyBids);
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
@@ -305,6 +345,46 @@ export default class ProfileController {
       }
     } catch (e) {
       console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const { username, wallet, email, bio, profileImg, profileBanner } =
+        req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateProfile(
+          username,
+          wallet,
+          email,
+          bio,
+          profileImg,
+          profileBanner
+        );
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateEmail(req, res) {
+    try {
+      const { wallet, email } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateEmail(wallet, email);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
       res.status(500).send(e);
     }
   }

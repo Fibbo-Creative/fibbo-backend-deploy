@@ -9,7 +9,7 @@ import {
   WFTM_CONTRACT,
 } from "../index.js";
 
-const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
+export const checkAuctionsSheduled = CronJob.schedule("* * * * *", async () => {
   const AUCTION_CONTRACT = await getAuctionContract();
   const auctions = await getAuctions();
   await Promise.all(
@@ -103,9 +103,3 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
     })
   );
 });
-
-const initScheduledJobs = () => {
-  scheduledJobFunction.start();
-};
-
-export default initScheduledJobs;

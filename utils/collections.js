@@ -2,6 +2,7 @@ import Collection from "../models/collection.js";
 import events from "../models/events.js";
 import Events from "../models/events.js";
 import Nft from "../models/nft.js";
+import { getProfileInfo } from "./profiles.js";
 
 export const getCollectionInfo = async (collectionAddress) => {
   let _collection;
@@ -20,12 +21,15 @@ export const getCollectionInfo = async (collectionAddress) => {
 
 export const getOwnersFromCollection = async (nftsFromCol) => {
   let owners = [];
-  nftsFromCol.forEach((item) => {
-    let _owner = item.owner;
-    if (!owners.includes(_owner)) {
-      owners.push(_owner);
-    }
-  });
+  await Promise.all(
+    nftsFromCol.map(async (item) => {
+      let _owner = item.owner;
+      let profileData = await getProfileInfo(_owner);
+      if (!owners.find((profile) => profile.wallet === _owner)) {
+        owners.push(profileData);
+      }
+    })
+  );
   return owners;
 };
 
@@ -49,6 +53,17 @@ export const filterCollectionsByName = async (filterQuery) => {
   });
 
   return nameFilteredCols;
+};
+
+export const updateCollectionAddress = async (owner, name, address) => {
+  const updatedCollection = await Collection.updateOne(
+    {
+      creator: owner,
+      name: name,
+    },
+    { contractAddress: address }
+  );
+  return updatedCollection;
 };
 
 export const updateTotalNfts = async (collectionAddress, numberOfItems) => {
@@ -83,10 +98,13 @@ export const getItemsFromCollection = async (collectionAddress) => {
   return items;
 };
 
-export const getCollectionsAvailable = async (owner) => {
-  const collections = await Collection.find({
-    creator: { $in: ["public", owner] },
-  });
+export const getCollectionsAvailable = async () => {
+  const collections = await Collection.find({});
+  return collections.filter((item) => item.creator !== "public");
+};
+
+export const getAllCollections = async () => {
+  const collections = await Collection.find({}).sort({ name: 1 });
   return collections;
 };
 
@@ -100,6 +118,14 @@ export const getCollectionsFromOwner = async (owner) => {
 export const createCollection = async (doc) => {
   const created = await Collection.create(doc);
   return created;
+};
+
+export const getCollectionAddress = async (creator, name) => {
+  const collection = await Collection.findOne({
+    creator: creator,
+    name: name,
+  });
+  return collection.contractAddress;
 };
 
 export const editCollection = async (

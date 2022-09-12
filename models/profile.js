@@ -11,6 +11,8 @@ const profileSchema = mongoose.Schema({
   verified: Boolean,
   importedWFTM: Boolean,
   notShowRedirect: Boolean,
+  email: String,
+  bio: String,
 });
 
 export default mongoose.model("profiles", profileSchema);
