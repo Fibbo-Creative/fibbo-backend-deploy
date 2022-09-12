@@ -4,6 +4,7 @@ import CollectionController from "../controllers/CollectionController.js";
 const CollectionRouter = express.Router();
 
 CollectionRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 
