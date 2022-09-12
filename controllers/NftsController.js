@@ -387,7 +387,7 @@ export default class NftController {
       const { collection, tokenId, from, to } = req.body;
 
       const nftInfo = await getNftInfoById(tokenId, collection);
-      console.log(nftInfo);
+
       if (nftInfo) {
         await changeNftOwner(collection.toLowerCase(), tokenId, from, to);
         await registerTransferEvent(collection, tokenId, from, to, 0, "");
@@ -397,7 +397,6 @@ export default class NftController {
           tokenId
         );
 
-        console.log(isFreezedMetadata);
         if (!isFreezedMetadata) {
           const MARKET_CONTRACT = await getMarketContract();
           const data = {

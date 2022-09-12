@@ -125,7 +125,6 @@ export const getCollectionAddress = async (creator, name) => {
     creator: creator,
     name: name,
   });
-  console.log(collection);
   return collection.contractAddress;
 };
 

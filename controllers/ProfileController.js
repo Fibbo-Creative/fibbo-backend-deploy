@@ -196,7 +196,6 @@ export default class ProfileController {
       );
 
       const formattedMyBids = await formatBids(finalMyBids);
-      console.log(formattedMyBids);
       res.status(200).send(formattedMyBids);
     } catch (e) {
       console.log(e);
