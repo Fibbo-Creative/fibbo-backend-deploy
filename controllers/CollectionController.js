@@ -206,7 +206,7 @@ export default class CollectionController {
       });
       if (address !== "") {
         const doc = {
-          contractAddress: address,
+          contractAddress: address.toLocaleLowerCase(),
           creator,
           name,
           description,
