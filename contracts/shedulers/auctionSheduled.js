@@ -3,20 +3,20 @@ import CronJob from "node-cron";
 import { getAuctions } from "../../utils/auctions.js";
 import {
   ADDRESS_ZERO,
-  AUCTION_CONTRACT,
-  COLLECTION_CONTRACT,
+  getAuctionContract,
+  getERC721Contract,
   managerWallet,
   WFTM_CONTRACT,
 } from "../index.js";
 
-const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
+export const checkAuctionsSheduled = CronJob.schedule("* * * * *", async () => {
+  const AUCTION_CONTRACT = await getAuctionContract();
   const auctions = await getAuctions();
   await Promise.all(
     auctions.map(async (auction) => {
       const now = new Date().getTime();
       const startTime = auction.startTime * 1000;
       const endTime = auction.endTime * 1000;
-
       if (now > startTime) {
         if (now > endTime) {
           try {
@@ -24,7 +24,6 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
               auction.collectionAddress,
               auction.tokenId
             );
-            console.log(highestBider._bidder);
             if (highestBider._bidder !== ADDRESS_ZERO) {
               const reservePrice = auction.reservePrice;
               const bid = highestBider._bid;
@@ -35,14 +34,16 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                 );
                 await clearAuctionTx.wait();
               } else {
-                const isApprovedForAll =
-                  await COLLECTION_CONTRACT.isApprovedForAll(
-                    managerWallet.address,
-                    AUCTION_CONTRACT.address
-                  );
+                const ERC721_CONTRACT = getERC721Contract(
+                  auction.collectionAddress
+                );
+                const isApprovedForAll = await ERC721_CONTRACT.isApprovedForAll(
+                  managerWallet.address,
+                  AUCTION_CONTRACT.address
+                );
 
                 if (!isApprovedForAll) {
-                  const approveTx = await COLLECTION_CONTRACT.setApprovalForAll(
+                  const approveTx = await ERC721_CONTRACT.setApprovalForAll(
                     AUCTION_CONTRACT.address,
                     true
                   );
@@ -70,10 +71,26 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
                 await resolveTx.wait();
               }
             } else {
-              const clearAuctionTx = AUCTION_CONTRACT.clearAuction(
+              const ERC721_CONTRACT = getERC721Contract(
+                auction.collectionAddress
+              );
+              const isApprovedForAll = await ERC721_CONTRACT.isApprovedForAll(
+                managerWallet.address,
+                AUCTION_CONTRACT.address
+              );
+              if (!isApprovedForAll) {
+                const approveTx = await ERC721_CONTRACT.setApprovalForAll(
+                  AUCTION_CONTRACT.address,
+                  true
+                );
+                await approveTx.wait();
+              }
+
+              const clearAuctionTx = await AUCTION_CONTRACT.clearAuction(
                 auction.collectionAddress,
                 auction.tokenId
               );
+
               await clearAuctionTx.wait();
             }
           } catch (e) {
@@ -86,9 +103,3 @@ const scheduledJobFunction = CronJob.schedule("* * * * *", async () => {
     })
   );
 });
-
-const initScheduledJobs = () => {
-  scheduledJobFunction.start();
-};
-
-export default initScheduledJobs;

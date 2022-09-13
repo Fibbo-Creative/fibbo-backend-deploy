@@ -1,5 +1,9 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { ADDRESS_ZERO, AUCTION_CONTRACT } from "../contracts/index.js";
+import {
+  ADDRESS_ZERO,
+  getAuctionContract,
+  getMarketContract,
+} from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
@@ -14,13 +18,21 @@ export const createNft = async (doc) => {
   }
 };
 
-export const getNftInfo = async (owner, nftId, collectionAddress) => {
-  const _nft = await Nft.findOne({
-    owner: owner,
-    tokenId: nftId,
-    collectionAddress: collectionAddress,
+export const deleteNftItem = async (collection, tokenId) => {
+  const _nftDeleted = await Nft.deleteOne({
+    collectionAddress: collection,
+    tokenId: tokenId,
   });
 
+  return _nftDeleted;
+};
+
+export const getNftInfo = async (owner, nftId, collectionAddress) => {
+  const _nft = await Nft.findOne({
+    collectionAddress: collectionAddress,
+    owner: owner,
+    tokenId: nftId,
+  });
   if (_nft) return _nft._doc;
 };
 
@@ -62,6 +74,46 @@ export const changeNftOwner = async (
   return updatedNft;
 };
 
+export const changeNftInfo = async (
+  collectionAddress,
+  nftId,
+  name,
+  desc,
+  royalties,
+  image,
+  ipfsImage,
+  ipfsMetadata,
+  externalLink,
+  additionalContent
+) => {
+  const updatedNft = await Nft.updateOne(
+    { tokenId: nftId, collectionAddress: collectionAddress },
+    {
+      name: name,
+      description: desc,
+      royalties: royalties,
+      image: image,
+      ipfsImage: ipfsImage,
+      ipfsMetadata: ipfsMetadata,
+      externalLink: externalLink,
+      additionalContent: additionalContent,
+    }
+  );
+
+  return updatedNft;
+};
+
+export const setFreezedMetadata = async (creator, collectionAddress, nftId) => {
+  const updatedNft = await Nft.updateOne(
+    { tokenId: nftId, collectionAddress: collectionAddress, creator: creator },
+    {
+      hasFreezedMetadata: true,
+    }
+  );
+
+  return updatedNft;
+};
+
 export const filterItemsByTitle = async (filterQuery) => {
   const titleFilteredItems = await Nft.find({
     name: { $regex: ".*" + filterQuery + ".*", $options: "i" },
@@ -73,7 +125,8 @@ export const filterItemsByTitle = async (filterQuery) => {
 export const getAllNftsInfo = async (nfts) => {
   try {
     let finalResult = [];
-
+    const AUCTION_CONTRACT = await getAuctionContract();
+    const MARKET_CONTRACT = await getMarketContract();
     await Promise.all(
       nfts.map(async (item) => {
         //Get collection info
@@ -94,7 +147,9 @@ export const getAllNftsInfo = async (nfts) => {
             item.collectionAddress,
             item.tokenId
           );
-          const createdAt = auctionInDb._id.getTimestamp();
+          //const createdAt = auctionInDb._id.getTimestamp();
+          const createdAt = 0;
+
           let payTokenInfo = await getPayTokenInfo(auction.payToken);
           let highestBid = await AUCTION_CONTRACT.highestBids(
             item.collectionAddress,
@@ -125,16 +180,26 @@ export const getAllNftsInfo = async (nfts) => {
           }
         } else {
           //Check if its for sale
-          let listing = await getNftForSaleById(
+          let listingInfo = await MARKET_CONTRACT.listings(
             item.collectionAddress,
-            item.tokenId
+            item.tokenId,
+            item.owner
           );
-          if (listing) {
-            let payTokenInfo = await getPayTokenInfo(listing.payToken);
+
+          listingInfo = {
+            payToken: listingInfo.payToken,
+            price: parseFloat(formatEther(listingInfo.price)),
+            startingTime: new Date(
+              listingInfo.startingTime * 1000
+            ).toLocaleString(),
+          };
+
+          if (listingInfo.price !== 0) {
+            let payTokenInfo = await getPayTokenInfo(listingInfo.payToken);
             result = {
               ...result,
-              forSaleAt: listing.forSaleAt,
-              price: listing.price,
+              forSaleAt: listingInfo.startingTime,
+              price: listingInfo.price,
               payToken: payTokenInfo._doc,
             };
           } else {

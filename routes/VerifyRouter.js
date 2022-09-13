@@ -3,6 +3,7 @@ import VerifyController from "../controllers/VerifyController.js";
 const VerifyRouter = express.Router();
 
 VerifyRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 

@@ -1,4 +1,6 @@
 import Offers from "../models/offers.js";
+import AcceptedOffers from "../models/acceptedOffers.js";
+
 import { getPayTokenInfo } from "./payTokens.js";
 import { getProfileInfo } from "./profiles.js";
 
@@ -45,6 +47,11 @@ export const getOffer = async (collectionAddress, tokenId, creator) => {
   return offers;
 };
 
+export const getOffers = async () => {
+  const offers = await Offers.find();
+  return offers;
+};
+
 export const formatOffers = async (offersData) => {
   let formatted = await Promise.all(
     offersData.map(async (item) => {
@@ -74,6 +81,29 @@ export const addNewOffer = async (doc) => {
   return offerCreated;
 };
 
+export const updateOffer = async (
+  creator,
+  collectionAddress,
+  tokenId,
+  payToken,
+  price,
+  deadline
+) => {
+  const offerCreated = await Offers.updateOne(
+    {
+      creator: creator,
+      collectionAddress: collectionAddress,
+      tokenId: tokenId,
+    },
+    {
+      payToken: payToken,
+      price: price,
+      deadline: deadline,
+    }
+  );
+  return offerCreated;
+};
+
 export const deleteOffer = async (collection, tokenId, creator) => {
   const offerDeleted = await Offers.deleteOne({
     collectionAddress: collection,
@@ -81,4 +111,17 @@ export const deleteOffer = async (collection, tokenId, creator) => {
     creator: creator,
   });
   return offerDeleted;
+};
+
+export const addAcceptedOffer = async (doc) => {
+  const offerAccepted = await AcceptedOffers.create(doc);
+  return offerAccepted;
+};
+
+export const getOfferAccepted = async (collectionAddress, tokenId) => {
+  const offerAccepted = await AcceptedOffers.findOne({
+    collectionAddress: collectionAddress,
+    tokenId: tokenId,
+  });
+  return offerAccepted;
 };

@@ -6,8 +6,11 @@ import {
   getAllProfiles,
   getProfileInfo,
   getVerifiedArtists,
+  updateEmail,
   updateFTMSended,
   updateImportWFTM,
+  updateNotShowRedirect,
+  updateProfile,
   updateProfileBanner,
   updateProfileImg,
   updateUsername,
@@ -15,7 +18,11 @@ import {
 import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import sanity_client from "../lib/sanity.js";
-import { formatHistory, getEventsFromWallet } from "../utils/events.js";
+import {
+  formatHistory,
+  getEventsFromWallet,
+  orderHistory,
+} from "../utils/events.js";
 import {
   formatOffers,
   getItemOffers,
@@ -24,6 +31,8 @@ import {
 } from "../utils/offers.js";
 import NftController from "./NftsController.js";
 import { getNftInfo, getNftInfoById, getNftsByAddress } from "../utils/nfts.js";
+import { formatBids, getBidsFromWallet } from "../utils/highestBidders.js";
+import { getAuction } from "../utils/auctions.js";
 
 export default class ProfileController {
   constructor() {}
@@ -94,7 +103,7 @@ export default class ProfileController {
         })
       );
       const formattedResult = await formatHistory(finalResullt);
-      res.status(200).send(formattedResult);
+      res.status(200).send(formattedResult.sort(orderHistory));
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
@@ -165,6 +174,42 @@ export default class ProfileController {
       res.status(500).send(e);
     }
   }
+
+  static async getWalletBids(req, res) {
+    try {
+      const { address } = req.query;
+
+      const myBids = await getBidsFromWallet(address);
+
+      let finalMyBids = [];
+      await Promise.all(
+        myBids.map(async (bid) => {
+          const itemInfo = await getNftInfoById(
+            bid.tokenId,
+            bid.collectionAddress
+          );
+          const auctionInfo = await getAuction(
+            bid.collectionAddress,
+            bid.tokenId
+          );
+          finalMyBids = [
+            ...finalMyBids,
+            {
+              ...bid._doc,
+              item: itemInfo,
+              auction: auctionInfo,
+            },
+          ];
+        })
+      );
+
+      const formattedMyBids = await formatBids(finalMyBids);
+      res.status(200).send(formattedMyBids);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
   //POST
 
   static async newProfile(req, res) {
@@ -186,6 +231,7 @@ export default class ProfileController {
           ftmSended: true,
           verified: false,
           importedWFTM: hasWFTM,
+          notShowRedirect: false,
         };
 
         const tx = {
@@ -285,6 +331,63 @@ export default class ProfileController {
       const userProfile = await getProfileInfo(wallet);
       if (userProfile) {
         await updateImportWFTM(wallet);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateShowRedirect(req, res) {
+    try {
+      const { wallet } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateNotShowRedirect(wallet);
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const { username, wallet, email, bio, profileImg, profileBanner } =
+        req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateProfile(
+          username,
+          wallet,
+          email,
+          bio,
+          profileImg,
+          profileBanner
+        );
+        res.status(200).send("Profile Updated");
+      } else {
+        res.status(205).send("Profile not found!");
+      }
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateEmail(req, res) {
+    try {
+      const { wallet, email } = req.body;
+
+      const userProfile = await getProfileInfo(wallet);
+      if (userProfile) {
+        await updateEmail(wallet, email);
         res.status(200).send("Profile Updated");
       } else {
         res.status(205).send("Profile not found!");

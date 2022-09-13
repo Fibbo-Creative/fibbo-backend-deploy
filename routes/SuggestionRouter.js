@@ -5,6 +5,7 @@ import SuggestionController from "../controllers/SuggestionController.js";
 const SuggestionRouter = express.Router();
 
 SuggestionRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 

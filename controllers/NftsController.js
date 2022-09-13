@@ -1,47 +1,36 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { nftColectionAddress } from "../contracts/address.js";
-import {
-  ADDRESS_ZERO,
-  AUCTION_CONTRACT,
-  MARKET_CONTRACT,
-  VERIFICATION_CONTRACT,
-} from "../contracts/index.js";
+import { getERC721Contract, getMarketContract } from "../contracts/index.js";
 import Nft from "../models/nft.js";
-import NftForSale from "../models/nftForSale.js";
-import offers from "../models/offers.js";
-import { getCollectionInfo, updateTotalNfts } from "../utils/collections.js";
+import ethers from "ethers";
+import {
+  getCollectionInfo,
+  getItemsFromCollection,
+  updateTotalNfts,
+} from "../utils/collections.js";
 import {
   formatHistory,
   getAllTransfers,
   getEventsFromNft,
   getEventsFromWallet,
   registerMintEvent,
+  registerTransferEvent,
 } from "../utils/events.js";
 import {
+  changeNftInfo,
   changeNftOwner,
   createNft,
-  filterItemsByTitle,
+  deleteNftItem,
   getAllNfts,
   getAllNftsInfo,
-  getNftInfo,
   getNftInfoById,
   getNftsByAddress,
   getNftsByCreator,
+  setFreezedMetadata,
 } from "../utils/nfts.js";
-import {
-  changePrice,
-  createNftForSale,
-  deleteNftForSale,
-  getAllNftsForSale,
-  getNftForSaleById,
-} from "../utils/nftsForSale.js";
-import {
-  formatOffers,
-  getItemOffers,
-  getOffersFromWallet,
-  sortHigherOffer,
-} from "../utils/offers.js";
+import { getAllNftsForSale } from "../utils/nftsForSale.js";
+import { formatOffers, getItemOffers } from "../utils/offers.js";
 import { getPayTokenInfo } from "../utils/payTokens.js";
+import { addJsonToIpfs } from "../utils/ipfs.js";
 
 export default class NftController {
   constructor() {}
@@ -87,27 +76,44 @@ export default class NftController {
 
   static async getNftInfoById(req, res) {
     try {
+      const MARKET_CONTRACT = await getMarketContract();
       const { collection, nftId } = req.query;
 
       if (!nftId) {
         res.status(204).send("No identifier supplied");
       }
 
-      const nft = await getNftInfoById(nftId, collection);
+      let collectionAddress = collection;
+      if (!collection.includes("0x")) {
+        const collectionInfo = await getCollectionInfo(collection);
+        collectionAddress = collectionInfo.contractAddress;
+      }
+
+      const nft = await getNftInfoById(nftId, collectionAddress);
       if (nft) {
-        const nftForSale = await getNftForSaleById(collection, nftId);
         let nftResult = {
           nftData: nft,
         };
+        let listingInfo = await MARKET_CONTRACT.listings(
+          collectionAddress,
+          nftId,
+          nft.owner
+        );
 
-        if (nftForSale) {
-          const payTokenInfo = await getPayTokenInfo(nftForSale.payToken);
+        listingInfo = {
+          payToken: listingInfo.payToken,
+          price: parseFloat(formatEther(listingInfo.price)),
+          startingTime: new Date(listingInfo.startingTime * 1000),
+        };
+
+        if (listingInfo.price !== 0) {
+          const payTokenInfo = await getPayTokenInfo(listingInfo.payToken);
           nftResult = {
             ...nftResult,
             listing: {
               forSale: true,
-              price: nftForSale.price,
-              forSaleAt: nftForSale.forSaleAt,
+              price: listingInfo.price,
+              forSaleAt: listingInfo.forSaleAt,
               payToken: payTokenInfo,
             },
           };
@@ -118,7 +124,7 @@ export default class NftController {
         }
 
         //Get offers
-        let offers = await getItemOffers(collection, nftId);
+        let offers = await getItemOffers(collectionAddress, nftId);
         offers = await formatOffers(offers);
         nftResult = {
           ...nftResult,
@@ -126,11 +132,18 @@ export default class NftController {
         };
 
         //Get history
-        let history = await getEventsFromNft(collection, nftId);
+        let history = await getEventsFromNft(collectionAddress, nftId);
         history = await formatHistory(history);
         nftResult = {
           ...nftResult,
           history: history,
+        };
+
+        //Get more from collection
+        let items = await getItemsFromCollection(collectionAddress);
+        nftResult = {
+          ...nftResult,
+          nfts: items.filter((item) => item.tokenId !== parseFloat(nftId)),
         };
 
         res.status(200).send(nftResult);
@@ -223,12 +236,14 @@ export default class NftController {
         creator,
         tokenId,
         royalty,
+        externalLink,
         sanityImgUrl,
+        ipfsImgUrl,
+        ipfsMetadataUrl,
         additionalContent,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
-
       if (collectionInfo) {
         let doc = {
           name: name,
@@ -238,7 +253,11 @@ export default class NftController {
           tokenId: parseInt(tokenId),
           royalty: parseFloat(royalty),
           image: sanityImgUrl,
+          ipfsImage: ipfsImgUrl,
+          ipfsMetadata: ipfsMetadataUrl,
           collectionAddress: collection,
+          hasFreezedMetadata: false,
+          externalLink: externalLink,
           createdAt: new Date().toISOString(),
         };
         if (additionalContent) {
@@ -249,9 +268,11 @@ export default class NftController {
         }
         const newNft = await createNft(doc);
 
+        const MARKET_CONTRACT = await getMarketContract();
+
         const tx = await MARKET_CONTRACT.registerRoyalty(
           creator,
-          nftColectionAddress,
+          collection,
           parseInt(tokenId),
           parseFloat(royalty) * 100
         );
@@ -268,6 +289,152 @@ export default class NftController {
       } else {
         res.send("No collection Found");
       }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async updateNft(req, res) {
+    try {
+      const {
+        collection,
+        name,
+        description,
+        creator,
+        tokenId,
+        royalty,
+        sanityImgUrl,
+        ipfsImageUrl,
+        ipfsMetadataUrl,
+        externalLink,
+        additionalContent,
+      } = req.body;
+
+      const collectionInfo = await getCollectionInfo(collection);
+
+      const nftData = await getNftInfoById(tokenId, collection);
+      if (nftData) {
+        if (collectionInfo) {
+          await changeNftInfo(
+            collection,
+            tokenId,
+            name,
+            description,
+            royalty,
+            sanityImgUrl,
+            ipfsImageUrl,
+            ipfsMetadataUrl,
+            externalLink,
+            additionalContent
+          );
+          res.status(200).send("Edited");
+        } else {
+          res.stauts(204).send("No collection Found");
+        }
+      } else {
+        res.stauts(204).send("No Item Found");
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async registerRoyalties(req, res) {
+    try {
+      const MARKET_CONTRACT = await getMarketContract();
+      const { collection, tokenId, royalty } = req.body;
+
+      const collectionInfo = await getCollectionInfo(collection);
+
+      if (collectionInfo) {
+        const tx = await MARKET_CONTRACT.registerRoyalty(
+          creator,
+          collectionInfo.contractAddress,
+          parseInt(tokenId),
+          parseFloat(royalty) * 100
+        );
+
+        tx.wait(1);
+
+        await setFreezedMetadata(
+          creator,
+          collectionInfo.contractAddress,
+          tokenId
+        );
+      } else {
+        res.send("No collection Found");
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async deleteItem(req, res) {
+    try {
+      const { collection, tokenId } = req.body;
+      const deleted = await deleteNftItem(collection, tokenId);
+      res.status(200).send("DELETED");
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async sentItem(req, res) {
+    try {
+      const { collection, tokenId, from, to } = req.body;
+
+      const nftInfo = await getNftInfoById(tokenId, collection);
+
+      if (nftInfo) {
+        await changeNftOwner(collection.toLowerCase(), tokenId, from, to);
+        await registerTransferEvent(collection, tokenId, from, to, 0, "");
+
+        const ERC721_CONTRACT = getERC721Contract(collection);
+        let isFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
+          tokenId
+        );
+
+        if (!isFreezedMetadata) {
+          const MARKET_CONTRACT = await getMarketContract();
+          const data = {
+            name: nftInfo.name,
+            description: nftInfo.description,
+            image: nftInfo.image,
+            external_link: nftInfo.externalLink,
+          };
+
+          const ipfsCID = await addJsonToIpfs(data);
+
+          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
+
+          const tx = await ERC721_CONTRACT.setFreezedMetadata(
+            tokenId,
+            ipfsFileURL
+          );
+          await tx.wait();
+
+          const royaltiesTx = await MARKET_CONTRACT.registerRoyalty(
+            nftInfo.creator,
+            collection,
+            tokenId,
+            parseFloat(nftInfo.royalty) * 100
+          );
+          await royaltiesTx.wait();
+        }
+        //set freezed metadata!
+
+        res.status(200).send("Sent");
+      } else {
+        res.status(200).send("Item dont exist");
+      }
+
+      //Update owner
+
+      //Register transfer event
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

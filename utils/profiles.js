@@ -37,10 +37,49 @@ export const updateImportWFTM = async (wallet) => {
   return updatedProfile;
 };
 
+export const updateNotShowRedirect = async (wallet) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    { notShowRedirect: true }
+  );
+  return updatedProfile;
+};
+
 export const updateUsername = async (wallet, username) => {
   const updatedProfile = await Profile.updateOne(
     { wallet: wallet },
     { username: username }
+  );
+  return updatedProfile;
+};
+
+export const updateProfile = async (
+  username,
+  wallet,
+  email,
+  bio,
+  profileImg,
+  profileBanner
+) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    {
+      username: username,
+      profileImg: profileImg,
+      profileBanner: profileBanner,
+      email: email,
+      bio: bio,
+    }
+  );
+  return updatedProfile;
+};
+
+export const updateEmail = async (wallet, email) => {
+  const updatedProfile = await Profile.updateOne(
+    { wallet: wallet },
+    {
+      email: email,
+    }
   );
   return updatedProfile;
 };

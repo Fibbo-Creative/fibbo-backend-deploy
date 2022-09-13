@@ -5,6 +5,7 @@ import upload from "../lib/multer.js";
 const ProfileRouter = express.Router();
 
 ProfileRouter.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
   next();
 });
 
@@ -14,6 +15,7 @@ ProfileRouter.get("/all", ProfileController.getAllProfiles);
 ProfileRouter.get("/verified", ProfileController.getVerifiedArtists);
 ProfileRouter.get("/history", ProfileController.getWalletHistory);
 ProfileRouter.get("/offers", ProfileController.getWalletOffers);
+ProfileRouter.get("/bids", ProfileController.getWalletBids);
 
 //POST
 ProfileRouter.post("/newProfile", ProfileController.newProfile);
@@ -29,5 +31,8 @@ ProfileRouter.post(
 );
 ProfileRouter.post("/setUsername", ProfileController.updateUsername);
 ProfileRouter.post("/setImportWFTM", ProfileController.updateImportWFTM);
+ProfileRouter.post("/setNotShowRedirect", ProfileController.updateShowRedirect);
+ProfileRouter.post("/update", ProfileController.updateProfile);
+ProfileRouter.post("/updateEmail", ProfileController.updateEmail);
 
 export default ProfileRouter;

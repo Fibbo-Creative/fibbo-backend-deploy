@@ -1,13 +1,6 @@
 import dotenv from "dotenv";
 import { ethers } from "ethers";
-import {
-  suggestionsAddress,
-  marketAddress,
-  verificationAddress,
-  auctionAddress,
-  wftmAddress,
-  nftColectionAddress,
-} from "./address.js";
+import { addressRegistry, wftmAddress } from "./address.js";
 import {
   MARKETPLACE_ABI,
   COMMUNITY_ABI,
@@ -15,9 +8,12 @@ import {
   AUCTION_ABI,
   WFTM_ABI,
   COLLECTION_ABI,
+  FACTORY_ABI,
+  ADDRESS_REGISTRY_ABI,
 } from "./abi.js";
 import { listenToMarketEvents } from "./eventListeners/marketListener.js";
 import { listenToAuctionEvents } from "./eventListeners/auctionListener.js";
+import { listenToFactoryEvents } from "./eventListeners/factoryListener.js";
 dotenv.config();
 
 const web3provider = new ethers.providers.JsonRpcProvider(
@@ -48,37 +44,42 @@ const faucetWallet = new ethers.Wallet(
   web3provider
 );
 
-const SUGGESTION_CONTRACT = new ethers.Contract(
-  suggestionsAddress,
-  COMMUNITY_ABI,
-  managerWallet
-);
-
-const MARKET_CONTRACT = new ethers.Contract(
-  marketAddress,
-  MARKETPLACE_ABI,
-  managerWallet
-);
-
-const AUCTION_CONTRACT = new ethers.Contract(
-  auctionAddress,
-  AUCTION_ABI,
-  managerWallet
-);
-
-const VERIFICATION_CONTRACT = new ethers.Contract(
-  verificationAddress,
-  VERIFICATION_ABI,
-  managerWallet
-);
-
-const COLLECTION_CONTRACT = new ethers.Contract(
-  nftColectionAddress,
-  COLLECTION_ABI,
+const ADDRESS_REGISTRY_CONTRACT = new ethers.Contract(
+  addressRegistry,
+  ADDRESS_REGISTRY_ABI,
   managerWallet
 );
 
 const WFTM_CONTRACT = new ethers.Contract(wftmAddress, WFTM_ABI, managerWallet);
+
+const getMarketContract = async () => {
+  const marketAddress = await ADDRESS_REGISTRY_CONTRACT.marketplace();
+  return new ethers.Contract(marketAddress, MARKETPLACE_ABI, managerWallet);
+};
+
+const getAuctionContract = async () => {
+  const auctionAddress = await ADDRESS_REGISTRY_CONTRACT.auction();
+  return new ethers.Contract(auctionAddress, AUCTION_ABI, managerWallet);
+};
+
+const getFactoryContract = async () => {
+  const factoryAddress = await ADDRESS_REGISTRY_CONTRACT.factory();
+  return new ethers.Contract(factoryAddress, FACTORY_ABI, managerWallet);
+};
+
+const getCommunityContract = async () => {
+  const communityAddress = await ADDRESS_REGISTRY_CONTRACT.community();
+  return new ethers.Contract(communityAddress, COMMUNITY_ABI, managerWallet);
+};
+
+const getVerificationContract = async () => {
+  const verifyAddress = await ADDRESS_REGISTRY_CONTRACT.verification();
+  return new ethers.Contract(verifyAddress, VERIFICATION_ABI, managerWallet);
+};
+
+const getERC721Contract = (collectionAddress) => {
+  return new ethers.Contract(collectionAddress, COLLECTION_ABI, managerWallet);
+};
 
 export {
   web3provider,
@@ -86,19 +87,17 @@ export {
   managerWallet,
   faucetWallet,
   ADDRESS_ZERO,
-  SUGGESTION_CONTRACT,
-  MARKET_CONTRACT,
-  VERIFICATION_CONTRACT,
-  AUCTION_CONTRACT,
+  getERC721Contract,
+  getMarketContract,
+  getAuctionContract,
+  getFactoryContract,
+  getVerificationContract,
+  getCommunityContract,
   WFTM_CONTRACT,
-  COLLECTION_CONTRACT,
 };
 
 export const listenToEvents = () => {
-  if (MARKET_CONTRACT !== undefined) {
-    listenToMarketEvents();
-  }
-  if (AUCTION_CONTRACT !== undefined) {
-    listenToAuctionEvents();
-  }
+  listenToMarketEvents();
+  listenToAuctionEvents();
+  listenToFactoryEvents();
 };

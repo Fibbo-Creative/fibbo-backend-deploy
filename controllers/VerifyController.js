@@ -1,4 +1,4 @@
-import { VERIFICATION_CONTRACT } from "../contracts/index.js";
+import { getVerificationContract } from "../contracts/index.js";
 import { getProfileInfo, verifyArtistInDb } from "../utils/profiles.js";
 import {
   createVerifyRequest,
@@ -64,6 +64,7 @@ export default class VerifyController {
     try {
       const { artist } = req.body;
 
+      const VERIFICATION_CONTRACT = await getVerificationContract();
       const verifyTx = await VERIFICATION_CONTRACT.verificateAddress(artist);
 
       await verifyTx.wait();
