@@ -222,7 +222,7 @@ export default class CollectionController {
           explicitContent,
         };
         const createdCollection = await createCollection(doc);
-        res.status(200).send(createdCollection);
+        res.status(200).send(address.toLocaleLowerCase());
       } else {
         res.status(500).send("ERROR");
       }

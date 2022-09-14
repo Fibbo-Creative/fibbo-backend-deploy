@@ -133,7 +133,6 @@ export const getAllNftsInfo = async (nfts) => {
         let result = {};
         let collectionInfo = await getCollectionInfo(item.collectionAddress);
         //Check if has auction
-
         result = {
           ...item._doc,
           collection: collectionInfo,
@@ -143,10 +142,6 @@ export const getAllNftsInfo = async (nfts) => {
           item.tokenId
         );
         if (auction.owner !== ADDRESS_ZERO) {
-          let auctionInDb = await getAuction(
-            item.collectionAddress,
-            item.tokenId
-          );
           //const createdAt = auctionInDb._id.getTimestamp();
           const createdAt = 0;
 
