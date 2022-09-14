@@ -31,6 +31,11 @@ import { getAllNftsForSale } from "../utils/nftsForSale.js";
 import { formatOffers, getItemOffers } from "../utils/offers.js";
 import { getPayTokenInfo } from "../utils/payTokens.js";
 import { addJsonToIpfs } from "../utils/ipfs.js";
+import {
+  createFavoriteItem,
+  deleteFavoriteItem,
+  getFavoriteItem,
+} from "../utils/favoriteItem.js";
 
 export default class NftController {
   constructor() {}
@@ -38,10 +43,10 @@ export default class NftController {
   //GET
   static async getAllNfts(req, res) {
     try {
-      const { count } = req.query;
+      const { count, user } = req.query;
       const allNfts = await getAllNfts(count);
 
-      let formatted = await getAllNftsInfo(allNfts);
+      let formatted = await getAllNftsInfo(allNfts, user);
       res.status(200).send(formatted);
     } catch (e) {
       console.log(e);
@@ -442,6 +447,40 @@ export default class NftController {
       //Update owner
 
       //Register transfer event
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async addFavorite(req, res) {
+    try {
+      const { collection, tokenId, from } = req.body;
+
+      const doc = {
+        collectionAddress: collection,
+        tokenId: tokenId,
+        for: from,
+      };
+
+      const favorite = await createFavoriteItem(doc);
+      res.status(200).send(favorite);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async deleteFavorite(req, res) {
+    try {
+      const { collection, tokenId, from } = req.body;
+      const favorite = await getFavoriteItem(collection, tokenId, from);
+      if (favorite) {
+        await deleteFavoriteItem(collection, tokenId, from);
+        res.status(200).send("DELETED");
+      } else {
+        res.status(205).send("Not found favorite");
+      }
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

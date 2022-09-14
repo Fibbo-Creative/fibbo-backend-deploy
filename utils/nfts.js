@@ -7,6 +7,7 @@ import {
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
+import { getFavoriteItem, getFavoriteItemForToken } from "./favoriteItem.js";
 import { getNftForSaleById } from "./nftsForSale.js";
 import { getItemOffers, sortHigherOffer } from "./offers.js";
 import { getPayTokenInfo, getPayTokens } from "./payTokens.js";
@@ -124,11 +125,12 @@ export const filterItemsByTitle = async (filterQuery) => {
   return titleFilteredItems;
 };
 
-export const getAllNftsInfo = async (nfts) => {
+export const getAllNftsInfo = async (nfts, user) => {
   try {
     let finalResult = [];
     const AUCTION_CONTRACT = await getAuctionContract();
     const MARKET_CONTRACT = await getMarketContract();
+
     await Promise.all(
       nfts.map(async (item) => {
         //Get collection info
@@ -224,7 +226,22 @@ export const getAllNftsInfo = async (nfts) => {
             }
           }
         }
+        let favoritesItem = await getFavoriteItemForToken(
+          item.collectionAddress,
+          item.tokenId
+        );
 
+        result = {
+          ...result,
+          favorites: favoritesItem.length,
+        };
+        let favorited = favoritesItem.find((fav) => fav.for === user);
+        if (favorited) {
+          result = {
+            ...result,
+            isFavorited: true,
+          };
+        }
         finalResult.push(result);
       })
     );

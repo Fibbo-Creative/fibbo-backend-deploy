@@ -21,6 +21,11 @@ import {
   getUserCollectionsOptions,
   setNotShowRedirect,
 } from "../utils/usersCollectionsOptions.js";
+import {
+  createWatchlist,
+  deleteWatchlist,
+  getWatchlist,
+} from "../utils/watchlists.js";
 
 export default class CollectionController {
   constructor() {}
@@ -41,7 +46,7 @@ export default class CollectionController {
 
   static async getCollectionDetails(req, res) {
     try {
-      const { collection } = req.query;
+      const { collection, user } = req.query;
       const collectionInfo = await getCollectionInfo(collection);
 
       const nftsFromCol = await getItemsFromCollection(
@@ -53,7 +58,7 @@ export default class CollectionController {
         collectionInfo.contractAddress
       );
 
-      const formatted = await getAllNftsInfo(nftsFromCol);
+      const formatted = await getAllNftsInfo(nftsFromCol, user);
       const result = {
         ...collectionInfo._doc,
         nfts: formatted,
@@ -305,6 +310,36 @@ export default class CollectionController {
       const { contractAddress, user } = req.body;
       const createdCollection = await setNotShowRedirect(contractAddress, user);
       res.status(200).send(createdCollection);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+  static async addToWatchList(req, res) {
+    try {
+      const { collection, from } = req.body;
+
+      const doc = {
+        collectionAddress: collection,
+        for: from,
+      };
+
+      const watchlist = await createWatchlist(doc);
+      res.status(200).send(watchlist);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+  static async removeFromWatchlist(req, res) {
+    try {
+      const { collection, from } = req.body;
+      const watchListInfo = await getWatchlist(collection, from);
+
+      if (watchListInfo) {
+        await deleteWatchlist(collection, from);
+        res.status(200).send("Deleted");
+      } else {
+        res.status(205).send("Not found watchlist");
+      }
     } catch (e) {
       res.status(500).send(e);
     }

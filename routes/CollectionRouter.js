@@ -41,5 +41,10 @@ CollectionRouter.post(
   CollectionController.newUserCollectionOptions
 );
 CollectionRouter.post("/setShowRedirect", CollectionController.setShowRedirect);
+CollectionRouter.post("/addToWatchlist", CollectionController.addToWatchList);
+CollectionRouter.post(
+  "/removeFromWatchlist",
+  CollectionController.removeFromWatchlist
+);
 
 export default CollectionRouter;
