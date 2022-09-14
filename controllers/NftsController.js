@@ -242,7 +242,10 @@ export default class NftController {
         ipfsImgUrl,
         ipfsMetadataUrl,
         additionalContent,
+        categories,
       } = req.body;
+
+      console.log(categories);
 
       const collectionInfo = await getCollectionInfo(collection);
       if (collectionInfo) {
@@ -260,6 +263,7 @@ export default class NftController {
           hasFreezedMetadata: false,
           externalLink: externalLink,
           createdAt: new Date().toISOString(),
+          categories: categories,
         };
         if (additionalContent) {
           doc = {
@@ -310,6 +314,7 @@ export default class NftController {
         ipfsMetadataUrl,
         externalLink,
         additionalContent,
+        categories,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
@@ -327,7 +332,8 @@ export default class NftController {
             ipfsImageUrl,
             ipfsMetadataUrl,
             externalLink,
-            additionalContent
+            additionalContent,
+            categories
           );
           res.status(200).send("Edited");
         } else {

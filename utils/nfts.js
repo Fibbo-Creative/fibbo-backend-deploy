@@ -84,7 +84,8 @@ export const changeNftInfo = async (
   ipfsImage,
   ipfsMetadata,
   externalLink,
-  additionalContent
+  additionalContent,
+  categories
 ) => {
   const updatedNft = await Nft.updateOne(
     { tokenId: nftId, collectionAddress: collectionAddress },
@@ -97,6 +98,7 @@ export const changeNftInfo = async (
       ipfsMetadata: ipfsMetadata,
       externalLink: externalLink,
       additionalContent: additionalContent,
+      categories: categories,
     }
   );
 
