@@ -36,6 +36,8 @@ import {
   getERC721Contract,
   getMarketContract,
   getVerificationContract,
+  managerWallet,
+  WFTM_CONTRACT,
 } from "../index.js";
 
 export const listenToMarketEvents = async () => {
@@ -58,7 +60,16 @@ export const listenToMarketEvents = async () => {
   );
   MARKET_CONTRACT.on(
     "ItemSold",
-    async (seller, buyer, collection, tokenId, payToken, price) => {
+    async (
+      seller,
+      buyer,
+      collection,
+      tokenId,
+      payToken,
+      price,
+      marketFee,
+      royaltyFee
+    ) => {
       //Save ItemSold
       try {
         const updatedOwner = await changeNftOwner(
@@ -67,18 +78,16 @@ export const listenToMarketEvents = async () => {
           seller,
           buyer
         );
-
+        const nftInfo = await getNftInfo(
+          buyer,
+          tokenId.toNumber(),
+          collection.toLowerCase()
+        );
         const ERC721_CONTRACT = getERC721Contract(collection);
         const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
           tokenId
         );
         if (!hasFreezedMetadata) {
-          const nftInfo = await getNftInfo(
-            buyer,
-            tokenId.toNumber(),
-            collection.toLowerCase()
-          );
-
           const data = {
             name: nftInfo.name,
             description: nftInfo.description,
@@ -115,6 +124,29 @@ export const listenToMarketEvents = async () => {
         }
 
         if (updatedOwner) {
+          const royaltyFeeFormatted = formatEther(royaltyFee);
+          const finalPrice = price.sub(marketFee).sub(royaltyFee);
+
+          const priceTx = await WFTM_CONTRACT.withdrawByAdmin(
+            finalPrice,
+            seller
+          );
+          await priceTx.wait();
+
+          const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+            marketFee,
+            managerWallet.address
+          );
+          await marketFeeTx.wait();
+
+          if (royaltyFeeFormatted > 0) {
+            const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+              royaltyFee,
+              nftInfo.creator
+            );
+            await royatyFeeTx.wait();
+          }
+
           const notificationDoc = {
             type: "TRANSFER",
             collectionAddress: collection.toLowerCase(),

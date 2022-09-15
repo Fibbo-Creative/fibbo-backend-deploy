@@ -1,4 +1,4 @@
-import { formatEther } from "ethers/lib/utils.js";
+import { formatEther, parseEther } from "ethers/lib/utils.js";
 import {
   addNewAuction,
   deleteAuction,
@@ -32,6 +32,8 @@ import {
   getAuctionContract,
   getERC721Contract,
   getMarketContract,
+  managerWallet,
+  WFTM_CONTRACT,
 } from "../index.js";
 
 export const listenToAuctionEvents = async () => {
@@ -186,6 +188,13 @@ export const listenToAuctionEvents = async () => {
           tokenId
         );
         if (prevBidder) {
+          const prevBidAmmount = parseEther(prevBidder.bid.toString());
+          const returnBid = await WFTM_CONTRACT.withdrawByAdmin(
+            prevBidAmmount,
+            prevBidder.bidder
+          );
+          await returnBid.wait();
+
           const notDoc = {
             type: "AUCTION",
             collectionAddress: collection.toLowerCase(),
@@ -235,9 +244,24 @@ export const listenToAuctionEvents = async () => {
 
   AUCTION_CONTRACT.on(
     "AuctionResulted",
-    async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
+    async (
+      prevOwner,
+      collection,
+      tokenId,
+      winner,
+      payToken,
+      winingBid,
+      marketFee,
+      royaltyFee
+    ) => {
       await deleteAuction(collection.toLowerCase(), tokenId);
       await deleteHighestBidder(collection.toLowerCase(), tokenId);
+
+      const nftInfo = await getNftInfo(
+        prevOwner,
+        tokenId.toNumber(),
+        collection.toLowerCase()
+      );
 
       await changeNftOwner(
         collection.toLowerCase(),
@@ -251,12 +275,6 @@ export const listenToAuctionEvents = async () => {
         tokenId
       );
       if (!hasFreezedMetadata) {
-        const nftInfo = await getNftInfo(
-          buyer,
-          tokenId.toNumber(),
-          collection.toLowerCase()
-        );
-
         const data = {
           name: nftInfo.name,
           description: nftInfo.description,
@@ -329,6 +347,34 @@ export const listenToAuctionEvents = async () => {
       };
 
       await createNotification(notificationDoc);
+
+      const royaltyFeeFormatted = formatEther(royaltyFee);
+      const finalPrice = winingBid.sub(marketFee).sub(royaltyFee);
+
+      console.log("FINAL", finalPrice);
+      console.log("RoyaltyFEE", royaltyFeeFormatted);
+      console.log("MarketFee", formatEther(marketFee));
+
+      const priceTx = await WFTM_CONTRACT.withdrawByAdmin(
+        finalPrice,
+        prevOwner
+      );
+      await priceTx.wait();
+
+      const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+        marketFee,
+        managerWallet.address
+      );
+      await marketFeeTx.wait();
+
+      if (royaltyFeeFormatted > 0) {
+        const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+          royaltyFee,
+          nftInfo.creator
+        );
+        await royatyFeeTx.wait();
+      }
+      console.log("DONE");
     }
   );
 };
