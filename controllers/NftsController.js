@@ -35,6 +35,7 @@ import {
   createFavoriteItem,
   deleteFavoriteItem,
   getFavoriteItem,
+  getFavoriteItemForToken,
 } from "../utils/favoriteItem.js";
 
 export default class NftController {
@@ -83,7 +84,7 @@ export default class NftController {
   static async getNftInfoById(req, res) {
     try {
       const MARKET_CONTRACT = await getMarketContract();
-      const { collection, nftId } = req.query;
+      const { collection, nftId, user } = req.query;
 
       if (!nftId) {
         res.status(204).send("No identifier supplied");
@@ -151,6 +152,24 @@ export default class NftController {
           ...nftResult,
           nfts: items.filter((item) => item.tokenId !== parseFloat(nftId)),
         };
+
+        let favoritesItem = await getFavoriteItemForToken(
+          nft.collectionAddress,
+          nft.tokenId
+        );
+
+        nftResult = {
+          ...nftResult,
+          favorites: favoritesItem.length,
+        };
+
+        let favorited = favoritesItem.find((fav) => fav.for === user);
+        if (favorited) {
+          nftResult = {
+            ...nftResult,
+            isFavorited: true,
+          };
+        }
 
         res.status(200).send(nftResult);
       } else {
