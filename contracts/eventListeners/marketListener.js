@@ -1,4 +1,4 @@
-import { formatEther } from "ethers/lib/utils.js";
+import { formatEther, parseEther } from "ethers/lib/utils.js";
 import NftController from "../../controllers/NftsController.js";
 import {
   registerChangePriceEvent,
@@ -32,6 +32,7 @@ import {
   updateOffer,
 } from "../../utils/offers.js";
 import { getProfileInfo } from "../../utils/profiles.js";
+import { gasStation } from "../address.js";
 import {
   getERC721Contract,
   getMarketContract,
@@ -48,7 +49,6 @@ export const listenToMarketEvents = async () => {
     "ItemListed",
     async (owner, collection, tokenId, payToken, price, startingTime) => {
       //Save ItemListed
-      console.log("LISTING");
       await registerListingEvent(
         collection.toLowerCase(),
         tokenId,
@@ -133,12 +133,6 @@ export const listenToMarketEvents = async () => {
           );
           await priceTx.wait();
 
-          const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
-            marketFee,
-            managerWallet.address
-          );
-          await marketFeeTx.wait();
-
           if (royaltyFeeFormatted > 0) {
             const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
               royaltyFee,
@@ -146,6 +140,26 @@ export const listenToMarketEvents = async () => {
             );
             await royatyFeeTx.wait();
           }
+
+          const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+            marketFee,
+            managerWallet.address
+          );
+          await marketFeeTx.wait();
+
+          const formattedMarketFee = formatEther(marketFee);
+          const feeForStation = (formattedMarketFee / 100) * 2;
+
+          console.log("fee for station", feeForStation);
+          const sendToGasToGasStation = {
+            from: managerWallet.address,
+            to: gasStation,
+            value: parseEther(feeForStation.toString()),
+          };
+
+          const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
+          await tx.wait();
+          console.log("DONE sending station");
 
           const notificationDoc = {
             type: "TRANSFER",

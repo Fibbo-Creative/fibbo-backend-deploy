@@ -27,6 +27,7 @@ import { addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
 import { getItemOffers } from "../../utils/offers.js";
+import { gasStation } from "../address.js";
 import {
   ADDRESS_ZERO,
   getAuctionContract,
@@ -357,12 +358,6 @@ export const listenToAuctionEvents = async () => {
       );
       await priceTx.wait();
 
-      const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
-        marketFee,
-        managerWallet.address
-      );
-      await marketFeeTx.wait();
-
       if (royaltyFeeFormatted > 0) {
         const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
           royaltyFee,
@@ -370,6 +365,26 @@ export const listenToAuctionEvents = async () => {
         );
         await royatyFeeTx.wait();
       }
+
+      const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+        marketFee,
+        managerWallet.address
+      );
+      await marketFeeTx.wait();
+
+      const formattedMarketFee = formatEther(marketFee);
+      const feeForStation = (formattedMarketFee / 100) * 2;
+
+      console.log("fee for station", feeForStation);
+      const sendToGasToGasStation = {
+        from: managerWallet.address,
+        to: gasStation,
+        value: parseEther(feeForStation.toString()),
+      };
+
+      const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
+      await tx.wait();
+      console.log("DONE");
     }
   );
 };
