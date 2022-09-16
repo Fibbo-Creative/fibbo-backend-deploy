@@ -351,10 +351,6 @@ export const listenToAuctionEvents = async () => {
       const royaltyFeeFormatted = formatEther(royaltyFee);
       const finalPrice = winingBid.sub(marketFee).sub(royaltyFee);
 
-      console.log("FINAL", finalPrice);
-      console.log("RoyaltyFEE", royaltyFeeFormatted);
-      console.log("MarketFee", formatEther(marketFee));
-
       const priceTx = await WFTM_CONTRACT.withdrawByAdmin(
         finalPrice,
         prevOwner
@@ -374,7 +370,6 @@ export const listenToAuctionEvents = async () => {
         );
         await royatyFeeTx.wait();
       }
-      console.log("DONE");
     }
   );
 };
