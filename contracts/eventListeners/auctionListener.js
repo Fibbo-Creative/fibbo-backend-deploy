@@ -26,7 +26,7 @@ import {
 import { addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
-import { getItemOffers } from "../../utils/offers.js";
+import { deleteOffer, getItemOffers } from "../../utils/offers.js";
 import { gasStation } from "../address.js";
 import {
   ADDRESS_ZERO,
@@ -78,6 +78,11 @@ export const listenToAuctionEvents = async () => {
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
+              await deleteOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
                 collection.toLowerCase(),
                 tokenId,
@@ -375,7 +380,6 @@ export const listenToAuctionEvents = async () => {
       const formattedMarketFee = formatEther(marketFee);
       const feeForStation = (formattedMarketFee / 100) * 2;
 
-      console.log("fee for station", feeForStation);
       const sendToGasToGasStation = {
         from: managerWallet.address,
         to: gasStation,
@@ -384,7 +388,6 @@ export const listenToAuctionEvents = async () => {
 
       const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
       await tx.wait();
-      console.log("DONE");
     }
   );
 };

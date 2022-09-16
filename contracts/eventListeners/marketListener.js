@@ -25,6 +25,7 @@ import {
 import { createNotification } from "../../utils/notifications.js";
 import {
   addNewOffer,
+  deleteAcceptedOffer,
   deleteOffer,
   getItemOffers,
   getOffer,
@@ -227,6 +228,16 @@ export const listenToMarketEvents = async () => {
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
+              await deleteOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
+              await deleteAcceptedOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
                 collection,
                 tokenId,

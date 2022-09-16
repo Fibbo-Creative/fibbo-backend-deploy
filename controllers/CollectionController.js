@@ -25,6 +25,7 @@ import {
   createWatchlist,
   deleteWatchlist,
   getWatchlist,
+  getWatchlistForWallet,
 } from "../utils/watchlists.js";
 
 export default class CollectionController {
@@ -58,12 +59,15 @@ export default class CollectionController {
         collectionInfo.contractAddress
       );
 
+      const favorites = await getWatchlistForWallet(user);
+
       const formatted = await getAllNftsInfo(nftsFromCol, user);
       const result = {
         ...collectionInfo._doc,
         nfts: formatted,
         owners: owners,
         volumen: volumen,
+        liked: favorites.find((item) => item.for === user) ? true : false,
       };
       if (collectionInfo) {
         res.status(200).send(result);
@@ -90,6 +94,29 @@ export default class CollectionController {
     try {
       const collections = await getAllCollections();
       res.status(200).send(collections);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getWatchlist(req, res) {
+    try {
+      const { user } = req.query;
+      const collections = await getWatchlistForWallet(user);
+
+      let formatted = await Promise.all(
+        collections.map(async (item) => {
+          const collection = item.collectionAddress;
+          const info = await getCollectionInfo(collection);
+
+          return {
+            ...info._doc,
+          };
+        })
+      );
+
+      res.status(200).send(formatted);
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

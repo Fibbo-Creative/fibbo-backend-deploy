@@ -19,6 +19,7 @@ CollectionRouter.get("/getAddress", CollectionController.getCollectionAddress);
 CollectionRouter.get("/items", CollectionController.getCollectionItems);
 CollectionRouter.get("/available", CollectionController.getCollections);
 CollectionRouter.get("/all", CollectionController.getAllCollections);
+CollectionRouter.get("/watchlist", CollectionController.getWatchlist);
 
 CollectionRouter.get(
   "/myCollections",
