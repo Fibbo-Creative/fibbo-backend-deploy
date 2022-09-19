@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { getCommunityContract } from "../contracts/index.js";
 import PendingSuggestions from "../models/pendingSuggestions.js";
+import SavedSuggestions from "../models/savedSuggestions.js";
 import Suggestions from "../models/suggestions.js";
 import {
   deletePendingSuggestion,
@@ -8,6 +9,7 @@ import {
   getActiveSuggestions,
   getPendingSuggestion,
   getPendingSuggestions,
+  getSavedSuggestions,
   getSuggestionInfo,
   voteSuggestion,
 } from "../utils/suggestions.js";
@@ -28,6 +30,16 @@ export default class SuggestionController {
   static async getActive(req, res) {
     try {
       const pendingSugg = await getActiveSuggestions();
+
+      res.status(200).send(pendingSugg);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async getSaved(req, res) {
+    try {
+      const pendingSugg = await getSavedSuggestions();
 
       res.status(200).send(pendingSugg);
     } catch (e) {
@@ -71,6 +83,31 @@ export default class SuggestionController {
       }
 
       await deletePendingSuggestion(title, proposer);
+
+      res.status(200).send("Suggestion accepted");
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async saveSuggestion(req, res) {
+    try {
+      const { title, proposer } = req.body;
+      const suggInfo = await getSuggestionInfo(title, proposer);
+      if (suggInfo) {
+        const doc = {
+          title: title,
+          description: suggInfo.description,
+          votes: suggInfo.votes,
+          proposer: proposer,
+          voters: suggInfo.voters,
+        };
+
+        await SavedSuggestions.create(doc);
+      }
+
+      await deleteSuggestion(title, proposer);
 
       res.status(200).send("Suggestion accepted");
     } catch (e) {

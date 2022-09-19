@@ -1,4 +1,5 @@
 import PendingSuggestions from "../models/pendingSuggestions.js";
+import SavedSuggestions from "../models/savedSuggestions.js";
 import Suggestions from "../models/suggestions.js";
 
 export const createSuggestion = async (doc) => {
@@ -23,6 +24,11 @@ export const getPendingSuggestions = async () => {
 
 export const getActiveSuggestions = async () => {
   const suggInfo = await Suggestions.find();
+  if (suggInfo) return suggInfo;
+};
+
+export const getSavedSuggestions = async () => {
+  const suggInfo = await SavedSuggestions.find();
   if (suggInfo) return suggInfo;
 };
 

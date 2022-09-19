@@ -10,6 +10,10 @@ AdminRouter.use((req, res, next) => {
 //GET
 AdminRouter.get("/lastBalance", AdminController.getLastBalance);
 
+AdminRouter.get("/login", AdminController.login);
+AdminRouter.get("/loginToken", AdminController.loginToken);
+
 AdminRouter.get("/lastGasStation", AdminController.getLastGasStation);
+AdminRouter.post("/newCategory", AdminController.newCategory);
 
 export default AdminRouter;
