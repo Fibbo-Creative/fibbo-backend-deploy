@@ -17,6 +17,7 @@ import {
   registerOfferCancelled,
   registerTransferEvent,
 } from "../../utils/events.js";
+import { getFavoriteItemForToken } from "../../utils/favoriteItem.js";
 import {
   createHighestBidder,
   deleteHighestBidder,
@@ -27,6 +28,7 @@ import { addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
 import { deleteOffer, getItemOffers } from "../../utils/offers.js";
+import { getWatchlistForCollection } from "../../utils/watchlists.js";
 import { gasStation } from "../address.js";
 import {
   ADDRESS_ZERO,
@@ -59,6 +61,7 @@ export const listenToAuctionEvents = async () => {
           owner: auctionInfo._owner,
           startTime: auctionInfo._startTime,
           endTime: auctionInfo._endTime,
+          started: false,
         };
 
         await addNewAuction(doc);
@@ -94,6 +97,57 @@ export const listenToAuctionEvents = async () => {
                 tokenId,
                 offer.creator
               );
+            })
+          );
+        }
+
+        //Get who has favorite item
+        const favorites = await getFavoriteItemForToken(
+          collection.toLowerCase(),
+          tokenId
+        );
+
+        if (favorites.length > 0) {
+          await Promise.all(
+            favorites.map(async (fav) => {
+              const notificationDoc = {
+                type: "AUCTION",
+                collectionAddress: collection.toLowerCase(),
+                tokenId: tokenId.toNumber(),
+                to: fav.for,
+                timestamp: new Date().toISOString(),
+                params: {
+                  type: "FAV AUCTION",
+                },
+                visible: true,
+              };
+
+              await createNotification(notificationDoc);
+            })
+          );
+        }
+
+        //Get watchlist
+        const watchlists = await getWatchlistForCollection(
+          collection.toLowerCase()
+        );
+
+        if (watchlists.length > 0) {
+          await Promise.all(
+            watchlists.map(async (fav) => {
+              const notificationDoc = {
+                type: "AUCTION",
+                collectionAddress: collection.toLowerCase(),
+                tokenId: tokenId.toNumber(),
+                to: fav.for,
+                timestamp: new Date().toISOString(),
+                params: {
+                  type: "COL AUCTION",
+                },
+                visible: true,
+              };
+
+              await createNotification(notificationDoc);
             })
           );
         }

@@ -51,6 +51,17 @@ export const updateEndTime = async (collection, tokenId, endTime) => {
   return auctionUpdated;
 };
 
+export const updateStarted = async (collection, tokenId) => {
+  const auctionUpdated = await Auction.updateOne(
+    {
+      collectionAddress: collection,
+      tokenId: tokenId,
+    },
+    { started: true }
+  );
+  return auctionUpdated;
+};
+
 export const deleteAuction = async (collection, tokenId) => {
   const deletedAuction = await Auction.deleteOne({
     collectionAddress: collection,
