@@ -32,3 +32,11 @@ export const getWatchlistForWallet = async (from) => {
 
   return watchlist;
 };
+
+export const getWatchlistForCollection = async (collection) => {
+  const watchlist = await Watchlist.find({
+    collectionAddress: collection,
+  });
+
+  return watchlist;
+};

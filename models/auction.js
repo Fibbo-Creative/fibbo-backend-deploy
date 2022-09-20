@@ -9,6 +9,7 @@ const auctionSchema = mongoose.Schema({
   buyNowPrice: Number,
   startTime: Number,
   endTime: Number,
+  started: Boolean,
 });
 
 export default mongoose.model("auctions", auctionSchema);

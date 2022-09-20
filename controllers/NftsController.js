@@ -37,6 +37,7 @@ import {
   getFavoriteItem,
   getFavoriteItemForToken,
 } from "../utils/favoriteItem.js";
+import { getAllCategories, getCategoryInfo } from "../utils/categories.js";
 
 export default class NftController {
   constructor() {}
@@ -171,6 +172,19 @@ export default class NftController {
           };
         }
 
+        const formattedCattegories = [];
+        await Promise.all(
+          nft.categories.map(async (cat) => {
+            const categoryInfo = await getCategoryInfo(cat);
+            formattedCattegories.push(categoryInfo);
+          })
+        );
+
+        nftResult = {
+          ...nftResult,
+          categories: formattedCattegories,
+        };
+
         res.status(200).send(nftResult);
       } else {
         res.status(205).send("Nft with id not found!");
@@ -245,6 +259,28 @@ export default class NftController {
     try {
       const result = await getAllTransfers();
       res.status(200).send(result.toString());
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCategories(req, res) {
+    try {
+      const result = await getAllCategories();
+      res.status(200).send(result);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCategoriesDetail(req, res) {
+    try {
+      const { categories } = req.query;
+      console.log(categories);
+      //const result = await getAllCategories();
+      res.status(200).send("OK");
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

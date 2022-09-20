@@ -1,4 +1,5 @@
 import PendingSuggestions from "../models/pendingSuggestions.js";
+import SavedSuggestions from "../models/savedSuggestions.js";
 import Suggestions from "../models/suggestions.js";
 
 export const createSuggestion = async (doc) => {
@@ -26,6 +27,11 @@ export const getActiveSuggestions = async () => {
   if (suggInfo) return suggInfo;
 };
 
+export const getSavedSuggestions = async () => {
+  const suggInfo = await SavedSuggestions.find();
+  if (suggInfo) return suggInfo;
+};
+
 export const getPendingSuggestion = async (title, proposer) => {
   const suggInfo = await PendingSuggestions.findOne({
     title: title,
@@ -44,6 +50,14 @@ export const deleteSuggestion = async (title, proposer) => {
 
 export const deletePendingSuggestion = async (title, proposer) => {
   const suggInfo = await PendingSuggestions.deleteOne({
+    title: title,
+    proposer: proposer,
+  });
+  if (suggInfo) return suggInfo;
+};
+
+export const deleteSavedSuggestion = async (title, proposer) => {
+  const suggInfo = await SavedSuggestions.deleteOne({
     title: title,
     proposer: proposer,
   });

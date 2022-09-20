@@ -1,4 +1,5 @@
 import AdminBalance from "../models/admin/adminBalance.js";
+import AdminUsers from "../models/adminusers.js";
 
 export const getOldBalance = async () => {
   const old = await AdminBalance.findOne({ name: "manager" });
@@ -24,4 +25,14 @@ export const updateOldGasStation = async (newBalance) => {
     { balance: newBalance }
   );
   return updated;
+};
+
+export const findUser = async (email, psswd) => {
+  const user = await AdminUsers.findOne({ email: email, password: psswd });
+  return user;
+};
+
+export const findUserByToken = async (token) => {
+  const user = await AdminUsers.findOne({ token: token });
+  return user;
 };

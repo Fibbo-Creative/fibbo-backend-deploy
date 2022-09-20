@@ -116,3 +116,12 @@ export const getOfferAccepted = async (collectionAddress, tokenId) => {
   });
   return offerAccepted;
 };
+
+export const deleteAcceptedOffer = async (collection, tokenId, creator) => {
+  const offerDeleted = await AcceptedOffers.deleteOne({
+    collectionAddress: collection,
+    tokenId: tokenId,
+    creator: creator,
+  });
+  return offerDeleted;
+};

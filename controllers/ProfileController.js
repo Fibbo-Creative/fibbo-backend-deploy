@@ -32,6 +32,7 @@ import NftController from "./NftsController.js";
 import { getNftInfo, getNftInfoById, getNftsByAddress } from "../utils/nfts.js";
 import { formatBids, getBidsFromWallet } from "../utils/highestBidders.js";
 import { getAuction } from "../utils/auctions.js";
+import { getFavoriteItemFromWallet } from "../utils/favoriteItem.js";
 
 export default class ProfileController {
   constructor() {}
@@ -102,6 +103,29 @@ export default class ProfileController {
         })
       );
       const formattedResult = await formatHistory(finalResullt);
+      res.status(200).send(formattedResult.sort(orderHistory));
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getFavorites(req, res) {
+    try {
+      const { address } = req.query;
+
+      const result = await getFavoriteItemFromWallet(address);
+      let finalResult = [];
+      await Promise.all(
+        result.map(async (item) => {
+          const itemInfo = await getNftInfoById(
+            item.tokenId,
+            item.collectionAddress
+          );
+          finalResult = [...finalResult, { ...itemInfo }];
+        })
+      );
+      const formattedResult = await formatHistory(finalResult);
       res.status(200).send(formattedResult.sort(orderHistory));
     } catch (e) {
       console.log(e);

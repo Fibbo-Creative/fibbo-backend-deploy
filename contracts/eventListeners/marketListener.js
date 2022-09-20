@@ -10,6 +10,7 @@ import {
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
+import { getFavoriteItemForToken } from "../../utils/favoriteItem.js";
 import { addJsonToIpfs } from "../../utils/ipfs.js";
 import {
   changeNftOwner,
@@ -25,6 +26,7 @@ import {
 import { createNotification } from "../../utils/notifications.js";
 import {
   addNewOffer,
+  deleteAcceptedOffer,
   deleteOffer,
   getItemOffers,
   getOffer,
@@ -32,6 +34,10 @@ import {
   updateOffer,
 } from "../../utils/offers.js";
 import { getProfileInfo } from "../../utils/profiles.js";
+import {
+  getWatchlist,
+  getWatchlistForCollection,
+} from "../../utils/watchlists.js";
 import { gasStation } from "../address.js";
 import {
   getERC721Contract,
@@ -56,6 +62,59 @@ export const listenToMarketEvents = async () => {
         formatEther(price),
         payToken
       );
+
+      //Get who has favorite item
+      const favorites = await getFavoriteItemForToken(
+        collection.toLowerCase(),
+        tokenId
+      );
+
+      if (favorites.length > 0) {
+        await Promise.all(
+          favorites.map(async (fav) => {
+            const notificationDoc = {
+              type: "LISTING",
+              collectionAddress: collection.toLowerCase(),
+              tokenId: tokenId.toNumber(),
+              to: fav.for,
+              timestamp: new Date().toISOString(),
+              params: {
+                type: "FAV LISTED",
+                price: parseFloat(formatEther(price)),
+              },
+              visible: true,
+            };
+
+            await createNotification(notificationDoc);
+          })
+        );
+      }
+
+      //Get watchlist
+      const watchlists = await getWatchlistForCollection(
+        collection.toLowerCase()
+      );
+
+      if (watchlists.length > 0) {
+        await Promise.all(
+          watchlists.map(async (fav) => {
+            const notificationDoc = {
+              type: "LISTING",
+              collectionAddress: collection.toLowerCase(),
+              tokenId: tokenId.toNumber(),
+              to: fav.for,
+              timestamp: new Date().toISOString(),
+              params: {
+                type: "COL LISTED",
+                price: parseFloat(formatEther(price)),
+              },
+              visible: true,
+            };
+
+            await createNotification(notificationDoc);
+          })
+        );
+      }
     }
   );
   MARKET_CONTRACT.on(
@@ -227,6 +286,16 @@ export const listenToMarketEvents = async () => {
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
+              await deleteOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
+              await deleteAcceptedOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
                 collection,
                 tokenId,

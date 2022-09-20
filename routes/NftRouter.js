@@ -17,6 +17,7 @@ NftRouter.get("/nftsByCreator", NftController.getNftsByCreator);
 NftRouter.get("/itemHistory", NftController.getItemHistory);
 
 NftRouter.get("/allTransfers", NftController.getAllTransfers);
+NftRouter.get("/categories", NftController.getCategories);
 
 //POST
 NftRouter.post("/newItem", NftController.newItem);
