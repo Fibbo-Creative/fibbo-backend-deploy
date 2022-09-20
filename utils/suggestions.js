@@ -56,6 +56,14 @@ export const deletePendingSuggestion = async (title, proposer) => {
   if (suggInfo) return suggInfo;
 };
 
+export const deleteSavedSuggestion = async (title, proposer) => {
+  const suggInfo = await SavedSuggestions.deleteOne({
+    title: title,
+    proposer: proposer,
+  });
+  if (suggInfo) return suggInfo;
+};
+
 export const voteSuggestion = async (title, proposer, voter, voters, votes) => {
   const suggInfo = await Suggestions.updateOne(
     {

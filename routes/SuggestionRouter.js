@@ -20,5 +20,6 @@ SuggestionRouter.post("/accept", SuggestionController.acceptSuggestion);
 SuggestionRouter.post("/decline", SuggestionController.declineSuggestion);
 SuggestionRouter.post("/vote", SuggestionController.vote);
 SuggestionRouter.post("/save", SuggestionController.saveSuggestion);
+SuggestionRouter.post("/delete", SuggestionController.deleteSuggestion);
 
 export default SuggestionRouter;

@@ -5,6 +5,7 @@ import SavedSuggestions from "../models/savedSuggestions.js";
 import Suggestions from "../models/suggestions.js";
 import {
   deletePendingSuggestion,
+  deleteSavedSuggestion,
   deleteSuggestion,
   getActiveSuggestions,
   getPendingSuggestion,
@@ -127,6 +128,19 @@ export default class SuggestionController {
 
       res.status(200).send("Suggestion declined");
     } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+
+  static async deleteSuggestion(req, res) {
+    try {
+      const { title, proposer } = req.body;
+      console.log(title, proposer);
+      await deleteSavedSuggestion(title, proposer);
+
+      res.status(200).send("Suggestion declined");
+    } catch (e) {
+      console.log(e);
       res.status(500).send(e);
     }
   }

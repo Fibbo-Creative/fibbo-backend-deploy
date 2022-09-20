@@ -1,3 +1,6 @@
+import { parseEther } from "ethers/lib/utils.js";
+import { gasStation } from "../contracts/address.js";
+import { managerWallet } from "../contracts/index.js";
 import {
   findUser,
   findUserByToken,
@@ -84,6 +87,38 @@ export default class AdminController {
 
       const newCat = await addCategory(doc);
       res.status(200).send(newCat);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async deposit(req, res) {
+    try {
+      const { token, value } = req.body;
+      //Buscaremos primero en los títulos de los items
+
+      if (!token) {
+        res.status(500).send("NOT AUTH");
+      } else {
+        const userInfo = await findUserByToken(token);
+        if (!userInfo) {
+          res.status(500).send("NOT AUTH");
+        } else {
+          console.log(value);
+
+          const formatted = parseEther(value.toString());
+          const sendToGasToGasStation = {
+            from: managerWallet.address,
+            to: gasStation,
+            value: formatted,
+          };
+
+          const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
+
+          res.status(200).send(tx.data);
+        }
+      }
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
