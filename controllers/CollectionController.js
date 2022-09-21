@@ -25,6 +25,7 @@ import {
   createWatchlist,
   deleteWatchlist,
   getWatchlist,
+  getWatchlistForCollection,
   getWatchlistForWallet,
 } from "../utils/watchlists.js";
 
@@ -83,6 +84,7 @@ export default class CollectionController {
   static async getCollections(req, res) {
     try {
       const collections = await getCollectionsAvailable();
+
       res.status(200).send(collections);
     } catch (e) {
       console.log(e);
@@ -92,8 +94,32 @@ export default class CollectionController {
 
   static async getAllCollections(req, res) {
     try {
+      const { user } = req.query;
       const collections = await getAllCollections();
-      res.status(200).send(collections);
+      const formatted = [];
+      await Promise.all(
+        collections.map(async (col) => {
+          const watchlistsForCol = await getWatchlistForCollection(
+            col.contractAddress
+          );
+          let item = {
+            ...col._doc,
+            isWatchlisted: watchlistsForCol.find((w) => w.for === user)
+              ? true
+              : false,
+          };
+          formatted.push(item);
+        })
+      );
+      res.status(200).send(
+        formatted.sort((a, b) => {
+          if (!a.isWatchlisted && b.isWatchlisted) {
+            return 1;
+          } else {
+            return -1;
+          }
+        })
+      );
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
