@@ -1,36 +1,35 @@
 import Reports from "../models/reports.js";
 
 export const getAllReports = async () => {
-  const Reports = await Reports.find();
-  return Reports;
+  const reports = await Reports.find();
+  return reports;
 };
 
 export const getCollectionReports = async () => {
-  const Reports = await Reports.find({ type: "COLLECTION" });
-  return Reports;
+  const reports = await Reports.find({ type: "COLLECTION" });
+  return reports;
 };
 
 export const getItemReports = async () => {
-  const Reports = await Reports.find({ type: "NFT" });
-  return Reports;
+  const reports = await Reports.find({ type: "NFT" });
+  return reports;
 };
 
 export const getProfileReports = async () => {
-  const Reports = await Reports.find({ type: "PROFILE" });
-  return Reports;
+  const reports = await Reports.find({ type: "PROFILE" });
+  return reports;
 };
 
 export const addReport = async (doc) => {
-  const Reports = await Reports.create({ ...doc });
-  return Reports;
+  const neReport = await Reports.create({ ...doc });
+  return neReport;
 };
 
-export const deleteReport = async (type, reported) => {
-  const Reports = await Reports.deleteOne({ name: name });
-  return Reports;
-};
-
-export const getCategoryInfo = async (identifier) => {
-  const Reports = await Reports.findOne({ identifier: identifier });
-  return Reports._doc;
+export const deleteReport = async (type, reported, reporter) => {
+  const deleted = await Reports.deleteOne({
+    type: type,
+    reported: reported,
+    reporter: reporter,
+  });
+  return deleted;
 };

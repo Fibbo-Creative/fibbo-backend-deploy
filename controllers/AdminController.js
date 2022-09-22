@@ -105,13 +105,11 @@ export default class AdminController {
         })
       );
 
-      res
-        .status(200)
-        .send({
-          collections: formattedCol,
-          item: formatedNfts,
-          profiles: formattedProfiles,
-        });
+      res.status(200).send({
+        collections: formattedCol,
+        item: formatedNfts,
+        profiles: formattedProfiles,
+      });
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
@@ -183,11 +181,7 @@ export default class AdminController {
         type: type,
         reporter: reporter,
         description: descr,
-        reported: reported.collection
-          ? reported.collection && reported.tokenId
-            ? { collection: reported.collection, tokenId: reported.tokenId }
-            : { collection: reported.collection }
-          : { profile: reported },
+        reported: reported,
       };
 
       const newRep = await addReport(doc);
