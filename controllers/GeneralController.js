@@ -95,23 +95,29 @@ export default class GeneralController {
     }
   }
 
-  static async uploadImg(req, res) {
+  static async uploadtoCDN(req, res) {
     try {
-      const image = req.file;
-      const uploadedImgSanity = await uploadToCDN(
+      const file = req.file;
+      const { uploadToIpfs, contentType, isExplicit } = req.body;
+
+      const uploadedFileSanity = await uploadToCDN(
         sanity_client,
-        image ? image : null,
+        contentType,
+        file ? file : null,
         imgsDir
       );
-      const { uploadToIpfs, isExplicit } = req.body;
 
       let ipfsImage = "None";
       if (uploadToIpfs === "true") {
-        ipfsImage = await addImgToIpfs(image);
+        ipfsImage = await addImgToIpfs(file);
       }
 
-      if (isExplicit === "false") {
-        const { id, output } = await checkNFSW(uploadedImgSanity.url);
+      if (
+        isExplicit === "false" &&
+        contentType !== "VIDEO" &&
+        contentType !== "AUDIO"
+      ) {
+        const { id, output } = await checkNFSW(uploadedFileSanity.url);
         const { detections, nsfw_score } = output;
 
         if (nsfw_score > 0.4) {
@@ -120,14 +126,14 @@ export default class GeneralController {
           await removeFiles(imgsDir);
 
           res.send({
-            sanity: uploadedImgSanity.url,
+            sanity: uploadedFileSanity.url,
             ipfs: ipfsImage.IpfsHash ? ipfsImage.IpfsHash : ipfsImage,
           });
         }
       } else {
         await removeFiles(imgsDir);
         res.send({
-          sanity: uploadedImgSanity.url,
+          sanity: uploadedFileSanity.url,
           ipfs: ipfsImage.IpfsHash ? ipfsImage.IpfsHash : ipfsImage,
         });
       }
@@ -139,13 +145,37 @@ export default class GeneralController {
 
   static async uploadJSONMetadata(req, res) {
     try {
-      const { name, description, externalLink, image } = req.body;
-      const data = {
+      const { name, description, externalLink, image, contentType, audio } =
+        req.body;
+
+      let data = {
         name: name,
         description: description,
-        image: image,
         external_link: externalLink,
       };
+
+      if (contentType === "VIDEO") {
+        data = {
+          ...data,
+          animation_url: image,
+        };
+      }
+
+      if (contentType === "AUDIO") {
+        data = {
+          ...data,
+          image: image,
+          animation_url: audio,
+        };
+      }
+
+      if (contentType === "IMG") {
+        data = {
+          ...data,
+          image: image,
+        };
+      }
+
       const ipfsCID = await addJsonToIpfs(data);
 
       res.send(ipfsCID.IpfsHash);

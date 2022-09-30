@@ -298,14 +298,14 @@ export default class NftController {
         tokenId,
         royalty,
         externalLink,
-        sanityImgUrl,
+        sanityFileURL,
         ipfsImgUrl,
         ipfsMetadataUrl,
         additionalContent,
         categories,
+        contentType,
+        sanityAudioURL,
       } = req.body;
-
-      console.log(categories);
 
       const collectionInfo = await getCollectionInfo(collection);
       if (collectionInfo) {
@@ -316,7 +316,6 @@ export default class NftController {
           creator: creator,
           tokenId: parseInt(tokenId),
           royalty: parseFloat(royalty),
-          image: sanityImgUrl,
           ipfsImage: ipfsImgUrl,
           ipfsMetadata: ipfsMetadataUrl,
           collectionAddress: collection,
@@ -324,6 +323,7 @@ export default class NftController {
           externalLink: externalLink,
           createdAt: new Date().toISOString(),
           categories: categories,
+          contentType: contentType,
         };
         if (additionalContent) {
           doc = {
@@ -331,6 +331,29 @@ export default class NftController {
             additionalContent: additionalContent,
           };
         }
+
+        if (contentType === "IMG") {
+          doc = {
+            ...doc,
+            image: sanityFileURL,
+          };
+        }
+
+        if (contentType === "VIDEO") {
+          doc = {
+            ...doc,
+            video: sanityFileURL,
+          };
+        }
+
+        if (contentType === "AUDIO") {
+          doc = {
+            ...doc,
+            audio: sanityAudioURL,
+            image: sanityFileURL,
+          };
+        }
+
         const newNft = await createNft(doc);
 
         const MARKET_CONTRACT = await getMarketContract();

@@ -62,9 +62,9 @@ export default class AdminController {
             item.reported.collection
           );
           let res = {
-            ...item,
+            ...item._doc,
             reported: {
-              ...reported,
+              ...item.reported,
               collection: collectionInfo,
             },
           };
@@ -80,9 +80,9 @@ export default class AdminController {
             item.reported.collection
           );
           let res = {
-            ...item,
+            ...item._doc,
             reported: {
-              ...reported,
+              ...item.reported,
               nft: nftInfo,
             },
           };
@@ -92,12 +92,12 @@ export default class AdminController {
 
       const formattedProfiles = [];
       await Promise.all(
-        col.map(async (item) => {
-          const profileInfo = await getProfileInfo(item.profile);
+        profile.map(async (item) => {
+          const profileInfo = await getProfileInfo(item.reported.profile);
           let res = {
-            ...item,
+            ...item._doc,
             reported: {
-              ...reported,
+              ...item.reported,
               profile: profileInfo,
             },
           };
