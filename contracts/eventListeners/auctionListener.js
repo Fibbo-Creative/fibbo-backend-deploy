@@ -24,7 +24,7 @@ import {
   getHighestBidder,
   updateHighestBidder,
 } from "../../utils/highestBidders.js";
-import { addJsonToIpfs } from "../../utils/ipfs.js";
+import { addImgToIpfs, addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
 import { deleteOffer, getItemOffers } from "../../utils/offers.js";
@@ -35,6 +35,7 @@ import {
   getAuctionContract,
   getERC721Contract,
   getMarketContract,
+  IPFS_BASE_URL,
   managerWallet,
   WFTM_CONTRACT,
 } from "../index.js";
@@ -335,16 +336,51 @@ export const listenToAuctionEvents = async () => {
         tokenId
       );
       if (!hasFreezedMetadata) {
-        const data = {
+        let data = {
           name: nftInfo.name,
           description: nftInfo.description,
-          image: nftInfo.image,
           external_link: nftInfo.externalLink,
         };
 
+        if (contentType === "AUDIO") {
+          let response = await fetch(nftInfo.audio);
+          let data = await response.blob();
+          let metadata = {
+            type: "audio/mp3",
+          };
+          let audioFile = new File([data], nftInfo.name, metadata);
+          const ipfsAudioCID = await addImgToIpfs(audioFile);
+          data = {
+            ...data,
+            image: nftInfo.ipfsImage,
+            audio: `${IPFS_BASE_URL}/${ipfsAudioCID.IpfsHash}`,
+          };
+        }
+
+        if (contentType === "VIDEO") {
+          let response = await fetch(nftInfo.audio);
+          let data = await response.blob();
+          let metadata = {
+            type: "video/mp4",
+          };
+          let videoFile = new File([data], nftInfo.name, metadata);
+          const ipfsAudioCID = await addImgToIpfs(videoFile);
+          data = {
+            ...data,
+            animation_url: `${IPFS_BASE_URL}/${ipfsAudioCID.IpfsHash}`,
+          };
+        }
+
+        if (contentType === "IMG") {
+          data = {
+            ...data,
+            image: nftInfo.ipfsImage,
+          };
+        }
+
         const ipfsCID = await addJsonToIpfs(data);
 
-        const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
+        const ipfsFileURL = `${IPFS_BASE_URL}/${ipfsCID.IpfsHash}`;
 
         const tx = await ERC721_CONTRACT.setFreezedMetadata(
           tokenId,

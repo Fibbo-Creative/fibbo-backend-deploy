@@ -81,29 +81,69 @@ export const changeNftInfo = async (
   name,
   desc,
   royalties,
-  image,
+  sanityFileURL,
   ipfsImage,
   ipfsMetadata,
   externalLink,
   additionalContent,
-  categories
+  categories,
+  contentType,
+  sanityAudioURL
 ) => {
-  const updatedNft = await Nft.updateOne(
-    { tokenId: nftId, collectionAddress: collectionAddress },
-    {
-      name: name,
-      description: desc,
-      royalties: royalties,
-      image: image,
-      ipfsImage: ipfsImage,
-      ipfsMetadata: ipfsMetadata,
-      externalLink: externalLink,
-      additionalContent: additionalContent,
-      categories: categories,
+  let updated;
+  if (contentType === "AUDIO") {
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalties: royalties,
+        image: sanityFileURL,
+        ipfsImage: ipfsImage,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        audio: sanityAudioURL,
+      }
+    );
+  }
+  if (contentType === "VIDEO") {
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalties: royalties,
+        ipfsImage: ipfsImage,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        video: sanityFileURL,
+      }
+    );
+  }
+  if (contentType === "IMG") {
+    if (contentType === "VIDEO") {
+      updated = await Nft.updateOne(
+        { tokenId: nftId, collectionAddress: collectionAddress },
+        {
+          name: name,
+          description: desc,
+          royalties: royalties,
+          ipfsImage: ipfsImage,
+          ipfsMetadata: ipfsMetadata,
+          externalLink: externalLink,
+          additionalContent: additionalContent,
+          categories: categories,
+          image: sanityFileURL,
+        }
+      );
     }
-  );
+  }
 
-  return updatedNft;
+  return updated;
 };
 
 export const setFreezedMetadata = async (creator, collectionAddress, nftId) => {

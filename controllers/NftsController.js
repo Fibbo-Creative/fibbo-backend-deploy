@@ -392,12 +392,14 @@ export default class NftController {
         creator,
         tokenId,
         royalty,
-        sanityImgUrl,
-        ipfsImageUrl,
-        ipfsMetadataUrl,
         externalLink,
+        sanityFileURL,
+        ipfsImgUrl,
+        ipfsMetadataUrl,
         additionalContent,
         categories,
+        contentType,
+        sanityAudioURL,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
@@ -411,12 +413,14 @@ export default class NftController {
             name,
             description,
             royalty,
-            sanityImgUrl,
-            ipfsImageUrl,
+            sanityFileURL,
+            ipfsImgUrl,
             ipfsMetadataUrl,
             externalLink,
             additionalContent,
-            categories
+            categories,
+            contentType,
+            sanityAudioURL
           );
           res.status(200).send("Edited");
         } else {

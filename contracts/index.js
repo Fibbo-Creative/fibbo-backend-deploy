@@ -16,6 +16,7 @@ import { listenToAuctionEvents } from "./eventListeners/auctionListener.js";
 import { listenToFactoryEvents } from "./eventListeners/factoryListener.js";
 dotenv.config();
 
+const IPFS_BASE_URL = "https://fibbocreative.mypinata.cloud/ipfs";
 const web3provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.testnet.fantom.network/"
 );
@@ -94,6 +95,7 @@ export {
   getVerificationContract,
   getCommunityContract,
   WFTM_CONTRACT,
+  IPFS_BASE_URL,
 };
 
 export const listenToEvents = () => {
