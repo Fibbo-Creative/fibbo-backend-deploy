@@ -494,20 +494,10 @@ export default class NftController {
 
         if (!isFreezedMetadata) {
           const MARKET_CONTRACT = await getMarketContract();
-          const data = {
-            name: nftInfo.name,
-            description: nftInfo.description,
-            image: nftInfo.image,
-            external_link: nftInfo.externalLink,
-          };
-
-          const ipfsCID = await addJsonToIpfs(data);
-
-          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
 
           const tx = await ERC721_CONTRACT.setFreezedMetadata(
             tokenId,
-            ipfsFileURL
+            nftInfo.ipfsMetadata
           );
           await tx.wait();
 

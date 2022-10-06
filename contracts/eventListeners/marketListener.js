@@ -147,55 +147,9 @@ export const listenToMarketEvents = async () => {
           tokenId
         );
         if (!hasFreezedMetadata) {
-          let data = {
-            name: nftInfo.name,
-            description: nftInfo.description,
-            external_link: nftInfo.externalLink,
-          };
-
-          if (contentType === "AUDIO") {
-            let response = await fetch(nftInfo.audio);
-            let data = await response.blob();
-            let metadata = {
-              type: "audio/mp3",
-            };
-            let audioFile = new File([data], nftInfo.name, metadata);
-            const ipfsAudioCID = await addImgToIpfs(audioFile);
-            data = {
-              ...data,
-              image: nftInfo.ipfsImage,
-              audio: `${IPFS_BASE_URL}/${ipfsAudioCID.IpfsHash}`,
-            };
-          }
-
-          if (contentType === "VIDEO") {
-            let response = await fetch(nftInfo.audio);
-            let data = await response.blob();
-            let metadata = {
-              type: "video/mp4",
-            };
-            let videoFile = new File([data], nftInfo.name, metadata);
-            const ipfsAudioCID = await addImgToIpfs(videoFile);
-            data = {
-              ...data,
-              animation_url: `${IPFS_BASE_URL}/${ipfsAudioCID.IpfsHash}`,
-            };
-          }
-
-          if (contentType === "IMG") {
-            data = {
-              ...data,
-              image: nftInfo.ipfsImage,
-            };
-          }
-
-          const ipfsCID = await addJsonToIpfs(data);
-
-          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
-
           const tx = await ERC721_CONTRACT.setFreezedMetadata(
             tokenId,
-            ipfsFileURL
+            nftInfo.ipfsMetadata
           );
           await tx.wait();
 
