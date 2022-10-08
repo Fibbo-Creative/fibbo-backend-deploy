@@ -304,7 +304,7 @@ export default class NftController {
         additionalContent,
         categories,
         contentType,
-        sanityAudioURL,
+        sanityAnimatedURL,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
@@ -342,14 +342,15 @@ export default class NftController {
         if (contentType === "VIDEO") {
           doc = {
             ...doc,
-            video: sanityFileURL,
+            image: sanityFileURL,
+            video: sanityAnimatedURL,
           };
         }
 
         if (contentType === "AUDIO") {
           doc = {
             ...doc,
-            audio: sanityAudioURL,
+            audio: sanityAnimatedURL,
             image: sanityFileURL,
           };
         }
@@ -399,7 +400,7 @@ export default class NftController {
         additionalContent,
         categories,
         contentType,
-        sanityAudioURL,
+        sanityAnimatedURL,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
@@ -420,7 +421,7 @@ export default class NftController {
             additionalContent,
             categories,
             contentType,
-            sanityAudioURL
+            sanityAnimatedURL
           );
           res.status(200).send("Edited");
         } else {
