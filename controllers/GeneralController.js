@@ -16,6 +16,7 @@ import {
   deleteNotification,
   getAllNotifications,
 } from "../utils/notifications.js";
+import nft from "../models/nft.js";
 
 export default class GeneralController {
   constructor() {}
@@ -187,7 +188,10 @@ export default class GeneralController {
 
   static async updateEventsInfo(req, res) {
     try {
-      await updateEvents();
+      await nft.updateMany(
+        { contentType: { $exists: false } },
+        { contentType: "IMG" }
+      );
       res.send("OK");
     } catch (e) {
       console.log(e);
