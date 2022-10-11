@@ -88,7 +88,7 @@ export const changeNftInfo = async (
   additionalContent,
   categories,
   contentType,
-  sanityAudioURL
+  sanityAnimatedURL
 ) => {
   let updated;
   if (contentType === "AUDIO") {
@@ -104,7 +104,7 @@ export const changeNftInfo = async (
         externalLink: externalLink,
         additionalContent: additionalContent,
         categories: categories,
-        audio: sanityAudioURL,
+        audio: sanityAnimatedURL,
       }
     );
   }
@@ -116,11 +116,12 @@ export const changeNftInfo = async (
         description: desc,
         royalties: royalties,
         ipfsImage: ipfsImage,
+        image: sanityFileURL,
         ipfsMetadata: ipfsMetadata,
         externalLink: externalLink,
         additionalContent: additionalContent,
         categories: categories,
-        video: sanityFileURL,
+        video: sanityAnimatedURL,
       }
     );
   }
