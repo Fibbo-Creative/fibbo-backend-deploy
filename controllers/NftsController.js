@@ -309,71 +309,76 @@ export default class NftController {
 
       const collectionInfo = await getCollectionInfo(collection);
       if (collectionInfo) {
-        let doc = {
-          name: name,
-          description: description,
-          owner: creator,
-          creator: creator,
-          tokenId: parseInt(tokenId),
-          royalty: parseFloat(royalty),
-          ipfsImage: ipfsImgUrl,
-          ipfsMetadata: ipfsMetadataUrl,
-          collectionAddress: collection,
-          hasFreezedMetadata: false,
-          externalLink: externalLink,
-          createdAt: new Date().toISOString(),
-          categories: categories,
-          contentType: contentType,
-        };
-        if (additionalContent) {
-          doc = {
-            ...doc,
-            additionalContent: additionalContent,
+        const nftInfo = await getNftInfoById(tokenId, collection);
+        if (nftInfo) {
+          res.status(204).send("TOKEN ALREADT EXISTS");
+        } else {
+          let doc = {
+            name: name,
+            description: description,
+            owner: creator,
+            creator: creator,
+            tokenId: parseInt(tokenId),
+            royalty: parseFloat(royalty),
+            ipfsImage: ipfsImgUrl,
+            ipfsMetadata: ipfsMetadataUrl,
+            collectionAddress: collection,
+            hasFreezedMetadata: false,
+            externalLink: externalLink,
+            createdAt: new Date().toISOString(),
+            categories: categories,
+            contentType: contentType,
           };
-        }
+          if (additionalContent) {
+            doc = {
+              ...doc,
+              additionalContent: additionalContent,
+            };
+          }
 
-        if (contentType === "IMG") {
-          doc = {
-            ...doc,
-            image: sanityFileURL,
-          };
-        }
+          if (contentType === "IMG") {
+            doc = {
+              ...doc,
+              image: sanityFileURL,
+            };
+          }
 
-        if (contentType === "VIDEO") {
-          doc = {
-            ...doc,
-            image: sanityFileURL,
-            video: sanityAnimatedURL,
-          };
-        }
+          if (contentType === "VIDEO") {
+            doc = {
+              ...doc,
+              image: sanityFileURL,
+              video: sanityAnimatedURL,
+            };
+          }
 
-        if (contentType === "AUDIO") {
-          doc = {
-            ...doc,
-            audio: sanityAnimatedURL,
-            image: sanityFileURL,
-          };
-        }
+          if (contentType === "AUDIO") {
+            doc = {
+              ...doc,
+              audio: sanityAnimatedURL,
+              image: sanityFileURL,
+            };
+          }
 
-        const newNft = await createNft(doc);
+          const newNft = await createNft(doc);
 
-        const MARKET_CONTRACT = await getMarketContract();
+          const MARKET_CONTRACT = await getMarketContract();
 
-        const tx = await MARKET_CONTRACT.registerRoyalty(
-          creator,
-          collection,
-          parseInt(tokenId),
-          parseFloat(royalty) * 100
-        );
+          const tx = await MARKET_CONTRACT.registerRoyalty(
+            creator,
+            collection,
+            parseInt(tokenId),
+            parseFloat(royalty) * 100
+          );
 
-        tx.wait(1);
+          tx.wait(1);
 
-        await updateTotalNfts(collection, collectionInfo.numberOfItems);
+          await updateTotalNfts(collection, collectionInfo.numberOfItems);
 
-        if (newNft) {
-          res.status(200).send(newNft);
+          if (newNft) {
+            res.status(200).send(newNft);
 
-          await registerMintEvent(collection, tokenId, creator);
+            await registerMintEvent(collection, tokenId, creator);
+          }
         }
       } else {
         res.send("No collection Found");

@@ -15,7 +15,6 @@ import {
   getVolumenFromCollection,
 } from "../utils/collections.js";
 import { getAllNftsInfo } from "../utils/nfts.js";
-import { uploadToCDN } from "../utils/sanity.js";
 import {
   createUserCollectionOptions,
   getUserCollectionsOptions,
