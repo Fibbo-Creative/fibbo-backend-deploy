@@ -7,7 +7,7 @@ import {
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
-import { getFavoriteItem, getFavoriteItemForToken } from "./favoriteItem.js";
+import { getFavoriteItemForToken } from "./favoriteItem.js";
 import { getNftForSaleById } from "./nftsForSale.js";
 import { getItemOffers, sortHigherOffer } from "./offers.js";
 import { getPayTokenInfo, getPayTokens } from "./payTokens.js";
@@ -97,7 +97,7 @@ export const changeNftInfo = async (
       {
         name: name,
         description: desc,
-        royalties: royalties,
+        royalty: royalties,
         image: sanityFileURL,
         ipfsImage: ipfsImage,
         ipfsMetadata: ipfsMetadata,
@@ -114,7 +114,7 @@ export const changeNftInfo = async (
       {
         name: name,
         description: desc,
-        royalties: royalties,
+        royalty: royalties,
         ipfsImage: ipfsImage,
         image: sanityFileURL,
         ipfsMetadata: ipfsMetadata,
@@ -126,22 +126,20 @@ export const changeNftInfo = async (
     );
   }
   if (contentType === "IMG") {
-    if (contentType === "VIDEO") {
-      updated = await Nft.updateOne(
-        { tokenId: nftId, collectionAddress: collectionAddress },
-        {
-          name: name,
-          description: desc,
-          royalties: royalties,
-          ipfsImage: ipfsImage,
-          ipfsMetadata: ipfsMetadata,
-          externalLink: externalLink,
-          additionalContent: additionalContent,
-          categories: categories,
-          image: sanityFileURL,
-        }
-      );
-    }
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalty: royalties,
+        ipfsImage: ipfsImage,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        image: sanityFileURL,
+      }
+    );
   }
 
   return updated;
