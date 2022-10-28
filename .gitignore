@@ -2,4 +2,3 @@ node_modules
 .env
 studio/node_modules
 dist/
-utils/images/*
