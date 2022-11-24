@@ -1,5 +1,10 @@
 import { formatEther } from "ethers/lib/utils.js";
-import { getERC721Contract, getMarketContract } from "../contracts/index.js";
+import {
+  ADDRESS_ZERO,
+  getERC721Contract,
+  getMarketContract,
+  managerWallet,
+} from "../contracts/index.js";
 import Nft from "../models/nft.js";
 import ethers from "ethers";
 import {
@@ -107,6 +112,14 @@ export default class NftController {
           nftId,
           nft.owner
         );
+
+        if (listingInfo.payToken === ADDRESS_ZERO) {
+          listingInfo = await MARKET_CONTRACT.listings(
+            collectionAddress,
+            nftId,
+            managerWallet.address
+          );
+        }
 
         listingInfo = {
           payToken: listingInfo.payToken,
