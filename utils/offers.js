@@ -12,6 +12,15 @@ export const getItemOffers = async (collectionAddress, tokenId) => {
   return offers;
 };
 
+export const hasExpired = (offer) => {
+  const deadline = offer.deadline;
+
+  const deadLineDate = new Date(deadline * 1000).getTime();
+  const nowDate = new Date().getTime();
+
+  return nowDate > deadLineDate;
+};
+
 export const getOffersFromWallet = async (address) => {
   const offers = await Offers.find({
     creator: address,

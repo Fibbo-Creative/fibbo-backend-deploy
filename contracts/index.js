@@ -18,7 +18,7 @@ dotenv.config();
 
 const IPFS_BASE_URL = "https://fibbocreative.mypinata.cloud/ipfs";
 const web3provider = new ethers.providers.JsonRpcProvider(
-  "https://rpc.testnet.fantom.network/"
+  "https://rpc.ankr.com/fantom_testnet"
 );
 
 const getHigherGWEI = async () => {

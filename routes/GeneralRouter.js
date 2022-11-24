@@ -27,6 +27,7 @@ GeneralRouter.post(
 
 GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);
 GeneralRouter.post("/updateEvents", GeneralController.updateEventsInfo);
+GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);
 
 GeneralRouter.post("/deleteNotification", GeneralController.deleteNotification);
 

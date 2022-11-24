@@ -1,12 +1,3 @@
-import { uploadToCDN } from "../utils/sanity.js";
-import { imgsDir, removeFiles } from "../utils/multer.js";
-import sanity_client from "../lib/sanity.js";
-import { filterProfilesByUsername, getProfileInfo } from "../utils/profiles.js";
-import {
-  filterCollectionsByName,
-  getCollectionInfo,
-} from "../utils/collections.js";
-
 import { filterItemsByTitle, getNftInfoById } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
