@@ -1,4 +1,4 @@
-import { formatEther } from "ethers/lib/utils.js";
+import { formatEther, parseEther } from "ethers/lib/utils.js";
 import {
   addNewAuction,
   deleteAuction,
@@ -17,21 +17,27 @@ import {
   registerOfferCancelled,
   registerTransferEvent,
 } from "../../utils/events.js";
+import { getFavoriteItemForToken } from "../../utils/favoriteItem.js";
 import {
   createHighestBidder,
   deleteHighestBidder,
   getHighestBidder,
   updateHighestBidder,
 } from "../../utils/highestBidders.js";
-import { addJsonToIpfs } from "../../utils/ipfs.js";
+import { addImgToIpfs, addJsonToIpfs } from "../../utils/ipfs.js";
 import { changeNftOwner, getNftInfo } from "../../utils/nfts.js";
 import { createNotification } from "../../utils/notifications.js";
-import { getItemOffers } from "../../utils/offers.js";
+import { deleteOffer, getItemOffers } from "../../utils/offers.js";
+import { getWatchlistForCollection } from "../../utils/watchlists.js";
+import { gasStation } from "../address.js";
 import {
   ADDRESS_ZERO,
   getAuctionContract,
   getERC721Contract,
   getMarketContract,
+  IPFS_BASE_URL,
+  managerWallet,
+  WFTM_CONTRACT,
 } from "../index.js";
 
 export const listenToAuctionEvents = async () => {
@@ -56,6 +62,7 @@ export const listenToAuctionEvents = async () => {
           owner: auctionInfo._owner,
           startTime: auctionInfo._startTime,
           endTime: auctionInfo._endTime,
+          started: false,
         };
 
         await addNewAuction(doc);
@@ -75,6 +82,11 @@ export const listenToAuctionEvents = async () => {
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
+              await deleteOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
                 collection.toLowerCase(),
                 tokenId,
@@ -86,6 +98,57 @@ export const listenToAuctionEvents = async () => {
                 tokenId,
                 offer.creator
               );
+            })
+          );
+        }
+
+        //Get who has favorite item
+        const favorites = await getFavoriteItemForToken(
+          collection.toLowerCase(),
+          tokenId
+        );
+
+        if (favorites.length > 0) {
+          await Promise.all(
+            favorites.map(async (fav) => {
+              const notificationDoc = {
+                type: "AUCTION",
+                collectionAddress: collection.toLowerCase(),
+                tokenId: tokenId.toNumber(),
+                to: fav.for,
+                timestamp: new Date().toISOString(),
+                params: {
+                  type: "FAV AUCTION",
+                },
+                visible: true,
+              };
+
+              await createNotification(notificationDoc);
+            })
+          );
+        }
+
+        //Get watchlist
+        const watchlists = await getWatchlistForCollection(
+          collection.toLowerCase()
+        );
+
+        if (watchlists.length > 0) {
+          await Promise.all(
+            watchlists.map(async (fav) => {
+              const notificationDoc = {
+                type: "AUCTION",
+                collectionAddress: collection.toLowerCase(),
+                tokenId: tokenId.toNumber(),
+                to: fav.for,
+                timestamp: new Date().toISOString(),
+                params: {
+                  type: "COL AUCTION",
+                },
+                visible: true,
+              };
+
+              await createNotification(notificationDoc);
             })
           );
         }
@@ -186,6 +249,13 @@ export const listenToAuctionEvents = async () => {
           tokenId
         );
         if (prevBidder) {
+          const prevBidAmmount = parseEther(prevBidder.bid.toString());
+          const returnBid = await WFTM_CONTRACT.withdrawByAdmin(
+            prevBidAmmount,
+            prevBidder.bidder
+          );
+          await returnBid.wait();
+
           const notDoc = {
             type: "AUCTION",
             collectionAddress: collection.toLowerCase(),
@@ -235,9 +305,24 @@ export const listenToAuctionEvents = async () => {
 
   AUCTION_CONTRACT.on(
     "AuctionResulted",
-    async (prevOwner, collection, tokenId, winner, payToken, winingBid) => {
+    async (
+      prevOwner,
+      collection,
+      tokenId,
+      winner,
+      payToken,
+      winingBid,
+      marketFee,
+      royaltyFee
+    ) => {
       await deleteAuction(collection.toLowerCase(), tokenId);
       await deleteHighestBidder(collection.toLowerCase(), tokenId);
+
+      const nftInfo = await getNftInfo(
+        prevOwner,
+        tokenId.toNumber(),
+        collection.toLowerCase()
+      );
 
       await changeNftOwner(
         collection.toLowerCase(),
@@ -251,26 +336,9 @@ export const listenToAuctionEvents = async () => {
         tokenId
       );
       if (!hasFreezedMetadata) {
-        const nftInfo = await getNftInfo(
-          buyer,
-          tokenId.toNumber(),
-          collection.toLowerCase()
-        );
-
-        const data = {
-          name: nftInfo.name,
-          description: nftInfo.description,
-          image: nftInfo.image,
-          external_link: nftInfo.externalLink,
-        };
-
-        const ipfsCID = await addJsonToIpfs(data);
-
-        const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
-
         const tx = await ERC721_CONTRACT.setFreezedMetadata(
           tokenId,
-          ipfsFileURL
+          nftInfo.ipfsMetadata
         );
         await tx.wait();
 
@@ -329,6 +397,41 @@ export const listenToAuctionEvents = async () => {
       };
 
       await createNotification(notificationDoc);
+
+      const royaltyFeeFormatted = formatEther(royaltyFee);
+      const finalPrice = winingBid.sub(marketFee).sub(royaltyFee);
+
+      const priceTx = await WFTM_CONTRACT.withdrawByAdmin(
+        finalPrice,
+        prevOwner
+      );
+      await priceTx.wait();
+
+      if (royaltyFeeFormatted > 0) {
+        const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+          royaltyFee,
+          nftInfo.creator
+        );
+        await royatyFeeTx.wait();
+      }
+
+      const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+        marketFee,
+        managerWallet.address
+      );
+      await marketFeeTx.wait();
+
+      const formattedMarketFee = formatEther(marketFee);
+      const feeForStation = (formattedMarketFee / 100) * 2;
+
+      const sendToGasToGasStation = {
+        from: managerWallet.address,
+        to: gasStation,
+        value: parseEther(feeForStation.toString()),
+      };
+
+      const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
+      await tx.wait();
     }
   );
 };

@@ -1,3 +1,5 @@
+import PendingSuggestions from "../models/pendingSuggestions.js";
+import SavedSuggestions from "../models/savedSuggestions.js";
 import Suggestions from "../models/suggestions.js";
 
 export const createSuggestion = async (doc) => {
@@ -16,7 +18,25 @@ export const getSuggestionInfo = async (title, proposer) => {
 };
 
 export const getPendingSuggestions = async () => {
+  const suggInfo = await PendingSuggestions.find();
+  if (suggInfo) return suggInfo;
+};
+
+export const getActiveSuggestions = async () => {
   const suggInfo = await Suggestions.find();
+  if (suggInfo) return suggInfo;
+};
+
+export const getSavedSuggestions = async () => {
+  const suggInfo = await SavedSuggestions.find();
+  if (suggInfo) return suggInfo;
+};
+
+export const getPendingSuggestion = async (title, proposer) => {
+  const suggInfo = await PendingSuggestions.findOne({
+    title: title,
+    proposer: proposer,
+  });
   if (suggInfo) return suggInfo;
 };
 
@@ -25,5 +45,35 @@ export const deleteSuggestion = async (title, proposer) => {
     title: title,
     proposer: proposer,
   });
+  if (suggInfo) return suggInfo;
+};
+
+export const deletePendingSuggestion = async (title, proposer) => {
+  const suggInfo = await PendingSuggestions.deleteOne({
+    title: title,
+    proposer: proposer,
+  });
+  if (suggInfo) return suggInfo;
+};
+
+export const deleteSavedSuggestion = async (title, proposer) => {
+  const suggInfo = await SavedSuggestions.deleteOne({
+    title: title,
+    proposer: proposer,
+  });
+  if (suggInfo) return suggInfo;
+};
+
+export const voteSuggestion = async (title, proposer, voter, voters, votes) => {
+  const suggInfo = await Suggestions.updateOne(
+    {
+      title: title,
+      proposer: proposer,
+    },
+    {
+      votes: votes + 1,
+      voters: [...voters, voter],
+    }
+  );
   if (suggInfo) return suggInfo;
 };

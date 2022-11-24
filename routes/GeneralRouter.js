@@ -19,8 +19,8 @@ GeneralRouter.get("/notifications", GeneralController.getAllNotifications);
 //POST
 GeneralRouter.post(
   "/uploadImg",
-  upload.single("image"),
-  GeneralController.uploadImg
+  upload.single("file"),
+  GeneralController.uploadtoCDN
 );
 
 GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);

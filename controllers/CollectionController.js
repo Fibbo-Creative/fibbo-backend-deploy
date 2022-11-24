@@ -15,12 +15,18 @@ import {
   getVolumenFromCollection,
 } from "../utils/collections.js";
 import { getAllNftsInfo } from "../utils/nfts.js";
-import { uploadToCDN } from "../utils/sanity.js";
 import {
   createUserCollectionOptions,
   getUserCollectionsOptions,
   setNotShowRedirect,
 } from "../utils/usersCollectionsOptions.js";
+import {
+  createWatchlist,
+  deleteWatchlist,
+  getWatchlist,
+  getWatchlistForCollection,
+  getWatchlistForWallet,
+} from "../utils/watchlists.js";
 
 export default class CollectionController {
   constructor() {}
@@ -41,7 +47,7 @@ export default class CollectionController {
 
   static async getCollectionDetails(req, res) {
     try {
-      const { collection } = req.query;
+      const { collection, user } = req.query;
       const collectionInfo = await getCollectionInfo(collection);
 
       const nftsFromCol = await getItemsFromCollection(
@@ -53,12 +59,15 @@ export default class CollectionController {
         collectionInfo.contractAddress
       );
 
-      const formatted = await getAllNftsInfo(nftsFromCol);
+      const favorites = await getWatchlistForWallet(user);
+
+      const formatted = await getAllNftsInfo(nftsFromCol, user);
       const result = {
         ...collectionInfo._doc,
         nfts: formatted,
         owners: owners,
         volumen: volumen,
+        liked: favorites.find((item) => item.for === user) ? true : false,
       };
       if (collectionInfo) {
         res.status(200).send(result);
@@ -74,6 +83,7 @@ export default class CollectionController {
   static async getCollections(req, res) {
     try {
       const collections = await getCollectionsAvailable();
+
       res.status(200).send(collections);
     } catch (e) {
       console.log(e);
@@ -83,8 +93,55 @@ export default class CollectionController {
 
   static async getAllCollections(req, res) {
     try {
+      const { user } = req.query;
       const collections = await getAllCollections();
-      res.status(200).send(collections);
+      const formatted = [];
+      await Promise.all(
+        collections.map(async (col) => {
+          const watchlistsForCol = await getWatchlistForCollection(
+            col.contractAddress
+          );
+          let item = {
+            ...col._doc,
+            isWatchlisted: watchlistsForCol.find((w) => w.for === user)
+              ? true
+              : false,
+          };
+          formatted.push(item);
+        })
+      );
+      res.status(200).send(
+        formatted.sort((a, b) => {
+          if (!a.isWatchlisted && b.isWatchlisted) {
+            return 1;
+          } else {
+            return -1;
+          }
+        })
+      );
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getWatchlist(req, res) {
+    try {
+      const { user } = req.query;
+      const collections = await getWatchlistForWallet(user);
+
+      let formatted = await Promise.all(
+        collections.map(async (item) => {
+          const collection = item.collectionAddress;
+          const info = await getCollectionInfo(collection);
+
+          return {
+            ...info._doc,
+          };
+        })
+      );
+
+      res.status(200).send(formatted);
     } catch (e) {
       console.log(e);
       res.status(500).send(e);
@@ -305,6 +362,36 @@ export default class CollectionController {
       const { contractAddress, user } = req.body;
       const createdCollection = await setNotShowRedirect(contractAddress, user);
       res.status(200).send(createdCollection);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+  static async addToWatchList(req, res) {
+    try {
+      const { collection, from } = req.body;
+
+      const doc = {
+        collectionAddress: collection,
+        for: from,
+      };
+
+      const watchlist = await createWatchlist(doc);
+      res.status(200).send(watchlist);
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  }
+  static async removeFromWatchlist(req, res) {
+    try {
+      const { collection, from } = req.body;
+      const watchListInfo = await getWatchlist(collection, from);
+
+      if (watchListInfo) {
+        await deleteWatchlist(collection, from);
+        res.status(200).send("Deleted");
+      } else {
+        res.status(205).send("Not found watchlist");
+      }
     } catch (e) {
       res.status(500).send(e);
     }

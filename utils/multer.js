@@ -19,7 +19,9 @@ export const removeFiles = async (directory) => {
         file.includes(".svg") ||
         file.includes(".jpeg") ||
         file.includes(".mp4") ||
-        file.includes(".webp")
+        file.includes(".webp") ||
+        file.includes(".mp3") ||
+        file.includes(".mpeg")
       )
         fs.unlinkSync(path.join(directory, file));
     }

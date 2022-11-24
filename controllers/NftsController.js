@@ -31,6 +31,13 @@ import { getAllNftsForSale } from "../utils/nftsForSale.js";
 import { formatOffers, getItemOffers } from "../utils/offers.js";
 import { getPayTokenInfo } from "../utils/payTokens.js";
 import { addJsonToIpfs } from "../utils/ipfs.js";
+import {
+  createFavoriteItem,
+  deleteFavoriteItem,
+  getFavoriteItem,
+  getFavoriteItemForToken,
+} from "../utils/favoriteItem.js";
+import { getAllCategories, getCategoryInfo } from "../utils/categories.js";
 
 export default class NftController {
   constructor() {}
@@ -38,9 +45,10 @@ export default class NftController {
   //GET
   static async getAllNfts(req, res) {
     try {
-      const { count } = req.query;
+      const { count, user } = req.query;
       const allNfts = await getAllNfts(count);
-      let formatted = await getAllNftsInfo(allNfts);
+
+      let formatted = await getAllNftsInfo(allNfts, user);
       res.status(200).send(formatted);
     } catch (e) {
       console.log(e);
@@ -77,7 +85,7 @@ export default class NftController {
   static async getNftInfoById(req, res) {
     try {
       const MARKET_CONTRACT = await getMarketContract();
-      const { collection, nftId } = req.query;
+      const { collection, nftId, user } = req.query;
 
       if (!nftId) {
         res.status(204).send("No identifier supplied");
@@ -144,6 +152,37 @@ export default class NftController {
         nftResult = {
           ...nftResult,
           nfts: items.filter((item) => item.tokenId !== parseFloat(nftId)),
+        };
+
+        let favoritesItem = await getFavoriteItemForToken(
+          nft.collectionAddress,
+          nft.tokenId
+        );
+
+        nftResult = {
+          ...nftResult,
+          favorites: favoritesItem.length,
+        };
+
+        let favorited = favoritesItem.find((fav) => fav.for === user);
+        if (favorited) {
+          nftResult = {
+            ...nftResult,
+            isFavorited: true,
+          };
+        }
+
+        const formattedCattegories = [];
+        await Promise.all(
+          nft.categories.map(async (cat) => {
+            const categoryInfo = await getCategoryInfo(cat);
+            formattedCattegories.push(categoryInfo);
+          })
+        );
+
+        nftResult = {
+          ...nftResult,
+          categories: formattedCattegories,
         };
 
         res.status(200).send(nftResult);
@@ -226,6 +265,28 @@ export default class NftController {
     }
   }
 
+  static async getCategories(req, res) {
+    try {
+      const result = await getAllCategories();
+      res.status(200).send(result);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async getCategoriesDetail(req, res) {
+    try {
+      const { categories } = req.query;
+      console.log(categories);
+      //const result = await getAllCategories();
+      res.status(200).send("OK");
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
   //POST
   static async newItem(req, res) {
     try {
@@ -237,54 +298,87 @@ export default class NftController {
         tokenId,
         royalty,
         externalLink,
-        sanityImgUrl,
+        sanityFileURL,
         ipfsImgUrl,
         ipfsMetadataUrl,
         additionalContent,
+        categories,
+        contentType,
+        sanityAnimatedURL,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
       if (collectionInfo) {
-        let doc = {
-          name: name,
-          description: description,
-          owner: creator,
-          creator: creator,
-          tokenId: parseInt(tokenId),
-          royalty: parseFloat(royalty),
-          image: sanityImgUrl,
-          ipfsImage: ipfsImgUrl,
-          ipfsMetadata: ipfsMetadataUrl,
-          collectionAddress: collection,
-          hasFreezedMetadata: false,
-          externalLink: externalLink,
-          createdAt: new Date().toISOString(),
-        };
-        if (additionalContent) {
-          doc = {
-            ...doc,
-            additionalContent: additionalContent,
+        const nftInfo = await getNftInfoById(tokenId, collection);
+        if (nftInfo) {
+          res.status(204).send("TOKEN ALREADT EXISTS");
+        } else {
+          let doc = {
+            name: name,
+            description: description,
+            owner: creator,
+            creator: creator,
+            tokenId: parseInt(tokenId),
+            royalty: parseFloat(royalty),
+            ipfsImage: ipfsImgUrl,
+            ipfsMetadata: ipfsMetadataUrl,
+            collectionAddress: collection,
+            hasFreezedMetadata: false,
+            externalLink: externalLink,
+            createdAt: new Date().toISOString(),
+            categories: categories,
+            contentType: contentType,
           };
-        }
-        const newNft = await createNft(doc);
+          if (additionalContent) {
+            doc = {
+              ...doc,
+              additionalContent: additionalContent,
+            };
+          }
 
-        const MARKET_CONTRACT = await getMarketContract();
+          if (contentType === "IMG") {
+            doc = {
+              ...doc,
+              image: sanityFileURL,
+            };
+          }
 
-        const tx = await MARKET_CONTRACT.registerRoyalty(
-          creator,
-          collection,
-          parseInt(tokenId),
-          parseFloat(royalty) * 100
-        );
+          if (contentType === "VIDEO") {
+            doc = {
+              ...doc,
+              image: sanityFileURL,
+              video: sanityAnimatedURL,
+            };
+          }
 
-        tx.wait(1);
+          if (contentType === "AUDIO") {
+            doc = {
+              ...doc,
+              audio: sanityAnimatedURL,
+              image: sanityFileURL,
+            };
+          }
 
-        await updateTotalNfts(collection, collectionInfo.numberOfItems);
+          const newNft = await createNft(doc);
 
-        if (newNft) {
-          res.status(200).send(newNft);
+          const MARKET_CONTRACT = await getMarketContract();
 
-          await registerMintEvent(collection, tokenId, creator);
+          const tx = await MARKET_CONTRACT.registerRoyalty(
+            creator,
+            collection,
+            parseInt(tokenId),
+            parseFloat(royalty) * 100
+          );
+
+          tx.wait(1);
+
+          await updateTotalNfts(collection, collectionInfo.numberOfItems);
+
+          if (newNft) {
+            res.status(200).send(newNft);
+
+            await registerMintEvent(collection, tokenId, creator);
+          }
         }
       } else {
         res.send("No collection Found");
@@ -304,11 +398,14 @@ export default class NftController {
         creator,
         tokenId,
         royalty,
-        sanityImgUrl,
-        ipfsImageUrl,
-        ipfsMetadataUrl,
         externalLink,
+        sanityFileURL,
+        ipfsImgUrl,
+        ipfsMetadataUrl,
         additionalContent,
+        categories,
+        contentType,
+        sanityAnimatedURL,
       } = req.body;
 
       const collectionInfo = await getCollectionInfo(collection);
@@ -322,11 +419,14 @@ export default class NftController {
             name,
             description,
             royalty,
-            sanityImgUrl,
-            ipfsImageUrl,
+            sanityFileURL,
+            ipfsImgUrl,
             ipfsMetadataUrl,
             externalLink,
-            additionalContent
+            additionalContent,
+            categories,
+            contentType,
+            sanityAnimatedURL
           );
           res.status(200).send("Edited");
         } else {
@@ -400,20 +500,10 @@ export default class NftController {
 
         if (!isFreezedMetadata) {
           const MARKET_CONTRACT = await getMarketContract();
-          const data = {
-            name: nftInfo.name,
-            description: nftInfo.description,
-            image: nftInfo.image,
-            external_link: nftInfo.externalLink,
-          };
-
-          const ipfsCID = await addJsonToIpfs(data);
-
-          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
 
           const tx = await ERC721_CONTRACT.setFreezedMetadata(
             tokenId,
-            ipfsFileURL
+            nftInfo.ipfsMetadata
           );
           await tx.wait();
 
@@ -435,6 +525,40 @@ export default class NftController {
       //Update owner
 
       //Register transfer event
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async addFavorite(req, res) {
+    try {
+      const { collection, tokenId, from } = req.body;
+
+      const doc = {
+        collectionAddress: collection,
+        tokenId: tokenId,
+        for: from,
+      };
+
+      const favorite = await createFavoriteItem(doc);
+      res.status(200).send(favorite);
+    } catch (e) {
+      console.log(e);
+      res.status(500).send(e);
+    }
+  }
+
+  static async deleteFavorite(req, res) {
+    try {
+      const { collection, tokenId, from } = req.body;
+      const favorite = await getFavoriteItem(collection, tokenId, from);
+      if (favorite) {
+        await deleteFavoriteItem(collection, tokenId, from);
+        res.status(200).send("DELETED");
+      } else {
+        res.status(205).send("Not found favorite");
+      }
     } catch (e) {
       console.log(e);
       res.status(500).send(e);

@@ -17,13 +17,15 @@ NftRouter.get("/nftsByCreator", NftController.getNftsByCreator);
 NftRouter.get("/itemHistory", NftController.getItemHistory);
 
 NftRouter.get("/allTransfers", NftController.getAllTransfers);
+NftRouter.get("/categories", NftController.getCategories);
 
 //POST
 NftRouter.post("/newItem", NftController.newItem);
 NftRouter.post("/editItem", NftController.updateNft);
 NftRouter.post("/delete", NftController.deleteItem);
 NftRouter.post("/sentItem", NftController.sentItem);
-
-NftRouter.post("/registerRoyalties", NftController.updateNft);
+NftRouter.post("/registerRoyalties", NftController.registerRoyalties);
+NftRouter.post("/addFavorite", NftController.addFavorite);
+NftRouter.post("/deleteFavorite", NftController.deleteFavorite);
 
 export default NftRouter;

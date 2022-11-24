@@ -12,6 +12,7 @@ import VerifyRouter from "./routes/VerifyRouter.js";
 import { listenToEvents } from "./contracts/index.js";
 import OffersRouter from "./routes/OffersRouter.js";
 import initScheduledJobs from "./contracts/shedulers/sheduler.js";
+import AdminRouter from "./routes/AdminRouter.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use("/offers", OffersRouter);
 app.use("/users", ProfileRouter);
 app.use("/suggestions", SuggestionRouter);
 app.use("/verify", VerifyRouter);
+app.use("/admin", AdminRouter);
 
 initScheduledJobs();
 

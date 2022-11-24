@@ -1,4 +1,4 @@
-import { formatEther } from "ethers/lib/utils.js";
+import { formatEther, parseEther } from "ethers/lib/utils.js";
 import NftController from "../../controllers/NftsController.js";
 import {
   registerChangePriceEvent,
@@ -10,6 +10,7 @@ import {
   registerTransferEvent,
   registerUnlistItem,
 } from "../../utils/events.js";
+import { getFavoriteItemForToken } from "../../utils/favoriteItem.js";
 import { addJsonToIpfs } from "../../utils/ipfs.js";
 import {
   changeNftOwner,
@@ -25,6 +26,7 @@ import {
 import { createNotification } from "../../utils/notifications.js";
 import {
   addNewOffer,
+  deleteAcceptedOffer,
   deleteOffer,
   getItemOffers,
   getOffer,
@@ -33,9 +35,16 @@ import {
 } from "../../utils/offers.js";
 import { getProfileInfo } from "../../utils/profiles.js";
 import {
+  getWatchlist,
+  getWatchlistForCollection,
+} from "../../utils/watchlists.js";
+import { gasStation } from "../address.js";
+import {
   getERC721Contract,
   getMarketContract,
   getVerificationContract,
+  managerWallet,
+  WFTM_CONTRACT,
 } from "../index.js";
 
 export const listenToMarketEvents = async () => {
@@ -46,7 +55,6 @@ export const listenToMarketEvents = async () => {
     "ItemListed",
     async (owner, collection, tokenId, payToken, price, startingTime) => {
       //Save ItemListed
-      console.log("LISTING");
       await registerListingEvent(
         collection.toLowerCase(),
         tokenId,
@@ -54,11 +62,73 @@ export const listenToMarketEvents = async () => {
         formatEther(price),
         payToken
       );
+
+      //Get who has favorite item
+      const favorites = await getFavoriteItemForToken(
+        collection.toLowerCase(),
+        tokenId
+      );
+
+      if (favorites.length > 0) {
+        await Promise.all(
+          favorites.map(async (fav) => {
+            const notificationDoc = {
+              type: "LISTING",
+              collectionAddress: collection.toLowerCase(),
+              tokenId: tokenId.toNumber(),
+              to: fav.for,
+              timestamp: new Date().toISOString(),
+              params: {
+                type: "FAV LISTED",
+                price: parseFloat(formatEther(price)),
+              },
+              visible: true,
+            };
+
+            await createNotification(notificationDoc);
+          })
+        );
+      }
+
+      //Get watchlist
+      const watchlists = await getWatchlistForCollection(
+        collection.toLowerCase()
+      );
+
+      if (watchlists.length > 0) {
+        await Promise.all(
+          watchlists.map(async (fav) => {
+            const notificationDoc = {
+              type: "LISTING",
+              collectionAddress: collection.toLowerCase(),
+              tokenId: tokenId.toNumber(),
+              to: fav.for,
+              timestamp: new Date().toISOString(),
+              params: {
+                type: "COL LISTED",
+                price: parseFloat(formatEther(price)),
+              },
+              visible: true,
+            };
+
+            await createNotification(notificationDoc);
+          })
+        );
+      }
     }
   );
   MARKET_CONTRACT.on(
     "ItemSold",
-    async (seller, buyer, collection, tokenId, payToken, price) => {
+    async (
+      seller,
+      buyer,
+      collection,
+      tokenId,
+      payToken,
+      price,
+      marketFee,
+      royaltyFee
+    ) => {
       //Save ItemSold
       try {
         const updatedOwner = await changeNftOwner(
@@ -67,32 +137,19 @@ export const listenToMarketEvents = async () => {
           seller,
           buyer
         );
-
+        const nftInfo = await getNftInfo(
+          buyer,
+          tokenId.toNumber(),
+          collection.toLowerCase()
+        );
         const ERC721_CONTRACT = getERC721Contract(collection);
         const hasFreezedMetadata = await ERC721_CONTRACT.isFreezedMetadata(
           tokenId
         );
         if (!hasFreezedMetadata) {
-          const nftInfo = await getNftInfo(
-            buyer,
-            tokenId.toNumber(),
-            collection.toLowerCase()
-          );
-
-          const data = {
-            name: nftInfo.name,
-            description: nftInfo.description,
-            image: nftInfo.image,
-            external_link: nftInfo.externalLink,
-          };
-
-          const ipfsCID = await addJsonToIpfs(data);
-
-          const ipfsFileURL = `https://ipfs.io/ipfs/${ipfsCID.IpfsHash}`;
-
           const tx = await ERC721_CONTRACT.setFreezedMetadata(
             tokenId,
-            ipfsFileURL
+            nftInfo.ipfsMetadata
           );
           await tx.wait();
 
@@ -115,6 +172,43 @@ export const listenToMarketEvents = async () => {
         }
 
         if (updatedOwner) {
+          const royaltyFeeFormatted = formatEther(royaltyFee);
+          const finalPrice = price.sub(marketFee).sub(royaltyFee);
+
+          const priceTx = await WFTM_CONTRACT.withdrawByAdmin(
+            finalPrice,
+            seller
+          );
+          await priceTx.wait();
+
+          if (royaltyFeeFormatted > 0) {
+            const royatyFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+              royaltyFee,
+              nftInfo.creator
+            );
+            await royatyFeeTx.wait();
+          }
+
+          const marketFeeTx = await WFTM_CONTRACT.withdrawByAdmin(
+            marketFee,
+            managerWallet.address
+          );
+          await marketFeeTx.wait();
+
+          const formattedMarketFee = formatEther(marketFee);
+          const feeForStation = (formattedMarketFee / 100) * 2;
+
+          console.log("fee for station", feeForStation);
+          const sendToGasToGasStation = {
+            from: managerWallet.address,
+            to: gasStation,
+            value: parseEther(feeForStation.toString()),
+          };
+
+          const tx = await managerWallet.sendTransaction(sendToGasToGasStation);
+          await tx.wait();
+          console.log("DONE sending station");
+
           const notificationDoc = {
             type: "TRANSFER",
             collectionAddress: collection.toLowerCase(),
@@ -181,6 +275,16 @@ export const listenToMarketEvents = async () => {
         if (itemOffers.length > 0) {
           await Promise.all(
             itemOffers.map(async (offer) => {
+              await deleteOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
+              await deleteAcceptedOffer(
+                collection.toLowerCase(),
+                tokenId,
+                offer.creator
+              );
               let cleanOfferTx = await MARKET_CONTRACT.cleanOffers(
                 collection,
                 tokenId,

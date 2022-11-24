@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const suggestionsSchema = mongoose.Schema({
+const savedSuggestionsSchema = mongoose.Schema({
   proposer: String,
   title: String,
   description: String,
@@ -8,4 +8,4 @@ const suggestionsSchema = mongoose.Schema({
   voters: Array,
 });
 
-export default mongoose.model("suggestions", suggestionsSchema);
+export default mongoose.model("savedsuggestions", savedSuggestionsSchema);

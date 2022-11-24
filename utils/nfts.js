@@ -7,6 +7,7 @@ import {
 import Nft from "../models/nft.js";
 import { getAuction } from "./auctions.js";
 import { getCollectionInfo } from "./collections.js";
+import { getFavoriteItemForToken } from "./favoriteItem.js";
 import { getNftForSaleById } from "./nftsForSale.js";
 import { getItemOffers, sortHigherOffer } from "./offers.js";
 import { getPayTokenInfo, getPayTokens } from "./payTokens.js";
@@ -80,27 +81,68 @@ export const changeNftInfo = async (
   name,
   desc,
   royalties,
-  image,
+  sanityFileURL,
   ipfsImage,
   ipfsMetadata,
   externalLink,
-  additionalContent
+  additionalContent,
+  categories,
+  contentType,
+  sanityAnimatedURL
 ) => {
-  const updatedNft = await Nft.updateOne(
-    { tokenId: nftId, collectionAddress: collectionAddress },
-    {
-      name: name,
-      description: desc,
-      royalties: royalties,
-      image: image,
-      ipfsImage: ipfsImage,
-      ipfsMetadata: ipfsMetadata,
-      externalLink: externalLink,
-      additionalContent: additionalContent,
-    }
-  );
+  let updated;
+  if (contentType === "AUDIO") {
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalty: royalties,
+        image: sanityFileURL,
+        ipfsImage: ipfsImage,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        audio: sanityAnimatedURL,
+      }
+    );
+  }
+  if (contentType === "VIDEO") {
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalty: royalties,
+        ipfsImage: ipfsImage,
+        image: sanityFileURL,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        video: sanityAnimatedURL,
+      }
+    );
+  }
+  if (contentType === "IMG") {
+    updated = await Nft.updateOne(
+      { tokenId: nftId, collectionAddress: collectionAddress },
+      {
+        name: name,
+        description: desc,
+        royalty: royalties,
+        ipfsImage: ipfsImage,
+        ipfsMetadata: ipfsMetadata,
+        externalLink: externalLink,
+        additionalContent: additionalContent,
+        categories: categories,
+        image: sanityFileURL,
+      }
+    );
+  }
 
-  return updatedNft;
+  return updated;
 };
 
 export const setFreezedMetadata = async (creator, collectionAddress, nftId) => {
@@ -122,18 +164,18 @@ export const filterItemsByTitle = async (filterQuery) => {
   return titleFilteredItems;
 };
 
-export const getAllNftsInfo = async (nfts) => {
+export const getAllNftsInfo = async (nfts, user) => {
   try {
     let finalResult = [];
     const AUCTION_CONTRACT = await getAuctionContract();
     const MARKET_CONTRACT = await getMarketContract();
+
     await Promise.all(
       nfts.map(async (item) => {
         //Get collection info
         let result = {};
         let collectionInfo = await getCollectionInfo(item.collectionAddress);
         //Check if has auction
-
         result = {
           ...item._doc,
           collection: collectionInfo,
@@ -143,10 +185,6 @@ export const getAllNftsInfo = async (nfts) => {
           item.tokenId
         );
         if (auction.owner !== ADDRESS_ZERO) {
-          let auctionInDb = await getAuction(
-            item.collectionAddress,
-            item.tokenId
-          );
           //const createdAt = auctionInDb._id.getTimestamp();
           const createdAt = 0;
 
@@ -227,7 +265,22 @@ export const getAllNftsInfo = async (nfts) => {
             }
           }
         }
+        let favoritesItem = await getFavoriteItemForToken(
+          item.collectionAddress,
+          item.tokenId
+        );
 
+        result = {
+          ...result,
+          favorites: favoritesItem.length,
+        };
+        let favorited = favoritesItem.find((fav) => fav.for === user);
+        if (favorited) {
+          result = {
+            ...result,
+            isFavorited: true,
+          };
+        }
         finalResult.push(result);
       })
     );

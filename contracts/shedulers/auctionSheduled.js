@@ -1,6 +1,9 @@
 import { formatEther } from "ethers/lib/utils.js";
 import CronJob from "node-cron";
-import { getAuctions } from "../../utils/auctions.js";
+import { getAuctions, updateStarted } from "../../utils/auctions.js";
+import { getFavoriteItemForToken } from "../../utils/favoriteItem.js";
+import { createNotification } from "../../utils/notifications.js";
+import { getWatchlistForCollection } from "../../utils/watchlists.js";
 import {
   ADDRESS_ZERO,
   getAuctionContract,
@@ -97,6 +100,61 @@ export const checkAuctionsSheduled = CronJob.schedule("* * * * *", async () => {
             console.log(e);
           }
         } else {
+          const { collectionAddress, started, tokenId } = auction;
+          if (!started) {
+            //Get who has favorite item
+            const favorites = await getFavoriteItemForToken(
+              collectionAddress.toLowerCase(),
+              tokenId
+            );
+
+            if (favorites.length > 0) {
+              await Promise.all(
+                favorites.map(async (fav) => {
+                  const notificationDoc = {
+                    type: "AUCTION",
+                    collectionAddress: collectionAddress.toLowerCase(),
+                    tokenId: tokenId,
+                    to: fav.for,
+                    timestamp: new Date().toISOString(),
+                    params: {
+                      type: "FAV STARTED",
+                    },
+                    visible: true,
+                  };
+
+                  await createNotification(notificationDoc);
+                })
+              );
+            }
+
+            //Get watchlist
+            const watchlists = await getWatchlistForCollection(
+              collectionAddress.toLowerCase()
+            );
+
+            if (watchlists.length > 0) {
+              await Promise.all(
+                watchlists.map(async (fav) => {
+                  const notificationDoc = {
+                    type: "AUCTION",
+                    collectionAddress: collectionAddress.toLowerCase(),
+                    tokenId: tokenId,
+                    to: fav.for,
+                    timestamp: new Date().toISOString(),
+                    params: {
+                      type: "COL STARTED",
+                    },
+                    visible: true,
+                  };
+
+                  await createNotification(notificationDoc);
+                })
+              );
+            }
+
+            await updateStarted(collectionAddress, tokenId);
+          }
         }
       } else {
       }
