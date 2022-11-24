@@ -4,6 +4,7 @@ const VerifyRouter = express.Router();
 
 VerifyRouter.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "*");
   next();
 });
 
