@@ -22,7 +22,7 @@ GeneralRouter.get("/notifications", GeneralController.getAllNotifications);
 GeneralRouter.post(
   "/uploadImg",
   upload.single("file"),
-  GeneralController.uploadtoCDN
+  GeneralController.uploadFiletoCDN
 );
 
 GeneralRouter.post("/uploadJson", GeneralController.uploadJSONMetadata);

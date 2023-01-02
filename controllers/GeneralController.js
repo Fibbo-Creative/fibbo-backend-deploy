@@ -8,6 +8,7 @@ import {
   getAllNotifications,
 } from "../utils/notifications.js";
 import nft from "../models/nft.js";
+import { uploadToCDN } from "../utils/sanity.js";
 
 export default class GeneralController {
   constructor() {}
@@ -87,7 +88,7 @@ export default class GeneralController {
     }
   }
 
-  static async uploadtoCDN(req, res) {
+  static async uploadFiletoCDN(req, res) {
     try {
       const file = req.file;
       const { uploadToIpfs, contentType, isExplicit } = req.body;
