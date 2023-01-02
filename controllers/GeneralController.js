@@ -11,6 +11,7 @@ import nft from "../models/nft.js";
 import { uploadToCDN } from "../utils/sanity.js";
 import { imgsDir, removeFiles } from "../utils/multer.js";
 import { filterCollectionsByName } from "../utils/collections.js";
+import { filterProfilesByUsername } from "../utils/profiles.js";
 
 export default class GeneralController {
   constructor() {}
