@@ -3,6 +3,7 @@ import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
 import { updateEvents } from "../utils/events.js";
 import { addImgToIpfs, addJsonToIpfs } from "../utils/ipfs.js";
+import sanity_client from "../lib/sanity.js";
 import {
   deleteNotification,
   getAllNotifications,
