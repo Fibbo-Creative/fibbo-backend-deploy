@@ -1,7 +1,6 @@
 import { filterItemsByTitle, getNftInfoById } from "../utils/nfts.js";
 import { checkNFSW } from "../lib/deepai.js";
 import { getPayTokenInfo, getPayTokens } from "../utils/payTokens.js";
-import { updateEvents } from "../utils/events.js";
 import { addImgToIpfs, addJsonToIpfs } from "../utils/ipfs.js";
 import sanity_client from "../lib/sanity.js";
 import {
@@ -10,6 +9,7 @@ import {
 } from "../utils/notifications.js";
 import nft from "../models/nft.js";
 import { uploadToCDN } from "../utils/sanity.js";
+import { imgsDir } from "../utils/multer";
 
 export default class GeneralController {
   constructor() {}
