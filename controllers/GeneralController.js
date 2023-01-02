@@ -9,7 +9,7 @@ import {
 } from "../utils/notifications.js";
 import nft from "../models/nft.js";
 import { uploadToCDN } from "../utils/sanity.js";
-import { imgsDir } from "../utils/multer";
+import { imgsDir } from "../utils/multer.js";
 
 export default class GeneralController {
   constructor() {}
